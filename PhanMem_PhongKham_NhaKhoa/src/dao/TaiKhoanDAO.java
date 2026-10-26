@@ -155,8 +155,8 @@ public class TaiKhoanDAO {
         // 2. Kiểm tra danh sách tài khoản mặc định của hệ thống
         for (TaiKhoan tk : DEFAULT_ACCOUNTS) {
             if (tk.getTenDangNhap().equalsIgnoreCase(username)) {
-                // Chấp nhận mật khẩu chính xác hoặc '123'/'123456' để dễ kiểm thử
-                if (tk.getMatKhau().equals(password) || "123456".equals(password) || "123".equals(password)) {
+                // Chỉ chấp nhận đúng mật khẩu của tài khoản mẫu.
+                if (tk.getMatKhau() != null && tk.getMatKhau().equals(password)) {
                     return tk;
                 }
             }
@@ -248,7 +248,15 @@ public class TaiKhoanDAO {
                 System.err.println("TaiKhoanDAO.themTaiKhoan DB error: " + e.getMessage());
             }
         }
-        // Thêm vào mock memory
+        // Keep offline demo data only when there is no database connection.
+        if (tk == null || tk.getTenDangNhap() == null || tk.getTenDangNhap().trim().isEmpty()) {
+            return false;
+        }
+        for (TaiKhoan existing : DEFAULT_ACCOUNTS) {
+            if (existing.getTenDangNhap().equalsIgnoreCase(tk.getTenDangNhap())) {
+                return false;
+            }
+        }
         DEFAULT_ACCOUNTS.add(tk);
         return true;
     }
@@ -273,7 +281,7 @@ public class TaiKhoanDAO {
                 return true;
             }
         }
-        return true;
+        return false;
     }
 
     public boolean khoaTaiKhoan(String username) {
@@ -295,7 +303,7 @@ public class TaiKhoanDAO {
                 return true;
             }
         }
-        return true;
+        return false;
     }
 
     public boolean moKhoaTaiKhoan(String username) {
@@ -317,7 +325,7 @@ public class TaiKhoanDAO {
                 return true;
             }
         }
-        return true;
+        return false;
     }
 
     public boolean capLaiMatKhau(String username, String passMacDinh) {

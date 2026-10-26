@@ -22,8 +22,14 @@ public class PanelBenhNhanModern extends JPanel {
     private JTextField txtMaBN, txtHoTen, txtSDT, txtDiaChi, txtNgaySinh, txtTienSuBenh, txtDiemTichLuy, txtTimKiem;
     private JComboBox<String> cbGioiTinh, cbLoaiKhach;
     private JButton btnThem, btnCapNhat, btnLamMoi, btnTimKiem;
+    private final boolean readOnly;
 
     public PanelBenhNhanModern() {
+        this(false);
+    }
+
+    public PanelBenhNhanModern(boolean readOnly) {
+        this.readOnly = readOnly;
         setLayout(new BorderLayout(0, 16));
         setBackground(ModernUITheme.BG_MAIN);
         setBorder(new EmptyBorder(16, 20, 20, 20));
@@ -34,11 +40,13 @@ public class PanelBenhNhanModern extends JPanel {
 
         JPanel pnlTitle = new JPanel(new GridLayout(2, 1, 0, 3));
         pnlTitle.setOpaque(false);
-        JLabel lblTitle = new JLabel("HỒ SƠ BỆNH NHÂN & THẺ THÀNH VIÊN");
+        JLabel lblTitle = new JLabel(readOnly ? "TRA CỨU BỆNH NHÂN" : "HỒ SƠ BỆNH NHÂN & THẺ THÀNH VIÊN");
         lblTitle.setFont(ModernUITheme.FONT_HERO);
         lblTitle.setForeground(ModernUITheme.TEXT_MAIN);
 
-        JLabel lblSub = new JLabel("Quản lý thông tin hành chính, tiền sử bệnh lý và phân hạng khách hàng");
+        JLabel lblSub = new JLabel(readOnly
+                ? "Xem thông tin bệnh nhân và tiền sử bệnh lý phục vụ khám, điều trị"
+                : "Quản lý thông tin hành chính, tiền sử bệnh lý và phân hạng khách hàng");
         lblSub.setFont(ModernUITheme.FONT_SMALL);
         lblSub.setForeground(ModernUITheme.TEXT_MUTED);
         pnlTitle.add(lblTitle);
@@ -133,6 +141,19 @@ public class PanelBenhNhanModern extends JPanel {
         pnlButtons.add(btnLamMoi);
         pnlButtons.add(btnCapNhat);
         pnlButtons.add(btnThem);
+        if (readOnly) {
+            btnThem.setVisible(false);
+            btnCapNhat.setVisible(false);
+            btnLamMoi.setVisible(false);
+            txtHoTen.setEditable(false);
+            txtSDT.setEditable(false);
+            txtDiaChi.setEditable(false);
+            txtNgaySinh.setEditable(false);
+            txtTienSuBenh.setEditable(false);
+            txtDiemTichLuy.setEditable(false);
+            cbGioiTinh.setEnabled(false);
+            cbLoaiKhach.setEnabled(false);
+        }
         pnlFormCard.add(pnlButtons, BorderLayout.SOUTH);
 
         splitPane.setBottomComponent(pnlFormCard);

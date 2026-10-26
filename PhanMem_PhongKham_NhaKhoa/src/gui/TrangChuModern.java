@@ -55,6 +55,7 @@ public class TrangChuModern extends JFrame {
         setMinimumSize(new Dimension(1180, 700));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
 
         // 1. WEST: SIDEBAR MENU NAVIGATION (Menu dọc hiện đại)
@@ -74,7 +75,7 @@ public class TrangChuModern extends JFrame {
 
         // Khởi tạo các panels
         pnlDashboard = new PanelDashboardModern(this::switchTab);
-        pnlBenhNhan  = new PanelBenhNhanModern();
+        pnlBenhNhan  = new PanelBenhNhanModern(laNhaSi(currentUser));
         pnlDichVu    = new PanelDichVuModern();
         pnlKhoVatTu  = new PanelKhoVatTuModern();
         pnlLichTruc  = new PanelLichTrucModern();
@@ -103,7 +104,8 @@ public class TrangChuModern extends JFrame {
         // Mặc định chọn tab phù hợp nhất theo từng vị trí
         String defaultTab = "DASHBOARD";
         String rLower = this.currentUser.getTenVaiTro() != null ? this.currentUser.getTenVaiTro().toLowerCase() : "";
-        if (rLower.contains("nha sĩ") || rLower.contains("bác sĩ")) {
+        String roleCode = this.currentUser.getMaVaiTro() != null ? this.currentUser.getMaVaiTro().toUpperCase() : "";
+        if (rLower.contains("nha sĩ") || rLower.contains("bác sĩ") || roleCode.contains("BS")) {
             defaultTab = "BENH_NHAN";
         } else if (rLower.contains("lễ tân") || rLower.contains("tiếp tân")) {
             defaultTab = "BENH_NHAN";
@@ -235,10 +237,10 @@ public class TrangChuModern extends JFrame {
 
         if (role.contains("nha sĩ") || role.contains("bác sĩ") || maRole.contains("BS")) {
             // VỊ TRÍ NHA SĨ: Chỉ hiển thị các chức năng của Nha sĩ
-            addCategoryHeader(pnlMenuItems, "CHỨC NĂNG NHA SĨ");
-            addMenuItem(pnlMenuItems, "Hồ Sơ Bệnh Nhân", "BENH_NHAN");
-            addMenuItem(pnlMenuItems, "Dịch Vụ & Bảng Giá", "DICH_VU");
-            addMenuItem(pnlMenuItems, "Lịch Trực & Ca Khám", "LICH_TRUC");
+            addCategoryHeader(pnlMenuItems, "KHÁM & ĐIỀU TRỊ");
+            addMenuItem(pnlMenuItems, "Tra cứu bệnh nhân", "BENH_NHAN");
+            addMenuItem(pnlMenuItems, "Dịch vụ điều trị", "DICH_VU");
+            addMenuItem(pnlMenuItems, "Lịch trực & ca khám", "LICH_TRUC");
 
         } else if (role.contains("lễ tân") || role.contains("tiếp tân") || maRole.contains("LT")) {
             // VỊ TRÍ LỄ TÂN: Đón tiếp, tạo hồ sơ, xếp lịch hẹn, xem bảng giá và ưu đãi
@@ -283,6 +285,12 @@ public class TrangChuModern extends JFrame {
             addMenuItem(pnlMenuItems, "Quản Trị Tài Khoản", "TAI_KHOAN");
             addMenuItem(pnlMenuItems, "Quy Chế Phòng Khám", "QUY_DINH");
         }
+    }
+
+    private boolean laNhaSi(TaiKhoan user) {
+        String role = user.getTenVaiTro() != null ? user.getTenVaiTro().toLowerCase() : "";
+        String code = user.getMaVaiTro() != null ? user.getMaVaiTro().toUpperCase() : "";
+        return role.contains("nha sĩ") || role.contains("bác sĩ") || code.contains("BS");
     }
 
     private void addCategoryHeader(JPanel parent, String title) {
