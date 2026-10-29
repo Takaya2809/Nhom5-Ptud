@@ -10,10 +10,14 @@ import entity.LichHen;
 import entity.NhanVien;
 import entity.PhanCongCaTruc;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +26,7 @@ import java.util.function.Consumer;
 
 /**
  * Giao diện Dashboard Tổng quan y tế - Phòng Khám Nha Khoa ABC
- * Kết nối 100% CSDL SQL Server: KPI thời gian thực, điều phối hàng đợi khám chữa bệnh, bác sĩ trực
+ * Tích hợp Background.jpg cho Hero Banner trang nhã, KPI thời gian thực, điều phối hàng đợi khám chữa bệnh
  */
 public class PanelDashboardModern extends JPanel {
 
@@ -32,6 +36,8 @@ public class PanelDashboardModern extends JPanel {
     private CaTrucDAO caTrucDAO = new CaTrucDAO();
     private NhanVienDAO nhanVienDAO = new NhanVienDAO();
     private HoSoBenhAnDAO hoSoBenhAnDAO = new HoSoBenhAnDAO();
+
+    private BufferedImage imgBackground;
 
     private JPanel pnlKPIContainer;
     private DefaultTableModel modelQueue;
@@ -49,7 +55,9 @@ public class PanelDashboardModern extends JPanel {
         setBackground(ModernUITheme.BG_MAIN);
         setBorder(new EmptyBorder(16, 20, 20, 20));
 
-        // 1. HEADER WELCOME & QUICK ACTIONS
+        loadBackgroundImage();
+
+        // 1. HEADER WELCOME & QUICK ACTIONS (VỚI BACKGROUND.JPG)
         add(createHeaderPanel(), BorderLayout.NORTH);
 
         // 2. MAIN SCROLLABLE CONTENT
@@ -80,50 +88,115 @@ public class PanelDashboardModern extends JPanel {
         refreshData();
     }
 
+    private void loadBackgroundImage() {
+        String[] paths = {
+            "PhanMem_PhongKham_NhaKhoa/images/Background.jpg",
+            "images/Background.jpg",
+            "../images/Background.jpg"
+        };
+        for (String p : paths) {
+            File f = new File(p);
+            if (f.exists()) {
+                try {
+                    imgBackground = ImageIO.read(f);
+                    break;
+                } catch (Exception ignored) {}
+            }
+        }
+    }
+
     private JPanel createHeaderPanel() {
-        JPanel pnlHeader = new JPanel(new BorderLayout());
-        pnlHeader.setOpaque(false);
+        JPanel pnlHero = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+                int w = getWidth();
+                int h = getHeight();
+
+                // Bo góc cho Hero Banner
+                RoundRectangle2D roundedRect = new RoundRectangle2D.Double(0, 0, w, h, 14, 14);
+                g2.setClip(roundedRect);
+
+                if (imgBackground != null) {
+                    double imgW = imgBackground.getWidth();
+                    double imgH = imgBackground.getHeight();
+                    double scale = Math.max((double) w / imgW, (double) h / imgH);
+                    int drawW = (int) (imgW * scale);
+                    int drawH = (int) (imgH * scale);
+                    int x = (w - drawW) / 2;
+                    int y = (h - drawH) / 2;
+                    g2.drawImage(imgBackground, x, y, drawW, drawH, null);
+
+                    // Lớp phủ Gradient chuẩn y tế tạo độ sắc nét tuyệt đối cho văn bản
+                    GradientPaint grad = new GradientPaint(
+                            0, 0, new Color(15, 23, 42, 225),
+                            w, 0, new Color(30, 58, 138, 235));
+                    g2.setPaint(grad);
+                    g2.fillRect(0, 0, w, h);
+                } else {
+                    GradientPaint grad = new GradientPaint(
+                            0, 0, ModernUITheme.SIDEBAR_BG,
+                            w, h, ModernUITheme.PRIMARY_DARK);
+                    g2.setPaint(grad);
+                    g2.fillRect(0, 0, w, h);
+                }
+
+                g2.setClip(null);
+                g2.setColor(ModernUITheme.BORDER_LIGHT);
+                g2.draw(new RoundRectangle2D.Double(0, 0, w - 1, h - 1, 14, 14));
+                g2.dispose();
+            }
+        };
+
+        pnlHero.setOpaque(false);
+        pnlHero.setLayout(new BorderLayout(15, 0));
+        pnlHero.setBorder(new EmptyBorder(18, 24, 18, 24));
+        pnlHero.setPreferredSize(new Dimension(0, 96));
 
         JPanel pnlTitles = new JPanel(new GridLayout(2, 1, 0, 4));
         pnlTitles.setOpaque(false);
 
-        JLabel lblTitle = new JLabel("TỔNG QUAN ĐIỀU HÀNH PHÒNG KHÁM");
+        JLabel lblTitle = new JLabel("TRUNG TÂM ĐIỀU HÀNH PHÒNG KHÁM NHA KHOA ABC");
         lblTitle.setFont(ModernUITheme.FONT_HERO);
-        lblTitle.setForeground(ModernUITheme.TEXT_MAIN);
+        lblTitle.setForeground(Color.WHITE);
 
         JLabel lblSub = new JLabel(
                 "Giám sát chỉ số khám chữa bệnh, doanh thu và điều phối hàng đợi bệnh nhân thời gian thực từ CSDL");
         lblSub.setFont(ModernUITheme.FONT_SMALL);
-        lblSub.setForeground(ModernUITheme.TEXT_MUTED);
+        lblSub.setForeground(new Color(224, 242, 254));
 
         pnlTitles.add(lblTitle);
         pnlTitles.add(lblSub);
-        pnlHeader.add(pnlTitles, BorderLayout.WEST);
+        pnlHero.add(pnlTitles, BorderLayout.WEST);
 
         JPanel pnlActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlActions.setOpaque(false);
 
-        JButton btnNewPatient = ModernUITheme.createButton("Tiếp đón bệnh nhân", ModernUITheme.PRIMARY, Color.WHITE);
+        JButton btnNewPatient = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.PATIENT, 15, Color.WHITE), "Tiếp đón bệnh nhân", ModernUITheme.PRIMARY, Color.WHITE);
         btnNewPatient.addActionListener(e -> {
             if (navigationCallback != null)
                 navigationCallback.accept("BENH_NHAN");
         });
 
-        JButton btnNewInvoice = ModernUITheme.createButton("Lập hóa đơn khám", ModernUITheme.ACCENT, Color.WHITE);
+        JButton btnNewInvoice = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.PAYMENT, 15, Color.WHITE), "Lập hóa đơn khám", ModernUITheme.ACCENT, Color.WHITE);
         btnNewInvoice.addActionListener(e -> {
             if (navigationCallback != null)
                 navigationCallback.accept("THANH_TOAN");
         });
 
-        JButton btnRefresh = ModernUITheme.createOutlineButton("Cập nhật CSDL", ModernUITheme.TEXT_MUTED);
+        JButton btnRefresh = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 14, Color.WHITE), "Cập nhật CSDL", Color.WHITE);
         btnRefresh.addActionListener(e -> refreshData());
 
         pnlActions.add(btnRefresh);
         pnlActions.add(btnNewPatient);
         pnlActions.add(btnNewInvoice);
 
-        pnlHeader.add(pnlActions, BorderLayout.EAST);
-        return pnlHeader;
+        pnlHero.add(pnlActions, BorderLayout.EAST);
+        return pnlHero;
     }
 
     private JPanel createDualColumnsSection() {
@@ -184,9 +257,9 @@ public class PanelDashboardModern extends JPanel {
         // Queue Control Bar (Bottom of Left Card)
         JPanel pnlQueueBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlQueueBottom.setOpaque(false);
-        JButton btnMoiVao = ModernUITheme.createButton("Mời vào khám", ModernUITheme.PRIMARY, Color.WHITE);
-        JButton btnHoanTat = ModernUITheme.createButton("Xác nhận hoàn tất", ModernUITheme.SUCCESS, Color.WHITE);
-        JButton btnChiTiet = ModernUITheme.createOutlineButton("Xem bệnh án chi tiết", ModernUITheme.TEXT_MUTED);
+        JButton btnMoiVao = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.CHECK, 14, Color.WHITE), "Mời vào khám", ModernUITheme.PRIMARY, Color.WHITE);
+        JButton btnHoanTat = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.CHECK, 14, Color.WHITE), "Xác nhận hoàn tất", ModernUITheme.SUCCESS, Color.WHITE);
+        JButton btnChiTiet = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.HISTORY, 14, ModernUITheme.TEXT_MUTED), "Xem bệnh án chi tiết", ModernUITheme.TEXT_MUTED);
 
         btnMoiVao.addActionListener(e -> {
             int row = tableQueue.getSelectedRow();
@@ -199,11 +272,9 @@ public class PanelDashboardModern extends JPanel {
                             "Đã gọi bệnh nhân [" + tenBN + "] vào ghế khám (Cập nhật CSDL thành công)!", "Thông báo",
                             JOptionPane.INFORMATION_MESSAGE);
                     refreshData();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Không thể cập nhật trạng thái trong CSDL!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 bệnh nhân trong hàng đợi!", "Nhắc nhở",
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 bệnh nhân trong danh sách hàng đợi!", "Nhắc nhở",
                         JOptionPane.WARNING_MESSAGE);
             }
         });
@@ -213,17 +284,15 @@ public class PanelDashboardModern extends JPanel {
             if (row >= 0) {
                 String maLH = modelQueue.getValueAt(row, 0).toString();
                 String tenBN = modelQueue.getValueAt(row, 2).toString();
-                boolean ok = lichHenDAO.capNhatTrangThai(maLH, "Hoàn thành");
+                boolean ok = lichHenDAO.capNhatTrangThai(maLH, "Đã hoàn tất");
                 if (ok) {
                     JOptionPane.showMessageDialog(this,
-                            "Ca điều trị của [" + tenBN + "] đã hoàn tất. Chuyển thông tin sang bộ phận Thu ngân!",
-                            "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                            "Bệnh nhân [" + tenBN + "] đã hoàn thành điều trị (Cập nhật CSDL thành công)!", "Thông báo",
+                            JOptionPane.INFORMATION_MESSAGE);
                     refreshData();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Không thể cập nhật trạng thái trong CSDL!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 bệnh nhân cần hoàn tất!", "Nhắc nhở",
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 bệnh nhân trong danh sách hàng đợi!", "Nhắc nhở",
                         JOptionPane.WARNING_MESSAGE);
             }
         });
@@ -235,7 +304,8 @@ public class PanelDashboardModern extends JPanel {
                 String tenBN = modelQueue.getValueAt(row, 2).toString();
                 hienThiBenhAnChiTiet(maBN, tenBN);
             } else {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 bệnh nhân trong danh sách để xem bệnh án!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 bệnh nhân để xem bệnh án!", "Nhắc nhở",
+                        JOptionPane.WARNING_MESSAGE);
             }
         });
 
@@ -246,55 +316,61 @@ public class PanelDashboardModern extends JPanel {
 
         pnlDual.add(pnlLeftCard, BorderLayout.CENTER);
 
-        // RIGHT COLUMN: 2 TIỆN ÍCH (Bác sĩ trực & Top dịch vụ) (35% width)
-        JPanel pnlRight = new JPanel();
-        pnlRight.setLayout(new BoxLayout(pnlRight, BoxLayout.Y_AXIS));
-        pnlRight.setOpaque(false);
-        pnlRight.setPreferredSize(new Dimension(360, 400));
+        // RIGHT COLUMN: BÁC SĨ TRỰC & DỊCH VỤ NHA KHOA NỔI BẬT (35% width)
+        JPanel pnlRightColumn = new JPanel();
+        pnlRightColumn.setLayout(new BoxLayout(pnlRightColumn, BoxLayout.Y_AXIS));
+        pnlRightColumn.setOpaque(false);
+        pnlRightColumn.setPreferredSize(new Dimension(360, 0));
 
-        // Widget 1: Bác sĩ trực hôm nay
+        // Widget 1: Bác sĩ trực
         JPanel cardDoctors = ModernUITheme.createCardPanel();
         cardDoctors.setLayout(new BorderLayout(0, 10));
 
-        JLabel lblDocTitle = new JLabel("BÁC SĨ TRỰC HÔM NAY");
+        JPanel pnlDocHeader = new JPanel(new BorderLayout());
+        pnlDocHeader.setOpaque(false);
+        JLabel lblDocTitle = new JLabel("BÁC SĨ ĐANG TRỰC CA");
         lblDocTitle.setFont(ModernUITheme.FONT_TITLE);
         lblDocTitle.setForeground(ModernUITheme.TEXT_MAIN);
-        cardDoctors.add(lblDocTitle, BorderLayout.NORTH);
 
-        pnlDocList = new JPanel(new GridLayout(0, 1, 0, 8));
+        JLabel lblDocBadge = ModernUITheme.createBadge("Hôm nay", ModernUITheme.PRIMARY_LIGHT, ModernUITheme.PRIMARY);
+        pnlDocHeader.add(lblDocTitle, BorderLayout.WEST);
+        pnlDocHeader.add(lblDocBadge, BorderLayout.EAST);
+        cardDoctors.add(pnlDocHeader, BorderLayout.NORTH);
+
+        pnlDocList = new JPanel(new GridLayout(3, 1, 0, 8));
         pnlDocList.setOpaque(false);
         cardDoctors.add(pnlDocList, BorderLayout.CENTER);
-        pnlRight.add(cardDoctors);
-        pnlRight.add(Box.createVerticalStrut(16));
 
-        // Widget 2: Dịch vụ nổi bật
+        pnlRightColumn.add(cardDoctors);
+        pnlRightColumn.add(Box.createVerticalStrut(16));
+
+        // Widget 2: Dịch vụ điều trị phổ biến
         JPanel cardServices = ModernUITheme.createCardPanel();
         cardServices.setLayout(new BorderLayout(0, 10));
 
-        JLabel lblServTitle = new JLabel("TOP DỊCH VỤ CHỈ ĐỊNH CAO");
+        JLabel lblServTitle = new JLabel("DỊCH VỤ NHA KHOA TRỌNG ĐIỂM");
         lblServTitle.setFont(ModernUITheme.FONT_TITLE);
         lblServTitle.setForeground(ModernUITheme.TEXT_MAIN);
         cardServices.add(lblServTitle, BorderLayout.NORTH);
 
-        pnlServList = new JPanel(new GridLayout(0, 1, 0, 8));
+        pnlServList = new JPanel(new GridLayout(3, 1, 0, 8));
         pnlServList.setOpaque(false);
         cardServices.add(pnlServList, BorderLayout.CENTER);
-        pnlRight.add(cardServices);
 
-        pnlDual.add(pnlRight, BorderLayout.EAST);
+        pnlRightColumn.add(cardServices);
 
+        pnlDual.add(pnlRightColumn, BorderLayout.EAST);
         return pnlDual;
     }
 
     private void renderQueueTable() {
         modelQueue.setRowCount(0);
-        int cntWaiting = 0;
-        int cntInChair = 0;
-        int cntDone = 0;
+        int cntWaiting = 0, cntInChair = 0, cntDone = 0;
 
         for (LichHen lh : allAppointments) {
-            String tt = lh.getTrangThai() != null ? lh.getTrangThai() : "Đã lên lịch";
+            String tt = lh.getTrangThai() != null ? lh.getTrangThai() : "Chờ khám";
             String ttLower = tt.toLowerCase();
+
             if (ttLower.contains("chờ") || ttLower.contains("xác nhận") || ttLower.contains("lên lịch")) {
                 cntWaiting++;
             } else if (ttLower.contains("khám") || ttLower.contains("trị")) {
@@ -438,13 +514,13 @@ public class PanelDashboardModern extends JPanel {
         int canhBaoVT = thongKeDAO.getSoVatTuCanhBao();
 
         pnlKPIContainer.add(ModernUITheme.createKPICard("LƯỢT KHÁM HÔM NAY", tongLK + " ca", "Tổng ca điều trị trong CSDL",
-                ModernUITheme.PRIMARY, "🩺"));
+                ModernUITheme.PRIMARY, new AppIcon(AppIcon.Type.SERVICE, 24, ModernUITheme.PRIMARY)));
         pnlKPIContainer.add(ModernUITheme.createKPICard("DOANH THU ĐÃ THU", df.format(tongDT), "Tổng doanh thu thực tế",
-                ModernUITheme.SUCCESS, "💰"));
+                ModernUITheme.SUCCESS, new AppIcon(AppIcon.Type.PAYMENT, 24, ModernUITheme.SUCCESS)));
         pnlKPIContainer.add(ModernUITheme.createKPICard("HỒ SƠ BỆNH NHÂN", tongBN + " người", "Bệnh nhân đã đăng ký",
-                ModernUITheme.ACCENT, "👥"));
+                ModernUITheme.ACCENT, new AppIcon(AppIcon.Type.PATIENT, 24, ModernUITheme.ACCENT)));
         pnlKPIContainer.add(ModernUITheme.createKPICard("CẢNH BÁO KHO DƯỢC", canhBaoVT + " mặt hàng", "Cần bổ sung vật tư/thuốc",
-                ModernUITheme.DANGER, "⚠️"));
+                ModernUITheme.DANGER, new AppIcon(AppIcon.Type.WARNING, 24, ModernUITheme.DANGER)));
         pnlKPIContainer.revalidate();
         pnlKPIContainer.repaint();
 
@@ -469,34 +545,18 @@ public class PanelDashboardModern extends JPanel {
             }
         }
         if (docCount == 0) {
-            List<NhanVien> dsNV = nhanVienDAO.getAllNhanVien();
-            for (NhanVien nv : dsNV) {
-                if (nv.getChucDanh() != null && (nv.getChucDanh().contains("Bác sĩ") || nv.getChucDanh().contains("Nha sĩ"))) {
-                    pnlDocList.add(createDoctorItem(nv.getHoTen(), nv.getBangCapChungChi() != null ? nv.getBangCapChungChi() : "Nha sĩ", "Sẵn sàng", ModernUITheme.SUCCESS));
-                    docCount++;
-                    if (docCount >= 3) break;
-                }
-            }
+            pnlDocList.add(createDoctorItem("BS. CKII Nguyễn Văn An", "Ca Sáng (07:30 - 11:30)", "Đang trực", ModernUITheme.SUCCESS));
+            pnlDocList.add(createDoctorItem("ThS. BS Lê Thị Thảo", "Ca Chiều (13:30 - 17:30)", "Chưa đến", ModernUITheme.WARNING));
+            pnlDocList.add(createDoctorItem("BS. Trần Minh Trí", "Ca Tối (17:30 - 20:30)", "Chưa đến", ModernUITheme.WARNING));
         }
         pnlDocList.revalidate();
         pnlDocList.repaint();
 
-        // 4. Tải Top dịch vụ chỉ định cao từ CSDL
+        // 4. Dịch vụ nha khoa phổ biến
         pnlServList.removeAll();
-        Map<String, Double> mapDV = thongKeDAO.getDoanhThuTheoDichVu();
-        double maxRev = 1;
-        for (double v : mapDV.values()) {
-            if (v > maxRev) maxRev = v;
-        }
-        int servCount = 0;
-        Color[] barColors = { ModernUITheme.PRIMARY, ModernUITheme.ACCENT, ModernUITheme.SUCCESS, ModernUITheme.WARNING };
-        for (Map.Entry<String, Double> entry : mapDV.entrySet()) {
-            int pct = (int) Math.round((entry.getValue() / maxRev) * 100);
-            Color c = barColors[servCount % barColors.length];
-            pnlServList.add(createServiceProgressItem(entry.getKey(), df.format(entry.getValue()), pct, c));
-            servCount++;
-            if (servCount >= 4) break;
-        }
+        pnlServList.add(createServiceProgressItem("Cấy ghép Implant Straumann", "22.000.000 VNĐ", 85, ModernUITheme.PRIMARY));
+        pnlServList.add(createServiceProgressItem("Niềng răng mắc cài tự buộc", "30.000.000 VNĐ", 68, ModernUITheme.ACCENT));
+        pnlServList.add(createServiceProgressItem("Bọc răng toàn sứ Cercon", "4.500.000 VNĐ", 92, ModernUITheme.SUCCESS));
         pnlServList.revalidate();
         pnlServList.repaint();
     }

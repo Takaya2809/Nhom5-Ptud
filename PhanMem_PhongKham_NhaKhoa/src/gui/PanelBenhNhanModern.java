@@ -15,10 +15,12 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.Date;
 import java.sql.Time;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Giao diện Hồ sơ Bệnh nhân - Thiết kế phẳng hiện đại
+ * Giao diện Hồ sơ Bệnh nhân & Khách hàng - Chuẩn Y Khoa Hiện Đại
+ * Tích hợp DatePickerField chọn ngày sinh trực quan, AppIcon độc lập hệ điều hành
  */
 public class PanelBenhNhanModern extends JPanel {
 
@@ -30,7 +32,8 @@ public class PanelBenhNhanModern extends JPanel {
     private JTable table;
     private DefaultTableModel tableModel;
 
-    private JTextField txtMaBN, txtHoTen, txtSDT, txtDiaChi, txtNgaySinh, txtTienSuBenh, txtDiemTichLuy, txtTimKiem;
+    private JTextField txtMaBN, txtHoTen, txtSDT, txtDiaChi, txtTienSuBenh, txtDiemTichLuy, txtTimKiem;
+    private DatePickerField dpNgaySinh;
     private JComboBox<String> cbGioiTinh, cbLoaiKhach;
     private JButton btnThem, btnCapNhat, btnXoa, btnXemLichSu, btnDatHen, btnLamMoi, btnTimKiem;
 
@@ -62,8 +65,8 @@ public class PanelBenhNhanModern extends JPanel {
         txtTimKiem = ModernUITheme.createTextField(18);
         txtTimKiem.setToolTipText("Nhập mã, tên hoặc SĐT bệnh nhân...");
 
-        btnTimKiem = ModernUITheme.createButton("Tìm kiếm", ModernUITheme.PRIMARY, Color.WHITE);
-        JButton btnTaiLai = ModernUITheme.createOutlineButton("Tất cả", ModernUITheme.TEXT_MUTED);
+        btnTimKiem = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SEARCH, 15, Color.WHITE), "Tìm kiếm", ModernUITheme.PRIMARY, Color.WHITE);
+        JButton btnTaiLai = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 14, ModernUITheme.TEXT_MUTED), "Tất cả", ModernUITheme.TEXT_MUTED);
 
         pnlSearch.add(new JLabel("Tra cứu:"));
         pnlSearch.add(txtTimKiem);
@@ -75,7 +78,7 @@ public class PanelBenhNhanModern extends JPanel {
 
         // 2. MAIN SPLITPANE (Bảng phía trên, Form phía dưới)
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setResizeWeight(0.62);
+        splitPane.setResizeWeight(0.58);
         splitPane.setDividerSize(6);
         splitPane.setOpaque(false);
 
@@ -96,10 +99,15 @@ public class PanelBenhNhanModern extends JPanel {
         JPanel pnlFormCard = ModernUITheme.createCardPanel();
         pnlFormCard.setLayout(new BorderLayout(12, 12));
 
+        JPanel pnlFormHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        pnlFormHeader.setOpaque(false);
+        JLabel lblFormIcon = new JLabel(new AppIcon(AppIcon.Type.PATIENT, 18, ModernUITheme.PRIMARY));
         JLabel lblFormTitle = new JLabel("THÔNG TIN CHI TIẾT HỒ SƠ BỆNH NHÂN");
         lblFormTitle.setFont(ModernUITheme.FONT_TITLE);
         lblFormTitle.setForeground(ModernUITheme.PRIMARY_DARK);
-        pnlFormCard.add(lblFormTitle, BorderLayout.NORTH);
+        pnlFormHeader.add(lblFormIcon);
+        pnlFormHeader.add(lblFormTitle);
+        pnlFormCard.add(pnlFormHeader, BorderLayout.NORTH);
 
         // Grid fields
         JPanel pnlFields = new JPanel(new GridLayout(2, 4, 14, 10));
@@ -113,12 +121,17 @@ public class PanelBenhNhanModern extends JPanel {
         txtSDT = ModernUITheme.createTextField(12);
         txtDiaChi = ModernUITheme.createTextField(20);
         cbGioiTinh = new JComboBox<>(new String[]{"Nam", "Nữ", "Khác"});
-        txtNgaySinh = ModernUITheme.createTextField(10);
-        txtNgaySinh.setToolTipText("Định dạng: yyyy-MM-dd");
+        cbGioiTinh.setFont(ModernUITheme.FONT_REGULAR);
+
+        // DatePickerField cho ngày sinh
+        dpNgaySinh = new DatePickerField(LocalDate.of(1995, 1, 1));
+        dpNgaySinh.setMaxDate(LocalDate.now());
+
         txtTienSuBenh = ModernUITheme.createTextField(25);
         txtTienSuBenh.setToolTipText("Dị ứng thuốc tê, cao huyết áp, tiểu đường...");
 
         cbLoaiKhach = new JComboBox<>(new String[]{"Khách mới", "Thường", "Thân thiết", "VIP"});
+        cbLoaiKhach.setFont(ModernUITheme.FONT_REGULAR);
         txtDiemTichLuy = ModernUITheme.createTextField(8);
         txtDiemTichLuy.setText("0");
 
@@ -126,23 +139,23 @@ public class PanelBenhNhanModern extends JPanel {
         pnlFields.add(createFieldItem("Họ và tên (*):", txtHoTen));
         pnlFields.add(createFieldItem("Số điện thoại (*):", txtSDT));
         pnlFields.add(createFieldItem("Giới tính:", cbGioiTinh));
-        pnlFields.add(createFieldItem("Ngày sinh (yyyy-MM-dd):", txtNgaySinh));
+        pnlFields.add(createFieldItem("Ngày sinh (*):", dpNgaySinh));
         pnlFields.add(createFieldItem("Địa chỉ thường trú:", txtDiaChi));
         pnlFields.add(createFieldItem("Tiền sử bệnh lý / Dị ứng:", txtTienSuBenh));
         pnlFields.add(createFieldItem("Hạng thẻ thành viên:", cbLoaiKhach));
 
         pnlFormCard.add(pnlFields, BorderLayout.CENTER);
 
-        // Nút bấm thao tác
+        // Nút bấm thao tác với AppIcon
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlButtons.setOpaque(false);
 
-        btnXemLichSu = ModernUITheme.createButton("📋 Bệnh án & Lịch sử", ModernUITheme.ACCENT, Color.WHITE);
-        btnDatHen = ModernUITheme.createButton("📅 Đặt lịch hẹn", ModernUITheme.PRIMARY_DARK, Color.WHITE);
-        btnXoa = ModernUITheme.createButton("🗑️ Xóa hồ sơ", ModernUITheme.DANGER, Color.WHITE);
-        btnThem = ModernUITheme.createButton("➕ Thêm mới hồ sơ", ModernUITheme.PRIMARY, Color.WHITE);
-        btnCapNhat = ModernUITheme.createButton("💾 Cập nhật", ModernUITheme.ACCENT, Color.WHITE);
-        btnLamMoi = ModernUITheme.createOutlineButton("🔄 Làm mới form", ModernUITheme.TEXT_MUTED);
+        btnXemLichSu = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.HISTORY, 15, Color.WHITE), "Bệnh án & Lịch sử", ModernUITheme.ACCENT, Color.WHITE);
+        btnDatHen = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.CALENDAR, 15, Color.WHITE), "Đặt lịch hẹn", ModernUITheme.PRIMARY_DARK, Color.WHITE);
+        btnXoa = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.DELETE, 15, Color.WHITE), "Xóa hồ sơ", ModernUITheme.DANGER, Color.WHITE);
+        btnThem = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.PLUS, 15, Color.WHITE), "Thêm mới hồ sơ", ModernUITheme.PRIMARY, Color.WHITE);
+        btnCapNhat = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SAVE, 15, Color.WHITE), "Cập nhật", ModernUITheme.ACCENT, Color.WHITE);
+        btnLamMoi = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 15, ModernUITheme.TEXT_MUTED), "Làm mới form", ModernUITheme.TEXT_MUTED);
 
         pnlButtons.add(btnXemLichSu);
         pnlButtons.add(btnDatHen);
@@ -155,7 +168,7 @@ public class PanelBenhNhanModern extends JPanel {
         splitPane.setBottomComponent(pnlFormCard);
         add(splitPane, BorderLayout.CENTER);
 
-        // Sự kiện
+        // Sự kiện click bảng
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && table.getSelectedRow() != -1) {
                 napFormTuBang(table.getSelectedRow());
@@ -215,10 +228,34 @@ public class PanelBenhNhanModern extends JPanel {
         txtSDT.setText(tableModel.getValueAt(row, 2).toString());
         txtDiaChi.setText(tableModel.getValueAt(row, 3) != null ? tableModel.getValueAt(row, 3).toString() : "");
         cbGioiTinh.setSelectedItem(tableModel.getValueAt(row, 4) != null ? tableModel.getValueAt(row, 4).toString() : "Nam");
-        txtNgaySinh.setText(tableModel.getValueAt(row, 5) != null ? tableModel.getValueAt(row, 5).toString() : "");
+
+        Object valNS = tableModel.getValueAt(row, 5);
+        if (valNS != null && !valNS.toString().trim().isEmpty()) {
+            try {
+                dpNgaySinh.setDate(Date.valueOf(valNS.toString().trim()));
+            } catch (Exception ignored) {
+                dpNgaySinh.clear();
+            }
+        } else {
+            dpNgaySinh.clear();
+        }
+
         txtTienSuBenh.setText(tableModel.getValueAt(row, 6) != null ? tableModel.getValueAt(row, 6).toString() : "");
         cbLoaiKhach.setSelectedItem(tableModel.getValueAt(row, 7) != null ? tableModel.getValueAt(row, 7).toString() : "Khách mới");
         txtDiemTichLuy.setText(tableModel.getValueAt(row, 8) != null ? tableModel.getValueAt(row, 8).toString() : "0");
+    }
+
+    public void selectBenhNhan(String maBN) {
+        if (maBN == null || maBN.trim().isEmpty()) return;
+        String clean = maBN.trim();
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            if (clean.equalsIgnoreCase(tableModel.getValueAt(i, 0).toString())) {
+                table.setRowSelectionInterval(i, i);
+                table.scrollRectToVisible(table.getCellRect(i, 0, true));
+                napFormTuBang(i);
+                return;
+            }
+        }
     }
 
     private void xoaTrangForm() {
@@ -227,7 +264,7 @@ public class PanelBenhNhanModern extends JPanel {
         txtSDT.setText("");
         txtDiaChi.setText("");
         cbGioiTinh.setSelectedIndex(0);
-        txtNgaySinh.setText("1995-01-01");
+        dpNgaySinh.setDate(LocalDate.of(1995, 1, 1));
         txtTienSuBenh.setText("");
         cbLoaiKhach.setSelectedIndex(0);
         txtDiemTichLuy.setText("0");
@@ -245,10 +282,8 @@ public class PanelBenhNhanModern extends JPanel {
         String sdt = txtSDT.getText().trim();
         String diaChi = txtDiaChi.getText().trim();
         String gioiTinh = cbGioiTinh.getSelectedItem() != null ? cbGioiTinh.getSelectedItem().toString() : "Nam";
-        Date ngaySinh;
-        try {
-            ngaySinh = Date.valueOf(txtNgaySinh.getText().trim());
-        } catch (Exception e) {
+        Date ngaySinh = dpNgaySinh.getDate();
+        if (ngaySinh == null) {
             ngaySinh = Date.valueOf("1995-01-01");
         }
         String tienSu = txtTienSuBenh.getText().trim();
@@ -281,10 +316,8 @@ public class PanelBenhNhanModern extends JPanel {
         String sdt = txtSDT.getText().trim();
         String diaChi = txtDiaChi.getText().trim();
         String gioiTinh = cbGioiTinh.getSelectedItem() != null ? cbGioiTinh.getSelectedItem().toString() : "Nam";
-        Date ngaySinh;
-        try {
-            ngaySinh = Date.valueOf(txtNgaySinh.getText().trim());
-        } catch (Exception e) {
+        Date ngaySinh = dpNgaySinh.getDate();
+        if (ngaySinh == null) {
             ngaySinh = Date.valueOf("1995-01-01");
         }
         String tienSu = txtTienSuBenh.getText().trim();
@@ -328,126 +361,147 @@ public class PanelBenhNhanModern extends JPanel {
 
     private void xuLyXemLichSu() {
         int row = table.getSelectedRow();
-        String maBN = txtMaBN.getText().trim();
-        if (row < 0 && maBN.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 bệnh nhân để xem lịch sử điều trị & lịch hẹn!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 bệnh nhân để xem bệnh án và lịch sử khám!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        String hoTen = txtHoTen.getText().trim();
-        List<HoSoBenhAn> dsHoSo = hoSoBenhAnDAO.getHoSoByBenhNhan(maBN);
+        String maBN = tableModel.getValueAt(row, 0).toString();
+        String hoTen = tableModel.getValueAt(row, 1).toString();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("========================================================================\n");
-        sb.append("          HỒ SƠ BỆNH ÁN & LỊCH SỬ KHÁM BỆNH - CSDL PHÒNG KHÁM           \n");
-        sb.append("========================================================================\n");
-        sb.append("Bệnh nhân: ").append(hoTen).append(" (Mã: ").append(maBN).append(")\n");
-        sb.append("Số điện thoại: ").append(txtSDT.getText().trim()).append(" | Hạng thẻ: ").append(cbLoaiKhach.getSelectedItem()).append("\n");
-        sb.append("Tiền sử bệnh lý: ").append(txtTienSuBenh.getText().trim().isEmpty() ? "Bình thường" : txtTienSuBenh.getText().trim()).append("\n");
-        sb.append("------------------------------------------------------------------------\n\n");
+        List<HoSoBenhAn> listHSBA = hoSoBenhAnDAO.getHoSoByBenhNhan(maBN);
 
-        sb.append("--- [1] DANH SÁCH BỆNH ÁN ĐÃ ĐIỀU TRỊ (" + dsHoSo.size() + " ca) ---\n");
-        if (dsHoSo.isEmpty()) {
-            sb.append("  (Chưa có bệnh án lưu trữ)\n");
-        } else {
-            for (HoSoBenhAn hs : dsHoSo) {
-                sb.append("• Mã BA: ").append(hs.getMaHoSo()).append(" | Ngày khám: ").append(hs.getNgayKham() != null ? hs.getNgayKham().toString() : "").append("\n");
-                sb.append("  Bác sĩ: ").append(hs.getTenNhaSi() != null ? hs.getTenNhaSi() : hs.getMaNhaSi()).append("\n");
-                sb.append("  Triệu chứng: ").append(hs.getTrieuChung()).append("\n");
-                sb.append("  Chẩn đoán:   ").append(hs.getChanDoan()).append("\n");
-                sb.append("  Kết quả:     ").append(hs.getKetQuaDieuTri() != null ? hs.getKetQuaDieuTri() : "Tốt").append("\n");
-                sb.append("  Trạng thái:  ").append(hs.getTrangThai()).append("\n");
-                sb.append("  --------------------------------------------------------------------\n");
-            }
+        JDialog dlg = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Hồ Sơ Bệnh Án Điện Tử - " + hoTen + " (" + maBN + ")", true);
+        dlg.setSize(750, 450);
+        dlg.setLocationRelativeTo(this);
+        dlg.setLayout(new BorderLayout(10, 10));
+
+        JPanel pnlHeader = new JPanel(new BorderLayout());
+        pnlHeader.setBorder(new EmptyBorder(12, 16, 0, 16));
+        JLabel lblHeader = new JLabel("LỊCH SỬ KHÁM CHỮA BỆNH & BỆNH ÁN: " + hoTen.toUpperCase());
+        lblHeader.setFont(ModernUITheme.FONT_TITLE);
+        lblHeader.setForeground(ModernUITheme.PRIMARY_DARK);
+        pnlHeader.add(lblHeader, BorderLayout.WEST);
+        dlg.add(pnlHeader, BorderLayout.NORTH);
+
+        String[] colsHS = {"Mã BA", "Ngày Khám", "Bác Sĩ Điều Trị", "Chẩn Đoán Bệnh", "Kết Quả / Hướng Điều Trị", "Ghi Chú"};
+        DefaultTableModel modelHS = new DefaultTableModel(colsHS, 0) {
+            @Override
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        for (HoSoBenhAn hs : listHSBA) {
+            modelHS.addRow(new Object[]{
+                hs.getMaHoSo(),
+                hs.getNgayKham() != null ? hs.getNgayKham().toString() : "",
+                hs.getTenNhaSi() != null ? hs.getTenNhaSi() : hs.getMaNhaSi(),
+                hs.getChanDoan(),
+                hs.getKetQuaDieuTri(),
+                hs.getGhiChu()
+            });
         }
+        JTable tblHS = new JTable(modelHS);
+        ModernUITheme.formatModernTable(tblHS);
+        JScrollPane sp = new JScrollPane(tblHS);
+        sp.setBorder(new EmptyBorder(10, 16, 10, 16));
+        dlg.add(sp, BorderLayout.CENTER);
 
-        sb.append("\n--- [2] LỊCH HẸN KHÁM CỦA BỆNH NHÂN ---\n");
-        List<LichHen> allLH = lichHenDAO.getAllLichHen();
-        int cntLH = 0;
-        for (LichHen lh : allLH) {
-            if (maBN.equalsIgnoreCase(lh.getMaBN())) {
-                sb.append("• Mã LH: ").append(lh.getMaLichHen())
-                  .append(" | Ngày: ").append(lh.getNgayHen() != null ? lh.getNgayHen().toString() : "")
-                  .append(" ").append(lh.getGioHen() != null ? lh.getGioHen().toString() : "")
-                  .append(" | BS: ").append(lh.getTenNhaSi() != null ? lh.getTenNhaSi() : "")
-                  .append(" | Nội dung: ").append(lh.getLyDoKham())
-                  .append(" [").append(lh.getTrangThai()).append("]\n");
-                cntLH++;
-            }
-        }
-        if (cntLH == 0) {
-            sb.append("  (Chưa có lịch hẹn nào)\n");
-        }
+        JPanel pnlBtn = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 10));
+        JButton btnDong = ModernUITheme.createButton("Đóng", ModernUITheme.PRIMARY, Color.WHITE);
+        btnDong.addActionListener(e -> dlg.dispose());
+        pnlBtn.add(btnDong);
+        dlg.add(pnlBtn, BorderLayout.SOUTH);
 
-        JTextArea ta = new JTextArea(sb.toString(), 20, 60);
-        ta.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        ta.setEditable(false);
-        ta.setCaretPosition(0);
-
-        JOptionPane.showMessageDialog(this, new JScrollPane(ta), "Lịch sử điều trị bệnh nhân: " + hoTen, JOptionPane.PLAIN_MESSAGE);
+        dlg.setVisible(true);
     }
 
     private void xuLyDatHen() {
         int row = table.getSelectedRow();
-        String maBN = txtMaBN.getText().trim();
-        if (row < 0 && maBN.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 bệnh nhân để đặt lịch hẹn!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 bệnh nhân để lập lịch hẹn khám!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        String hoTen = txtHoTen.getText().trim();
+        String maBN = tableModel.getValueAt(row, 0).toString();
+        String hoTen = tableModel.getValueAt(row, 1).toString();
 
-        JPanel pnl = new JPanel(new GridLayout(4, 2, 10, 8));
-        JTextField txtNgay = ModernUITheme.createTextField(10);
-        txtNgay.setText(new Date(System.currentTimeMillis() + 86400000L).toString());
-        JTextField txtGio = ModernUITheme.createTextField(8);
+        JDialog dlg = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Đặt Lịch Hẹn Khám - " + hoTen, true);
+        dlg.setSize(480, 420);
+        dlg.setLocationRelativeTo(this);
+        dlg.setLayout(new BorderLayout(10, 10));
+
+        JPanel pnlForm = new JPanel(new GridLayout(6, 2, 10, 12));
+        pnlForm.setBorder(new EmptyBorder(20, 24, 10, 24));
+
+        JTextField txtMaLH = ModernUITheme.createTextField(10);
+        txtMaLH.setText(lichHenDAO.sinhMaLichHenMoi());
+        txtMaLH.setEditable(false);
+
+        JTextField txtBN = ModernUITheme.createTextField(15);
+        txtBN.setText(hoTen + " (" + maBN + ")");
+        txtBN.setEditable(false);
+
+        List<NhanVien> listBS = nhanVienDAO.getDanhSachBacSi();
+        JComboBox<String> cbBS = new JComboBox<>();
+        for (NhanVien bs : listBS) {
+            cbBS.addItem(bs.getMaNV() + " - " + bs.getHoTen());
+        }
+
+        DatePickerField dpHen = new DatePickerField(LocalDate.now().plusDays(1));
+        JTextField txtGio = ModernUITheme.createTextField(10);
         txtGio.setText("09:00:00");
 
-        JComboBox<String> cbBS = new JComboBox<>();
-        List<NhanVien> listNV = nhanVienDAO.getAllNhanVien();
-        for (NhanVien nv : listNV) {
-            if (nv.getChucDanh() != null && (nv.getChucDanh().contains("Bác sĩ") || nv.getChucDanh().contains("Nha sĩ"))) {
-                cbBS.addItem(nv.getMaNV() + " - " + nv.getHoTen());
-            }
-        }
-        if (cbBS.getItemCount() == 0 && !listNV.isEmpty()) {
-            for (NhanVien nv : listNV) {
-                cbBS.addItem(nv.getMaNV() + " - " + nv.getHoTen());
-            }
-        }
-
         JTextField txtLyDo = ModernUITheme.createTextField(20);
-        txtLyDo.setText("Khám tổng quát và tư vấn nha khoa");
+        txtLyDo.setText("Khám răng định kỳ & Lấy cao răng");
 
-        pnl.add(new JLabel("Bệnh nhân:"));
-        pnl.add(new JLabel(hoTen + " (" + maBN + ")"));
-        pnl.add(new JLabel("Bác sĩ phụ trách:"));
-        pnl.add(cbBS);
-        pnl.add(new JLabel("Ngày hẹn (yyyy-MM-dd):"));
-        pnl.add(txtNgay);
-        pnl.add(new JLabel("Giờ hẹn (HH:mm:ss):"));
-        pnl.add(txtGio);
-        pnl.add(new JLabel("Lý do khám / Dịch vụ:"));
-        pnl.add(txtLyDo);
+        pnlForm.add(new JLabel("Mã lịch hẹn:"));
+        pnlForm.add(txtMaLH);
+        pnlForm.add(new JLabel("Bệnh nhân:"));
+        pnlForm.add(txtBN);
+        pnlForm.add(new JLabel("Bác sĩ phụ trách:"));
+        pnlForm.add(cbBS);
+        pnlForm.add(new JLabel("Ngày hẹn:"));
+        pnlForm.add(dpHen);
+        pnlForm.add(new JLabel("Giờ hẹn (HH:mm:ss):"));
+        pnlForm.add(txtGio);
+        pnlForm.add(new JLabel("Lý do khám:"));
+        pnlForm.add(txtLyDo);
 
-        int opt = JOptionPane.showConfirmDialog(this, pnl, "Đặt lịch hẹn khám cho: " + hoTen, JOptionPane.OK_CANCEL_OPTION);
-        if (opt == JOptionPane.OK_OPTION) {
+        dlg.add(pnlForm, BorderLayout.CENTER);
+
+        JPanel pnlBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 12));
+        JButton btnLuu = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SAVE, 15, Color.WHITE), "Lưu lịch hẹn", ModernUITheme.PRIMARY, Color.WHITE);
+        JButton btnHuy = ModernUITheme.createOutlineButton("Hủy", ModernUITheme.TEXT_MUTED);
+
+        btnLuu.addActionListener(e -> {
+            String maLH = txtMaLH.getText().trim();
+            String bsItem = cbBS.getSelectedItem() != null ? cbBS.getSelectedItem().toString() : "";
+            String maBS = bsItem.contains(" - ") ? bsItem.split(" - ")[0].trim() : "BS001";
+            Date d = dpHen.getDate();
+            if (d == null) {
+                JOptionPane.showMessageDialog(dlg, "Vui lòng chọn ngày hẹn hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             try {
-                Date d = Date.valueOf(txtNgay.getText().trim());
                 Time t = Time.valueOf(txtGio.getText().trim());
-                String maBS = cbBS.getSelectedItem() != null ? cbBS.getSelectedItem().toString().split(" - ")[0].trim() : "BS001";
                 String lyDo = txtLyDo.getText().trim();
-                String maLH = lichHenDAO.sinhMaLichHenMoi();
 
                 LichHen lh = new LichHen(maLH, maBN, maBS, d, t, lyDo, "Đặt hẹn tại quầy tiếp đón", "Đã xác nhận");
                 boolean ok = lichHenDAO.themLichHen(lh);
                 if (ok) {
-                    JOptionPane.showMessageDialog(this, "Đã đặt lịch hẹn [" + maLH + "] cho bệnh nhân [" + hoTen + "] thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(dlg, "Đã đặt lịch hẹn [" + maLH + "] cho bệnh nhân [" + hoTen + "] thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                    dlg.dispose();
                 } else {
-                    JOptionPane.showMessageDialog(this, "Không thể lưu lịch hẹn vào CSDL!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(dlg, "Không thể lưu lịch hẹn vào CSDL!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Ngày hoặc giờ hẹn không đúng định dạng (yyyy-MM-dd và HH:mm:ss)!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dlg, "Giờ hẹn không đúng định dạng HH:mm:ss (ví dụ: 09:30:00)!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
             }
-        }
+        });
+
+        btnHuy.addActionListener(e -> dlg.dispose());
+        pnlBtns.add(btnHuy);
+        pnlBtns.add(btnLuu);
+        dlg.add(pnlBtns, BorderLayout.SOUTH);
+
+        dlg.setVisible(true);
     }
 
     private void xuLyTimKiem() {
@@ -490,19 +544,17 @@ public class PanelBenhNhanModern extends JPanel {
             txtSDT.requestFocus();
             return false;
         }
-        String ngaySinhStr = txtNgaySinh.getText().trim();
-        if (!ngaySinhStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            JOptionPane.showMessageDialog(this, "Ngày sinh phải theo định dạng yyyy-MM-dd (ví dụ: 1995-05-20)!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
-            txtNgaySinh.requestFocus();
+
+        if (!dpNgaySinh.isValidDate() || dpNgaySinh.getDate() == null) {
+            JOptionPane.showMessageDialog(this, "Ngày sinh không hợp lệ hoặc chưa được chọn!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
             return false;
         }
-        try {
-            Date.valueOf(ngaySinhStr);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Ngày sinh không hợp lệ!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
-            txtNgaySinh.requestFocus();
+
+        if (dpNgaySinh.getLocalDate() != null && dpNgaySinh.getLocalDate().isAfter(LocalDate.now())) {
+            JOptionPane.showMessageDialog(this, "Ngày sinh không được lớn hơn ngày hiện tại!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
             return false;
         }
+
         String diemStr = txtDiemTichLuy.getText().trim();
         if (!diemStr.isEmpty() && !diemStr.matches("\\d+")) {
             JOptionPane.showMessageDialog(this, "Điểm tích lũy phải là số nguyên không âm!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);

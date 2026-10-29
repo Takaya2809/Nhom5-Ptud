@@ -56,8 +56,8 @@ public class PanelTaiKhoanModern extends JPanel {
         pnlSearch.setOpaque(false);
         txtTimKiem = ModernUITheme.createTextField(18);
         txtTimKiem.setToolTipText("Tìm tên đăng nhập hoặc tên nhân viên...");
-        btnTimKiem = ModernUITheme.createButton("🔍 Tìm kiếm", ModernUITheme.PRIMARY, Color.WHITE);
-        JButton btnTaiLai = ModernUITheme.createOutlineButton("Tất cả", ModernUITheme.TEXT_MUTED);
+        btnTimKiem = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SEARCH, 15, Color.WHITE), "Tìm kiếm", ModernUITheme.PRIMARY, Color.WHITE);
+        JButton btnTaiLai = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 14, ModernUITheme.TEXT_MUTED), "Tất cả", ModernUITheme.TEXT_MUTED);
 
         pnlSearch.add(new JLabel("Tra cứu:"));
         pnlSearch.add(txtTimKiem);
@@ -92,7 +92,7 @@ public class PanelTaiKhoanModern extends JPanel {
         JPanel pnlFormCard = ModernUITheme.createCardPanel();
         pnlFormCard.setLayout(new BorderLayout(12, 12));
 
-        JLabel lblFormTitle = new JLabel("🔐 THÔNG TIN TÀI KHOẢN NGƯỜI DÙNG");
+        JLabel lblFormTitle = new JLabel("THÔNG TIN TÀI KHOẢN NGƯỜI DÙNG");
         lblFormTitle.setFont(ModernUITheme.FONT_TITLE);
         lblFormTitle.setForeground(ModernUITheme.PRIMARY_DARK);
         pnlFormCard.add(lblFormTitle, BorderLayout.NORTH);
@@ -116,11 +116,11 @@ public class PanelTaiKhoanModern extends JPanel {
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlButtons.setOpaque(false);
 
-        btnThem = ModernUITheme.createButton("➕ Cấp tài khoản mới", ModernUITheme.PRIMARY, Color.WHITE);
-        btnDatLaiMK = ModernUITheme.createButton("🔑 Đặt lại MK (123456)", ModernUITheme.ACCENT, Color.WHITE);
-        btnKhoa = ModernUITheme.createButton("🔒 Khóa / Mở khóa", ModernUITheme.SECONDARY, Color.WHITE);
-        btnXoaTK = ModernUITheme.createButton("🗑️ Xóa tài khoản", ModernUITheme.DANGER, Color.WHITE);
-        btnLamMoi = ModernUITheme.createOutlineButton("🔄 Làm mới", ModernUITheme.TEXT_MUTED);
+        btnThem = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.PLUS, 15, Color.WHITE), "Cấp tài khoản mới", ModernUITheme.PRIMARY, Color.WHITE);
+        btnDatLaiMK = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.LOCK, 15, Color.WHITE), "Đặt lại MK", ModernUITheme.ACCENT, Color.WHITE);
+        btnKhoa = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.ACCOUNT, 15, Color.WHITE), "Khóa / Mở khóa", ModernUITheme.SECONDARY, Color.WHITE);
+        btnXoaTK = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.DELETE, 15, Color.WHITE), "Xóa tài khoản", ModernUITheme.DANGER, Color.WHITE);
+        btnLamMoi = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 15, ModernUITheme.TEXT_MUTED), "Làm mới", ModernUITheme.TEXT_MUTED);
 
         pnlButtons.add(btnLamMoi);
         pnlButtons.add(btnXoaTK);

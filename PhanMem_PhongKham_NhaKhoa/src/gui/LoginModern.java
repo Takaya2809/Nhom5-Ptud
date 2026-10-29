@@ -3,197 +3,51 @@ package gui;
 import dao.TaiKhoanDAO;
 import entity.TaiKhoan;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
-/**
- * Giao diện đăng nhập hệ thống - Thiết kế Basic, đơn giản, thanh lịch
- * Hỗ trợ phân quyền chọn vị trí công tác và xác thực tài khoản chính xác theo
- * vị trí
- */
 public class LoginModern extends JFrame {
 
     private JComboBox<String> cboVaiTro;
     private JTextField txtUsername;
     private JPasswordField txtPassword;
     private JCheckBox chkShowPass;
-    private JLabel lblHintAccount;
     private JButton btnLogin, btnExit;
+
+    private BufferedImage imgLogin;
+    private BufferedImage imgLogo;
 
     private final TaiKhoanDAO taiKhoanDAO = new TaiKhoanDAO();
 
     public LoginModern() {
-        setTitle("Đăng Nhập - Hệ Thống Quản Lý Phòng Khám Nha Khoa ABC");
-        setSize(540, 600);
+        setTitle("Đăng Nhập");
+        setSize(880, 560);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
 
-        // Nền chính màu xám nhạt basic, sạch sẽ
-        JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.setBackground(new Color(241, 245, 249));
+        loadImages();
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(Color.WHITE);
         setContentPane(mainPanel);
 
-        // Khung form đăng nhập trắng tinh tế ở giữa màn hình
-        JPanel cardPanel = new JPanel();
-        cardPanel.setLayout(new BoxLayout(cardPanel, BoxLayout.Y_AXIS));
-        cardPanel.setBackground(Color.WHITE);
-        cardPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(203, 213, 225), 1),
-                new EmptyBorder(28, 36, 28, 36)));
-        cardPanel.setPreferredSize(new Dimension(460, 520));
+        // 1. CỘT TRÁI: BANNER HÌNH ẢNH NHA KHOA (LOGIN.JPG)
+        JPanel pnlBanner = createBannerPanel();
+        mainPanel.add(pnlBanner, BorderLayout.WEST);
 
-        // --- TIÊU ĐỀ ---
-        JLabel lblClinicName = new JLabel("PHÒNG KHÁM NHA KHOA ABC");
-        lblClinicName.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        lblClinicName.setForeground(new Color(15, 23, 42));
-        lblClinicName.setAlignmentX(Component.CENTER_ALIGNMENT);
-        cardPanel.add(lblClinicName);
+        // 2. CỘT PHẢI: FORM ĐĂNG NHẬP CHUYÊN NGHIỆP
+        JPanel pnlFormContainer = createFormPanel();
+        mainPanel.add(pnlFormContainer, BorderLayout.CENTER);
 
-        cardPanel.add(Box.createVerticalStrut(4));
-
-        JLabel lblSub = new JLabel("HỆ THỐNG QUẢN TRỊ & ĐIỀU HÀNH");
-        lblSub.setFont(new Font("Segoe UI", Font.BOLD, 11));
-        lblSub.setForeground(new Color(100, 116, 139));
-        lblSub.setAlignmentX(Component.CENTER_ALIGNMENT);
-        cardPanel.add(lblSub);
-
-        cardPanel.add(Box.createVerticalStrut(6));
-
-        JLabel lblLoginTitle = new JLabel("ĐĂNG NHẬP THEO VỊ TRÍ CÔNG TÁC");
-        lblLoginTitle.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        lblLoginTitle.setForeground(new Color(2, 132, 199));
-        lblLoginTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
-        cardPanel.add(lblLoginTitle);
-
-        cardPanel.add(Box.createVerticalStrut(18));
-        cardPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
-        cardPanel.add(Box.createVerticalStrut(16));
-
-        // --- 1. CHỌN VỊ TRÍ ---
-        addLabel(cardPanel, "Vị trí làm việc:");
-        cboVaiTro = new JComboBox<>(new String[] {
-                "Quản lý",
-                "Nha sĩ",
-                "Lễ tân",
-                "Thu ngân",
-                "Y tá"
-        });
-        cboVaiTro.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cboVaiTro.setBackground(Color.WHITE);
-        cboVaiTro.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
-        cboVaiTro.setPreferredSize(new Dimension(380, 38));
-        cboVaiTro.setAlignmentX(Component.LEFT_ALIGNMENT);
-        cardPanel.add(cboVaiTro);
-
-        cardPanel.add(Box.createVerticalStrut(12));
-
-        // --- 2. TÊN ĐĂNG NHẬP ---
-        addLabel(cardPanel, "Tên đăng nhập:");
-        txtUsername = new JTextField();
-        txtUsername.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        txtUsername.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(203, 213, 225), 1),
-                new EmptyBorder(6, 10, 6, 10)));
-        txtUsername.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
-        txtUsername.setPreferredSize(new Dimension(380, 38));
-        txtUsername.setAlignmentX(Component.LEFT_ALIGNMENT);
-        cardPanel.add(txtUsername);
-
-        cardPanel.add(Box.createVerticalStrut(12));
-
-        // --- 3. MẬT KHẨU ---
-        addLabel(cardPanel, "Mật khẩu:");
-        txtPassword = new JPasswordField();
-        txtPassword.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        txtPassword.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(203, 213, 225), 1),
-                new EmptyBorder(6, 10, 6, 10)));
-        txtPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
-        txtPassword.setPreferredSize(new Dimension(380, 38));
-        txtPassword.setAlignmentX(Component.LEFT_ALIGNMENT);
-        cardPanel.add(txtPassword);
-
-        // Hiển thị mật khẩu
-        cardPanel.add(Box.createVerticalStrut(6));
-        chkShowPass = new JCheckBox("Hiển thị mật khẩu");
-        chkShowPass.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        chkShowPass.setForeground(new Color(100, 116, 139));
-        chkShowPass.setOpaque(false);
-        chkShowPass.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        char defaultEcho = txtPassword.getEchoChar();
-        chkShowPass.addActionListener(e -> {
-            txtPassword.setEchoChar(chkShowPass.isSelected() ? (char) 0 : defaultEcho);
-        });
-        cardPanel.add(chkShowPass);
-
-        cardPanel.add(Box.createVerticalStrut(10));
-
-        // --- KHUNG GỢI Ý TÀI KHOẢN MẪU CHO TỪNG VỊ TRÍ ---
-        JPanel pnlHint = new JPanel(new BorderLayout());
-        pnlHint.setBackground(new Color(248, 250, 252));
-        pnlHint.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(226, 232, 240), 1),
-                new EmptyBorder(6, 10, 6, 10)));
-        pnlHint.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
-        pnlHint.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        lblHintAccount = new JLabel();
-        lblHintAccount.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        lblHintAccount.setForeground(new Color(71, 85, 105));
-        pnlHint.add(lblHintAccount, BorderLayout.CENTER);
-        cardPanel.add(pnlHint);
-
-        cardPanel.add(Box.createVerticalStrut(16));
-
-        // --- NÚT BẤM (ĐĂNG NHẬP & THOÁT) ---
-        JPanel pnlBtns = new JPanel(new GridLayout(1, 2, 10, 0));
-        pnlBtns.setOpaque(false);
-        pnlBtns.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        pnlBtns.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        btnExit = new JButton("THOÁT");
-        btnExit.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnExit.setBackground(new Color(241, 245, 249));
-        btnExit.setForeground(new Color(71, 85, 105));
-        btnExit.setFocusPainted(false);
-        btnExit.setBorder(BorderFactory.createLineBorder(new Color(203, 213, 225), 1));
-        btnExit.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnExit.addActionListener(e -> System.exit(0));
-
-        btnLogin = new JButton("ĐĂNG NHẬP");
-        btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnLogin.setBackground(new Color(2, 132, 199));
-        btnLogin.setForeground(Color.WHITE);
-        btnLogin.setFocusPainted(false);
-        btnLogin.setBorder(BorderFactory.createLineBorder(new Color(3, 105, 161), 1));
-        btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnLogin.addActionListener(e -> handleLogin());
-
-        pnlBtns.add(btnExit);
-        pnlBtns.add(btnLogin);
-        cardPanel.add(pnlBtns);
-
-        cardPanel.add(Box.createVerticalStrut(12));
-
-        JLabel lblNotice = new JLabel("Lưu ý: Đăng nhập đúng tên tài khoản và mật khẩu của vị trí đã chọn.",
-                SwingConstants.CENTER);
-        lblNotice.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        lblNotice.setForeground(new Color(148, 163, 184));
-        lblNotice.setAlignmentX(Component.CENTER_ALIGNMENT);
-        cardPanel.add(lblNotice);
-
-        mainPanel.add(cardPanel);
-
-        // Sự kiện khi đổi vị trí ở ComboBox -> Cập nhật tài khoản mẫu và gợi ý
-        cboVaiTro.addActionListener(e -> capNhatGoiYTheoVaiTro());
-        capNhatGoiYTheoVaiTro();
-
-        // Phím Enter để đăng nhập
+        // Thiết lập phím Enter mặc định
         KeyAdapter enterKey = new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -202,26 +56,228 @@ public class LoginModern extends JFrame {
                 }
             }
         };
-
         txtUsername.addKeyListener(enterKey);
         txtPassword.addKeyListener(enterKey);
         cboVaiTro.addKeyListener(enterKey);
-
         getRootPane().setDefaultButton(btnLogin);
     }
 
-    private void addLabel(JPanel panel, String text) {
+    private void loadImages() {
+        // Tải ảnh Login.jpg từ thư mục images
+        String[] possibleLoginPaths = {
+                "PhanMem_PhongKham_NhaKhoa/images/Login.jpg",
+                "images/Login.jpg",
+                "../images/Login.jpg"
+        };
+        for (String p : possibleLoginPaths) {
+            File f = new File(p);
+            if (f.exists()) {
+                try {
+                    imgLogin = ImageIO.read(f);
+                    break;
+                } catch (Exception ignored) {
+                }
+            }
+        }
+
+        // Tải logo ABC
+        String[] possibleLogoPaths = {
+                "PhanMem_PhongKham_NhaKhoa/images/dental_logo.png",
+                "images/dental_logo.png",
+                "../images/dental_logo.png"
+        };
+        for (String p : possibleLogoPaths) {
+            File f = new File(p);
+            if (f.exists()) {
+                try {
+                    imgLogo = ImageIO.read(f);
+                    break;
+                } catch (Exception ignored) {
+                }
+            }
+        }
+    }
+
+    private JPanel createBannerPanel() {
+        JPanel banner = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+                int w = getWidth();
+                int h = getHeight();
+
+                if (imgLogin != null) {
+                    // Vẽ ảnh giữ tỷ lệ, phủ toàn bộ khung
+                    double imgW = imgLogin.getWidth();
+                    double imgH = imgLogin.getHeight();
+                    double scale = Math.max((double) w / imgW, (double) h / imgH);
+                    int drawW = (int) (imgW * scale);
+                    int drawH = (int) (imgH * scale);
+                    int x = (w - drawW) / 2;
+                    int y = (h - drawH) / 2;
+                    g2.drawImage(imgLogin, x, y, drawW, drawH, null);
+                } else {
+                    // Fallback gradient nếu chưa thấy ảnh
+                    GradientPaint grad = new GradientPaint(
+                            0, 0, ModernUITheme.SIDEBAR_BG,
+                            w, h, ModernUITheme.PRIMARY_DARK);
+                    g2.setPaint(grad);
+                    g2.fillRect(0, 0, w, h);
+                }
+                g2.dispose();
+            }
+        };
+
+        banner.setPreferredSize(new Dimension(380, 0));
+
+        return banner;
+    }
+
+    private JPanel createFormPanel() {
+        JPanel pnlRight = new JPanel(new GridBagLayout());
+        pnlRight.setBackground(Color.WHITE);
+
+        JPanel card = new JPanel();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBackground(Color.WHITE);
+        card.setPreferredSize(new Dimension(420, 460));
+        card.setBorder(new EmptyBorder(20, 30, 20, 30));
+
+        // LOGO + TIÊU ĐỀ FORM
+        JPanel pnlHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        pnlHeader.setOpaque(false);
+        pnlHeader.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        if (imgLogo != null) {
+            Image scaledLogo = imgLogo.getScaledInstance(38, 38, Image.SCALE_SMOOTH);
+            pnlHeader.add(new JLabel(new ImageIcon(scaledLogo)));
+        } else {
+            JLabel lblIco = new JLabel("[ABC]");
+            lblIco.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            lblIco.setForeground(ModernUITheme.PRIMARY);
+            pnlHeader.add(lblIco);
+        }
+
+        JPanel pnlHeaderText = new JPanel(new GridLayout(2, 1, 0, 2));
+        pnlHeaderText.setOpaque(false);
+        JLabel lblTitle = new JLabel("ĐĂNG NHẬP HỆ THỐNG");
+        lblTitle.setFont(ModernUITheme.FONT_TITLE);
+        lblTitle.setForeground(ModernUITheme.TEXT_MAIN);
+
+        JLabel lblSub = new JLabel("Vui lòng chọn vị trí công tác để tiếp tục");
+        lblSub.setFont(ModernUITheme.FONT_SMALL);
+        lblSub.setForeground(ModernUITheme.TEXT_MUTED);
+
+        pnlHeaderText.add(lblTitle);
+        pnlHeaderText.add(lblSub);
+        pnlHeader.add(pnlHeaderText);
+        card.add(pnlHeader);
+
+        card.add(Box.createVerticalStrut(18));
+        card.add(new JSeparator());
+        card.add(Box.createVerticalStrut(14));
+
+        // 1. CHỌN VỊ TRÍ
+        addLabel(card, "Vị trí làm việc:", AppIcon.Type.STAFF);
+        cboVaiTro = new JComboBox<>(new String[] {
+                "Quản lý",
+                "Nha sĩ",
+                "Lễ tân",
+                "Thu ngân",
+                "Y tá"
+        });
+        cboVaiTro.setFont(ModernUITheme.FONT_REGULAR);
+        cboVaiTro.setBackground(Color.WHITE);
+        cboVaiTro.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        cboVaiTro.setPreferredSize(new Dimension(360, 38));
+        cboVaiTro.setAlignmentX(Component.LEFT_ALIGNMENT);
+        card.add(cboVaiTro);
+
+        card.add(Box.createVerticalStrut(12));
+
+        // 2. TÊN ĐĂNG NHẬP
+        addLabel(card, "Tên đăng nhập:", AppIcon.Type.USER);
+        txtUsername = ModernUITheme.createTextField(20);
+        txtUsername.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        txtUsername.setPreferredSize(new Dimension(360, 38));
+        txtUsername.setAlignmentX(Component.LEFT_ALIGNMENT);
+        card.add(txtUsername);
+
+        card.add(Box.createVerticalStrut(12));
+
+        // 3. MẬT KHẨU
+        addLabel(card, "Mật khẩu:", AppIcon.Type.LOCK);
+        txtPassword = new JPasswordField();
+        txtPassword.setFont(ModernUITheme.FONT_REGULAR);
+        txtPassword.setCaretColor(ModernUITheme.PRIMARY);
+        txtPassword.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ModernUITheme.BORDER_LIGHT, 1, true),
+                new EmptyBorder(6, 12, 6, 12)));
+        txtPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        txtPassword.setPreferredSize(new Dimension(360, 38));
+        txtPassword.setAlignmentX(Component.LEFT_ALIGNMENT);
+        card.add(txtPassword);
+
+        // HIỂN THỊ MẬT KHẨU
+        card.add(Box.createVerticalStrut(6));
+        chkShowPass = new JCheckBox("Hiển thị mật khẩu");
+        chkShowPass.setFont(ModernUITheme.FONT_SMALL);
+        chkShowPass.setForeground(ModernUITheme.TEXT_MUTED);
+        chkShowPass.setOpaque(false);
+        chkShowPass.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        char defaultEcho = txtPassword.getEchoChar();
+        chkShowPass.addActionListener(e -> {
+            txtPassword.setEchoChar(chkShowPass.isSelected() ? (char) 0 : defaultEcho);
+        });
+        card.add(chkShowPass);
+
+        card.add(Box.createVerticalStrut(20));
+
+        // NÚT BẤM (ĐĂNG NHẬP & THOÁT)
+        JPanel pnlBtns = new JPanel(new GridLayout(1, 2, 10, 0));
+        pnlBtns.setOpaque(false);
+        pnlBtns.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        pnlBtns.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        btnExit = ModernUITheme.createOutlineButton("Thoát", ModernUITheme.TEXT_MUTED);
+        btnExit.addActionListener(e -> System.exit(0));
+
+        btnLogin = ModernUITheme.createButton("Đăng nhập", ModernUITheme.PRIMARY, Color.WHITE);
+        btnLogin.addActionListener(e -> handleLogin());
+
+        pnlBtns.add(btnExit);
+        pnlBtns.add(btnLogin);
+        card.add(pnlBtns);
+
+        // Đổi vị trí -> Cập nhật tài khoản mẫu
+        cboVaiTro.addActionListener(e -> capNhatGoiYTheoVaiTro());
+        capNhatGoiYTheoVaiTro();
+
+        pnlRight.add(card);
+        return pnlRight;
+    }
+
+    private void addLabel(JPanel panel, String text, AppIcon.Type iconType) {
+        JPanel pnl = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        pnl.setOpaque(false);
+        pnl.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel lblIco = new JLabel(new AppIcon(iconType, 13, ModernUITheme.PRIMARY));
         JLabel label = new JLabel(text);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        label.setForeground(new Color(51, 65, 85));
-        label.setAlignmentX(Component.LEFT_ALIGNMENT);
-        panel.add(label);
+        label.setFont(ModernUITheme.FONT_BOLD);
+        label.setForeground(ModernUITheme.TEXT_REGULAR);
+
+        pnl.add(lblIco);
+        pnl.add(label);
+        panel.add(pnl);
         panel.add(Box.createVerticalStrut(5));
     }
 
-    /**
-     * Cập nhật gợi ý tài khoản mẫu tương ứng với vị trí đã chọn
-     */
     private void capNhatGoiYTheoVaiTro() {
         String role = (String) cboVaiTro.getSelectedItem();
         if (role == null)
@@ -251,11 +307,6 @@ public class LoginModern extends JFrame {
         }
     }
 
-    /**
-     * Xử lý xác thực đăng nhập:
-     * 1. Kiểm tra tài khoản & mật khẩu
-     * 2. Kiểm tra tài khoản có thuộc đúng vị trí đã chọn hay không
-     */
     private void handleLogin() {
         String username = txtUsername.getText().trim();
         String password = new String(txtPassword.getPassword()).trim();
@@ -268,7 +319,6 @@ public class LoginModern extends JFrame {
             return;
         }
 
-        // 1. Kiểm tra thông tin đăng nhập trong CSDL / hệ thống
         TaiKhoan user = taiKhoanDAO.checkLogin(username, password);
         if (user == null) {
             JOptionPane.showMessageDialog(this,
@@ -278,7 +328,6 @@ public class LoginModern extends JFrame {
             return;
         }
 
-        // 2. Kiểm tra trạng thái tài khoản
         if ("Bị khóa".equalsIgnoreCase(user.getTrangThai())) {
             JOptionPane.showMessageDialog(this,
                     "Tài khoản này hiện đang bị khóa! Vui lòng liên hệ ban quản trị.",
@@ -286,8 +335,6 @@ public class LoginModern extends JFrame {
             return;
         }
 
-        // 3. Phân quyền: Kiểm tra tài khoản có thuộc đúng vị trí (vai trò) đã chọn hay
-        // không
         boolean hopLe = taiKhoanDAO.kiemTraVaiTro(user, selectedRole);
         if (!hopLe) {
             String roleName = user.getTenVaiTro() != null ? user.getTenVaiTro() : user.getMaVaiTro();
@@ -300,11 +347,8 @@ public class LoginModern extends JFrame {
             return;
         }
 
-        // Cập nhật tên vai trò chuẩn theo vị trí đã chọn
         user.setTenVaiTro(selectedRole);
 
-        // Đăng nhập thành công -> Mở giao diện tương ứng với các chức năng của vị trí
-        // đó
         this.dispose();
         new TrangChuModern(user).setVisible(true);
     }

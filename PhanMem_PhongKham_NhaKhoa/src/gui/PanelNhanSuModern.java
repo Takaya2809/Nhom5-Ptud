@@ -8,10 +8,14 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Giao diện Quản lý Đội ngũ Bác Sĩ & Nhân Sự Y Tế - Phong cách hiện đại
+ * Giao diện Quản lý Đội ngũ Bác Sĩ & Nhân Sự Y Tế - Redesign chuẩn Y Khoa
+ * - Sử dụng Date Picker trực quan cho Ngày Sinh và Ngày Vào Làm
+ * - Ràng buộc ngày sinh không vượt quá ngày hiện tại (maxDate = today)
+ * - Tích hợp AppIcon độc lập lỗi hiển thị trên Windows
  */
 public class PanelNhanSuModern extends JPanel {
 
@@ -19,7 +23,8 @@ public class PanelNhanSuModern extends JPanel {
     private JTable table;
     private DefaultTableModel tableModel;
 
-    private JTextField txtMaNV, txtHoTen, txtNgaySinh, txtSDT, txtEmail, txtBangCap, txtNgayVaoLam, txtTimKiem;
+    private JTextField txtMaNV, txtHoTen, txtSDT, txtEmail, txtBangCap, txtTimKiem;
+    private DatePickerField dpNgaySinh, dpNgayVaoLam;
     private JComboBox<String> cbGioiTinh, cbChucDanh, cbTrangThai;
     private JButton btnThem, btnCapNhat, btnLamMoi, btnTimKiem, btnXoa;
 
@@ -50,10 +55,10 @@ public class PanelNhanSuModern extends JPanel {
         pnlSearch.setOpaque(false);
         txtTimKiem = ModernUITheme.createTextField(18);
         txtTimKiem.setToolTipText("Tìm mã, tên, chức danh bác sĩ...");
-        btnTimKiem = ModernUITheme.createButton("🔍 Tìm kiếm", ModernUITheme.PRIMARY, Color.WHITE);
-        JButton btnTaiLai = ModernUITheme.createOutlineButton("Tất cả", ModernUITheme.TEXT_MUTED);
+        btnTimKiem = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SEARCH, 15, Color.WHITE), "Tìm kiếm", ModernUITheme.PRIMARY, Color.WHITE);
+        JButton btnTaiLai = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 14, ModernUITheme.TEXT_MUTED), "Tất cả", ModernUITheme.TEXT_MUTED);
 
-        pnlSearch.add(new JLabel("Tra cứu nhân sự:"));
+        pnlSearch.add(new JLabel("Tra cứu:"));
         pnlSearch.add(txtTimKiem);
         pnlSearch.add(btnTimKiem);
         pnlSearch.add(btnTaiLai);
@@ -63,7 +68,7 @@ public class PanelNhanSuModern extends JPanel {
 
         // 2. MAIN SPLITPANE
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setResizeWeight(0.62);
+        splitPane.setResizeWeight(0.58);
         splitPane.setDividerSize(6);
         splitPane.setOpaque(false);
 
@@ -84,10 +89,15 @@ public class PanelNhanSuModern extends JPanel {
         JPanel pnlFormCard = ModernUITheme.createCardPanel();
         pnlFormCard.setLayout(new BorderLayout(12, 12));
 
-        JLabel lblFormTitle = new JLabel("👨‍⚕️ THÔNG TIN CHI TIẾT BÁC SĨ / NHÂN VIÊN");
+        JPanel pnlFormHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        pnlFormHeader.setOpaque(false);
+        JLabel lblFormIcon = new JLabel(new AppIcon(AppIcon.Type.STAFF, 18, ModernUITheme.PRIMARY));
+        JLabel lblFormTitle = new JLabel("THÔNG TIN CHI TIẾT BÁC SĨ / NHÂN VIÊN");
         lblFormTitle.setFont(ModernUITheme.FONT_TITLE);
         lblFormTitle.setForeground(ModernUITheme.PRIMARY_DARK);
-        pnlFormCard.add(lblFormTitle, BorderLayout.NORTH);
+        pnlFormHeader.add(lblFormIcon);
+        pnlFormHeader.add(lblFormTitle);
+        pnlFormCard.add(pnlFormHeader, BorderLayout.NORTH);
 
         JPanel pnlFields = new JPanel(new GridLayout(2, 5, 12, 10));
         pnlFields.setOpaque(false);
@@ -97,9 +107,14 @@ public class PanelNhanSuModern extends JPanel {
         txtMaNV.setBackground(new Color(241, 245, 249));
 
         txtHoTen = ModernUITheme.createTextField(16);
-        txtNgaySinh = ModernUITheme.createTextField(10);
-        txtNgaySinh.setText("1988-05-12");
+
+        // Ngày sinh với DatePickerField & giới hạn không chọn tương lai
+        dpNgaySinh = new DatePickerField(LocalDate.of(1990, 1, 1));
+        dpNgaySinh.setMaxDate(LocalDate.now());
+
         cbGioiTinh = new JComboBox<>(new String[]{"Nam", "Nữ", "Khác"});
+        cbGioiTinh.setFont(ModernUITheme.FONT_REGULAR);
+
         txtSDT = ModernUITheme.createTextField(12);
         txtEmail = ModernUITheme.createTextField(16);
 
@@ -107,36 +122,38 @@ public class PanelNhanSuModern extends JPanel {
             "Bác sĩ Chuyên khoa RHM", "Bác sĩ Trưởng khoa", "Bác sĩ Chỉnh nha",
             "Y tá / Phụ tá", "Kỹ thuật viên nha khoa", "Lễ tân", "Thu ngân", "Quản lý"
         });
+        cbChucDanh.setFont(ModernUITheme.FONT_REGULAR);
 
         txtBangCap = ModernUITheme.createTextField(18);
         txtBangCap.setText("BS. CKI ĐHYD TP.HCM");
 
-        txtNgayVaoLam = ModernUITheme.createTextField(10);
-        txtNgayVaoLam.setText("2023-01-15");
+        // Ngày vào làm với DatePickerField
+        dpNgayVaoLam = new DatePickerField(LocalDate.now());
 
         cbTrangThai = new JComboBox<>(new String[]{"Đang làm việc", "Tạm nghỉ", "Đã nghỉ việc"});
+        cbTrangThai.setFont(ModernUITheme.FONT_REGULAR);
 
         pnlFields.add(createFieldItem("Mã nhân viên:", txtMaNV));
         pnlFields.add(createFieldItem("Họ và tên (*):", txtHoTen));
-        pnlFields.add(createFieldItem("Ngày sinh (yyyy-MM-dd):", txtNgaySinh));
+        pnlFields.add(createFieldItem("Ngày sinh (*):", dpNgaySinh));
         pnlFields.add(createFieldItem("Giới tính:", cbGioiTinh));
         pnlFields.add(createFieldItem("Số điện thoại (*):", txtSDT));
         pnlFields.add(createFieldItem("Email liên hệ:", txtEmail));
         pnlFields.add(createFieldItem("Chức danh y tế:", cbChucDanh));
         pnlFields.add(createFieldItem("Bằng cấp / Chứng chỉ:", txtBangCap));
-        pnlFields.add(createFieldItem("Ngày vào làm:", txtNgayVaoLam));
+        pnlFields.add(createFieldItem("Ngày vào làm:", dpNgayVaoLam));
         pnlFields.add(createFieldItem("Trạng thái:", cbTrangThai));
 
         pnlFormCard.add(pnlFields, BorderLayout.CENTER);
 
-        // Buttons
+        // Nút bấm thao tác với AppIcon chuyên nghiệp
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlButtons.setOpaque(false);
 
-        btnThem = ModernUITheme.createButton("➕ Thêm nhân sự", ModernUITheme.PRIMARY, Color.WHITE);
-        btnCapNhat = ModernUITheme.createButton("💾 Cập nhật hồ sơ", ModernUITheme.ACCENT, Color.WHITE);
-        btnXoa = ModernUITheme.createButton("🗑️ Xóa / Nghỉ việc", ModernUITheme.DANGER, Color.WHITE);
-        btnLamMoi = ModernUITheme.createOutlineButton("🔄 Làm mới", ModernUITheme.TEXT_MUTED);
+        btnThem = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.PLUS, 15, Color.WHITE), "Thêm nhân sự", ModernUITheme.PRIMARY, Color.WHITE);
+        btnCapNhat = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SAVE, 15, Color.WHITE), "Cập nhật hồ sơ", ModernUITheme.ACCENT, Color.WHITE);
+        btnXoa = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.DELETE, 15, Color.WHITE), "Xóa / Nghỉ việc", ModernUITheme.DANGER, Color.WHITE);
+        btnLamMoi = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 15, ModernUITheme.TEXT_MUTED), "Làm mới", ModernUITheme.TEXT_MUTED);
 
         pnlButtons.add(btnLamMoi);
         pnlButtons.add(btnXoa);
@@ -147,7 +164,7 @@ public class PanelNhanSuModern extends JPanel {
         splitPane.setBottomComponent(pnlFormCard);
         add(splitPane, BorderLayout.CENTER);
 
-        // Sự kiện
+        // Sự kiện chọn bảng
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && table.getSelectedRow() != -1) {
                 napFormTuBang(table.getSelectedRow());
@@ -166,7 +183,7 @@ public class PanelNhanSuModern extends JPanel {
         });
 
         cbChucDanh.addActionListener(e -> {
-            if (table.getSelectedRow() == -1) {
+            if (table.getSelectedRow() == -1 && txtMaNV.getText().isEmpty()) {
                 String cd = cbChucDanh.getSelectedItem() != null ? cbChucDanh.getSelectedItem().toString() : "Nha sĩ";
                 txtMaNV.setText(nhanVienDAO.sinhMaNVMoi(cd));
             }
@@ -190,17 +207,17 @@ public class PanelNhanSuModern extends JPanel {
         tableModel.setRowCount(0);
         List<NhanVien> list = nhanVienDAO.getAllNhanVien();
         for (NhanVien nv : list) {
-            tableModel.addRow(new Object[] {
-                    nv.getMaNV(),
-                    nv.getHoTen(),
-                    nv.getNgaySinh() != null ? nv.getNgaySinh().toString() : "",
-                    nv.getGioiTinh() != null ? nv.getGioiTinh() : "Nam",
-                    nv.getSoDienThoai(),
-                    nv.getEmail() != null ? nv.getEmail() : "",
-                    nv.getChucDanh() != null ? nv.getChucDanh() : "",
-                    nv.getBangCapChungChi() != null ? nv.getBangCapChungChi() : "",
-                    nv.getNgayVaoLam() != null ? nv.getNgayVaoLam().toString() : "",
-                    nv.getTrangThai() != null ? nv.getTrangThai() : "Đang làm việc"
+            tableModel.addRow(new Object[]{
+                nv.getMaNV(),
+                nv.getHoTen(),
+                nv.getNgaySinh() != null ? nv.getNgaySinh().toString() : "",
+                nv.getGioiTinh() != null ? nv.getGioiTinh() : "Nam",
+                nv.getSoDienThoai(),
+                nv.getEmail() != null ? nv.getEmail() : "",
+                nv.getChucDanh() != null ? nv.getChucDanh() : "",
+                nv.getBangCapChungChi() != null ? nv.getBangCapChungChi() : "",
+                nv.getNgayVaoLam() != null ? nv.getNgayVaoLam().toString() : "",
+                nv.getTrangThai() != null ? nv.getTrangThai() : "Đang làm việc"
             });
         }
         xoaTrangForm();
@@ -211,7 +228,19 @@ public class PanelNhanSuModern extends JPanel {
             return;
         txtMaNV.setText(tableModel.getValueAt(row, 0).toString());
         txtHoTen.setText(tableModel.getValueAt(row, 1).toString());
-        txtNgaySinh.setText(tableModel.getValueAt(row, 2) != null ? tableModel.getValueAt(row, 2).toString() : "");
+
+        // Nạp ngày sinh vào DatePickerField
+        Object valNS = tableModel.getValueAt(row, 2);
+        if (valNS != null && !valNS.toString().trim().isEmpty()) {
+            try {
+                dpNgaySinh.setDate(Date.valueOf(valNS.toString().trim()));
+            } catch (Exception ignored) {
+                dpNgaySinh.clear();
+            }
+        } else {
+            dpNgaySinh.clear();
+        }
+
         cbGioiTinh.setSelectedItem(
                 tableModel.getValueAt(row, 3) != null ? tableModel.getValueAt(row, 3).toString() : "Nam");
         txtSDT.setText(tableModel.getValueAt(row, 4).toString());
@@ -219,21 +248,46 @@ public class PanelNhanSuModern extends JPanel {
         cbChucDanh.setSelectedItem(tableModel.getValueAt(row, 6) != null ? tableModel.getValueAt(row, 6).toString()
                 : "Bác sĩ Chuyên khoa RHM");
         txtBangCap.setText(tableModel.getValueAt(row, 7) != null ? tableModel.getValueAt(row, 7).toString() : "");
-        txtNgayVaoLam.setText(tableModel.getValueAt(row, 8) != null ? tableModel.getValueAt(row, 8).toString() : "");
+
+        // Nạp ngày vào làm vào DatePickerField
+        Object valNVL = tableModel.getValueAt(row, 8);
+        if (valNVL != null && !valNVL.toString().trim().isEmpty()) {
+            try {
+                dpNgayVaoLam.setDate(Date.valueOf(valNVL.toString().trim()));
+            } catch (Exception ignored) {
+                dpNgayVaoLam.clear();
+            }
+        } else {
+            dpNgayVaoLam.clear();
+        }
+
         cbTrangThai.setSelectedItem(
                 tableModel.getValueAt(row, 9) != null ? tableModel.getValueAt(row, 9).toString() : "Đang làm việc");
+    }
+
+    public void selectNhanVien(String maNV) {
+        if (maNV == null || maNV.trim().isEmpty()) return;
+        String clean = maNV.trim();
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            if (clean.equalsIgnoreCase(tableModel.getValueAt(i, 0).toString())) {
+                table.setRowSelectionInterval(i, i);
+                table.scrollRectToVisible(table.getCellRect(i, 0, true));
+                napFormTuBang(i);
+                return;
+            }
+        }
     }
 
     private void xoaTrangForm() {
         String cd = cbChucDanh.getSelectedItem() != null ? cbChucDanh.getSelectedItem().toString() : "Nha sĩ";
         txtMaNV.setText(nhanVienDAO.sinhMaNVMoi(cd));
         txtHoTen.setText("");
-        txtNgaySinh.setText("1990-01-01");
+        dpNgaySinh.setDate(LocalDate.of(1990, 1, 1));
         cbGioiTinh.setSelectedIndex(0);
         txtSDT.setText("");
         txtEmail.setText("");
-        txtBangCap.setText("BS Răng Hàm Mặt");
-        txtNgayVaoLam.setText("2024-01-01");
+        txtBangCap.setText("BS. Chuyên khoa Răng Hàm Mặt");
+        dpNgayVaoLam.setDate(LocalDate.now());
         cbTrangThai.setSelectedIndex(0);
         table.clearSelection();
     }
@@ -248,7 +302,7 @@ public class PanelNhanSuModern extends JPanel {
             maNV = nhanVienDAO.sinhMaNVMoi(cd);
         }
         String hoTen = txtHoTen.getText().trim();
-        Date ngaySinh = Date.valueOf(txtNgaySinh.getText().trim());
+        Date ngaySinh = dpNgaySinh.getDate();
         String gioiTinh = cbGioiTinh.getSelectedItem() != null ? cbGioiTinh.getSelectedItem().toString() : "Nam";
         String sdt = txtSDT.getText().trim();
         String email = txtEmail.getText().trim();
@@ -256,12 +310,7 @@ public class PanelNhanSuModern extends JPanel {
             email = maNV.toLowerCase() + "@nhakhoaabc.vn";
         }
         String bangCap = txtBangCap.getText().trim();
-        Date ngayVaoLam;
-        try {
-            ngayVaoLam = Date.valueOf(txtNgayVaoLam.getText().trim());
-        } catch (Exception e) {
-            ngayVaoLam = new Date(System.currentTimeMillis());
-        }
+        Date ngayVaoLam = dpNgayVaoLam.getDate() != null ? dpNgayVaoLam.getDate() : new Date(System.currentTimeMillis());
         String trangThai = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString()
                 : "Đang làm việc";
 
@@ -289,18 +338,13 @@ public class PanelNhanSuModern extends JPanel {
             return;
 
         String hoTen = txtHoTen.getText().trim();
-        Date ngaySinh = Date.valueOf(txtNgaySinh.getText().trim());
+        Date ngaySinh = dpNgaySinh.getDate();
         String gioiTinh = cbGioiTinh.getSelectedItem() != null ? cbGioiTinh.getSelectedItem().toString() : "Nam";
         String sdt = txtSDT.getText().trim();
         String email = txtEmail.getText().trim();
         String cd = cbChucDanh.getSelectedItem() != null ? cbChucDanh.getSelectedItem().toString() : "Nha sĩ";
         String bangCap = txtBangCap.getText().trim();
-        Date ngayVaoLam;
-        try {
-            ngayVaoLam = Date.valueOf(txtNgayVaoLam.getText().trim());
-        } catch (Exception e) {
-            ngayVaoLam = new Date(System.currentTimeMillis());
-        }
+        Date ngayVaoLam = dpNgayVaoLam.getDate() != null ? dpNgayVaoLam.getDate() : new Date(System.currentTimeMillis());
         String trangThai = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString()
                 : "Đang làm việc";
 
@@ -360,31 +404,25 @@ public class PanelNhanSuModern extends JPanel {
             txtSDT.requestFocus();
             return false;
         }
-        String nsStr = txtNgaySinh.getText().trim();
-        if (!nsStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            JOptionPane.showMessageDialog(this, "Ngày sinh phải theo định dạng yyyy-MM-dd!", "Lỗi dữ liệu",
+
+        if (!dpNgaySinh.isValidDate() || dpNgaySinh.getDate() == null) {
+            JOptionPane.showMessageDialog(this, "Ngày sinh không hợp lệ hoặc chưa được chọn!\nVui lòng chọn ngày từ lịch (dd/MM/yyyy).", "Lỗi dữ liệu",
                     JOptionPane.ERROR_MESSAGE);
-            txtNgaySinh.requestFocus();
             return false;
         }
-        try {
-            Date.valueOf(nsStr);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Ngày sinh không hợp lệ!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
-            txtNgaySinh.requestFocus();
+
+        if (dpNgaySinh.getLocalDate() != null && dpNgaySinh.getLocalDate().isAfter(LocalDate.now())) {
+            JOptionPane.showMessageDialog(this, "Ngày sinh không được lớn hơn ngày hiện tại!", "Lỗi dữ liệu",
+                    JOptionPane.ERROR_MESSAGE);
             return false;
         }
-        String nvlStr = txtNgayVaoLam.getText().trim();
-        if (!nvlStr.isEmpty()) {
-            try {
-                Date.valueOf(nvlStr);
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Ngày vào làm phải theo định dạng yyyy-MM-dd!", "Lỗi dữ liệu",
-                        JOptionPane.ERROR_MESSAGE);
-                txtNgayVaoLam.requestFocus();
-                return false;
-            }
+
+        if (dpNgayVaoLam.getDate() != null && !dpNgayVaoLam.isValidDate()) {
+            JOptionPane.showMessageDialog(this, "Ngày vào làm không hợp lệ!", "Lỗi dữ liệu",
+                    JOptionPane.ERROR_MESSAGE);
+            return false;
         }
+
         return true;
     }
 

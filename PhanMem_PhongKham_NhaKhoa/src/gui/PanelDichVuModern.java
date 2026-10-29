@@ -51,8 +51,8 @@ public class PanelDichVuModern extends JPanel {
         pnlSearch.setOpaque(false);
         txtTimKiem = ModernUITheme.createTextField(18);
         txtTimKiem.setToolTipText("Tìm mã hoặc tên dịch vụ...");
-        btnTimKiem = ModernUITheme.createButton("Tìm kiếm", ModernUITheme.PRIMARY, Color.WHITE);
-        JButton btnTaiLai = ModernUITheme.createOutlineButton("Tất cả", ModernUITheme.TEXT_MUTED);
+        btnTimKiem = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SEARCH, 15, Color.WHITE), "Tìm kiếm", ModernUITheme.PRIMARY, Color.WHITE);
+        JButton btnTaiLai = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 14, ModernUITheme.TEXT_MUTED), "Tất cả", ModernUITheme.TEXT_MUTED);
 
         pnlSearch.add(new JLabel("Tra cứu:"));
         pnlSearch.add(txtTimKiem);
@@ -120,10 +120,10 @@ public class PanelDichVuModern extends JPanel {
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlButtons.setOpaque(false);
 
-        btnThem = ModernUITheme.createButton("Thêm dịch vụ", ModernUITheme.PRIMARY, Color.WHITE);
-        btnCapNhat = ModernUITheme.createButton("Cập nhật giá", ModernUITheme.ACCENT, Color.WHITE);
-        btnXoa = ModernUITheme.createButton("🗑️ Xóa / Ngừng DV", ModernUITheme.DANGER, Color.WHITE);
-        btnLamMoi = ModernUITheme.createOutlineButton("Làm mới", ModernUITheme.TEXT_MUTED);
+        btnThem = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.PLUS, 15, Color.WHITE), "Thêm dịch vụ", ModernUITheme.PRIMARY, Color.WHITE);
+        btnCapNhat = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SAVE, 15, Color.WHITE), "Cập nhật giá", ModernUITheme.ACCENT, Color.WHITE);
+        btnXoa = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.DELETE, 15, Color.WHITE), "Ngừng dịch vụ", ModernUITheme.DANGER, Color.WHITE);
+        btnLamMoi = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 15, ModernUITheme.TEXT_MUTED), "Làm mới", ModernUITheme.TEXT_MUTED);
 
         pnlButtons.add(btnLamMoi);
         pnlButtons.add(btnXoa);

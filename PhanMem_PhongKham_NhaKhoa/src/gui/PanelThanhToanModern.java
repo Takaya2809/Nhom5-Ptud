@@ -71,8 +71,8 @@ public class PanelThanhToanModern extends JPanel {
         pnlSearch.setOpaque(false);
         txtTimKiem = ModernUITheme.createTextField(16);
         txtTimKiem.setToolTipText("Tra cứu mã HĐ, tên bệnh nhân, bác sĩ...");
-        btnTimKiem = ModernUITheme.createButton("Tra cứu", ModernUITheme.PRIMARY, Color.WHITE);
-        JButton btnTaiLai = ModernUITheme.createOutlineButton("Tất cả", ModernUITheme.TEXT_MUTED);
+        btnTimKiem = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SEARCH, 14, Color.WHITE), "Tra cứu", ModernUITheme.PRIMARY, Color.WHITE);
+        JButton btnTaiLai = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 13, ModernUITheme.TEXT_MUTED), "Tất cả", ModernUITheme.TEXT_MUTED);
 
         pnlSearch.add(new JLabel("Tra cứu:"));
         pnlSearch.add(txtTimKiem);
@@ -157,10 +157,10 @@ public class PanelThanhToanModern extends JPanel {
         JPanel pnlActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlActions.setOpaque(false);
 
-        btnLamMoi = ModernUITheme.createOutlineButton("Làm mới", ModernUITheme.TEXT_MUTED);
-        btnHuyHoaDon = ModernUITheme.createButton("❌ Hủy hóa đơn", ModernUITheme.DANGER, Color.WHITE);
-        btnInHoaDon = ModernUITheme.createButton("In phiếu khám", ModernUITheme.ACCENT, Color.WHITE);
-        btnThanhToan = ModernUITheme.createButton("Xác nhận thanh toán", ModernUITheme.SUCCESS, Color.WHITE);
+        btnLamMoi = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 14, ModernUITheme.TEXT_MUTED), "Làm mới", ModernUITheme.TEXT_MUTED);
+        btnHuyHoaDon = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.CLOSE, 14, Color.WHITE), "Hủy hóa đơn", ModernUITheme.DANGER, Color.WHITE);
+        btnInHoaDon = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.PRINT, 14, Color.WHITE), "In phiếu khám", ModernUITheme.ACCENT, Color.WHITE);
+        btnThanhToan = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.CHECK, 14, Color.WHITE), "Xác nhận thanh toán", ModernUITheme.SUCCESS, Color.WHITE);
 
         pnlActions.add(btnLamMoi);
         pnlActions.add(btnHuyHoaDon);
@@ -481,6 +481,19 @@ public class PanelThanhToanModern extends JPanel {
         }
         if (list.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Không tìm thấy hóa đơn nào khớp với từ khóa: \"" + keyword + "\"", "Kết quả tra cứu", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    public void selectHoaDon(int maHD) {
+        String code = "HD" + String.format("%03d", maHD);
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            Object val = tableModel.getValueAt(i, 0);
+            if (val != null && (val.toString().equalsIgnoreCase(code) || val.toString().contains(String.valueOf(maHD)))) {
+                table.setRowSelectionInterval(i, i);
+                table.scrollRectToVisible(table.getCellRect(i, 0, true));
+                napFormTuBang(i);
+                return;
+            }
         }
     }
 

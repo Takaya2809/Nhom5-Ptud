@@ -43,7 +43,7 @@ public class PanelThongKeModern extends JPanel {
         pnlTitle.add(lblSub);
         pnlHeader.add(pnlTitle, BorderLayout.WEST);
 
-        JButton btnRefresh = ModernUITheme.createButton("🔄 Cập nhật số liệu", ModernUITheme.PRIMARY, Color.WHITE);
+        JButton btnRefresh = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.REFRESH, 14, Color.WHITE), "Cập nhật số liệu", ModernUITheme.PRIMARY, Color.WHITE);
         btnRefresh.addActionListener(e -> taiDuLieu());
         pnlHeader.add(btnRefresh, BorderLayout.EAST);
 
@@ -68,7 +68,7 @@ public class PanelThongKeModern extends JPanel {
         // Table 1: Dịch vụ
         JPanel cardDV = ModernUITheme.createCardPanel();
         cardDV.setLayout(new BorderLayout(0, 10));
-        JLabel lblDVTitle = new JLabel("🦷 DOANH THU THEO DANH MỤC DỊCH VỤ");
+        JLabel lblDVTitle = new JLabel("DOANH THU THEO DANH MỤC DỊCH VỤ");
         lblDVTitle.setFont(ModernUITheme.FONT_TITLE);
         lblDVTitle.setForeground(ModernUITheme.PRIMARY_DARK);
         cardDV.add(lblDVTitle, BorderLayout.NORTH);
@@ -90,7 +90,7 @@ public class PanelThongKeModern extends JPanel {
         // Table 2: Bác sĩ
         JPanel cardBS = ModernUITheme.createCardPanel();
         cardBS.setLayout(new BorderLayout(0, 10));
-        JLabel lblBSTitle = new JLabel("👨‍⚕️ NĂNG SUẤT ĐIỀU TRỊ THEO BÁC SĨ");
+        JLabel lblBSTitle = new JLabel("NĂNG SUẤT ĐIỀU TRỊ THEO BÁC SĨ");
         lblBSTitle.setFont(ModernUITheme.FONT_TITLE);
         lblBSTitle.setForeground(ModernUITheme.PRIMARY_DARK);
         cardBS.add(lblBSTitle, BorderLayout.NORTH);
@@ -136,13 +136,13 @@ public class PanelThongKeModern extends JPanel {
         }
 
         pnlKPIContainer.add(ModernUITheme.createKPICard("TỔNG DOANH THU", df.format(tongDT), "Doanh thu thực tế đã thu",
-                ModernUITheme.SUCCESS, "💰"));
+                ModernUITheme.SUCCESS, new AppIcon(AppIcon.Type.PAYMENT, 24, ModernUITheme.SUCCESS)));
         pnlKPIContainer.add(ModernUITheme.createKPICard("TỔNG LƯỢT KHÁM", tongLK + " ca", "Tổng hồ sơ đã điều trị",
-                ModernUITheme.PRIMARY, "🩺"));
+                ModernUITheme.PRIMARY, new AppIcon(AppIcon.Type.SERVICE, 24, ModernUITheme.PRIMARY)));
         pnlKPIContainer.add(ModernUITheme.createKPICard("HỒ SƠ BỆNH NHÂN", tongBN + " người", "Bệnh nhân đã đăng ký",
-                ModernUITheme.ACCENT, "👥"));
+                ModernUITheme.ACCENT, new AppIcon(AppIcon.Type.PATIENT, 24, ModernUITheme.ACCENT)));
         pnlKPIContainer.add(ModernUITheme.createKPICard("CẢNH BÁO KHO", canhBaoVT + " mặt hàng",
-                "Dưới định mức tối thiểu", ModernUITheme.DANGER, "⚠️"));
+                "Dưới định mức tối thiểu", ModernUITheme.DANGER, new AppIcon(AppIcon.Type.WARNING, 24, ModernUITheme.DANGER)));
 
         pnlKPIContainer.revalidate();
         pnlKPIContainer.repaint();

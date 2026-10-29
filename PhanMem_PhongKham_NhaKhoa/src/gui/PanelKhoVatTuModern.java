@@ -66,8 +66,8 @@ public class PanelKhoVatTuModern extends JPanel {
         tabbedPane.setFont(ModernUITheme.FONT_BOLD);
         tabbedPane.setBackground(Color.WHITE);
 
-        tabbedPane.addTab("📦 Vật Tư Tiêu Hao & Dụng Cụ Nha Khoa", createTabVatTu());
-        tabbedPane.addTab("💊 Danh Mục Thuốc Kê Đơn & Dược Phẩm", createTabThuoc());
+        tabbedPane.addTab("Vật Tư Tiêu Hao & Dụng Cụ Nha Khoa", new AppIcon(AppIcon.Type.INVENTORY, 16, ModernUITheme.PRIMARY), createTabVatTu());
+        tabbedPane.addTab("Danh Mục Thuốc Kê Đơn & Dược Phẩm", new AppIcon(AppIcon.Type.SERVICE, 16, ModernUITheme.ACCENT), createTabThuoc());
 
         add(tabbedPane, BorderLayout.CENTER);
 
@@ -87,8 +87,8 @@ public class PanelKhoVatTuModern extends JPanel {
         pnlSearch.setOpaque(false);
         txtTimKiemVT = ModernUITheme.createTextField(18);
         txtTimKiemVT.setToolTipText("Tìm mã, tên hoặc loại vật tư...");
-        btnTimKiemVT = ModernUITheme.createButton("🔍 Tra cứu", ModernUITheme.PRIMARY, Color.WHITE);
-        JButton btnTaiLaiVT = ModernUITheme.createOutlineButton("Tất cả", ModernUITheme.TEXT_MUTED);
+        btnTimKiemVT = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SEARCH, 15, Color.WHITE), "Tra cứu", ModernUITheme.PRIMARY, Color.WHITE);
+        JButton btnTaiLaiVT = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 14, ModernUITheme.TEXT_MUTED), "Tất cả", ModernUITheme.TEXT_MUTED);
 
         pnlSearch.add(new JLabel("Tìm vật tư:"));
         pnlSearch.add(txtTimKiemVT);
@@ -147,11 +147,11 @@ public class PanelKhoVatTuModern extends JPanel {
         // Buttons
         JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         btns.setOpaque(false);
-        btnLamMoiVT = ModernUITheme.createOutlineButton("🔄 Làm mới", ModernUITheme.TEXT_MUTED);
-        btnNhapXuatVT = ModernUITheme.createButton("📥 Nhập/Xuất kho", ModernUITheme.ACCENT, Color.WHITE);
-        btnXoaVT = ModernUITheme.createButton("🗑️ Xóa VT", ModernUITheme.DANGER, Color.WHITE);
-        btnCapNhatVT = ModernUITheme.createButton("💾 Cập nhật", ModernUITheme.ACCENT, Color.WHITE);
-        btnThemVT = ModernUITheme.createButton("➕ Thêm vật tư", ModernUITheme.PRIMARY, Color.WHITE);
+        btnLamMoiVT = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 14, ModernUITheme.TEXT_MUTED), "Làm mới", ModernUITheme.TEXT_MUTED);
+        btnNhapXuatVT = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.INVENTORY, 14, Color.WHITE), "Nhập/Xuất kho", ModernUITheme.ACCENT, Color.WHITE);
+        btnXoaVT = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.DELETE, 14, Color.WHITE), "Xóa VT", ModernUITheme.DANGER, Color.WHITE);
+        btnCapNhatVT = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SAVE, 14, Color.WHITE), "Cập nhật", ModernUITheme.ACCENT, Color.WHITE);
+        btnThemVT = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.PLUS, 14, Color.WHITE), "Thêm vật tư", ModernUITheme.PRIMARY, Color.WHITE);
 
         btns.add(btnLamMoiVT);
         btns.add(btnNhapXuatVT);
@@ -371,8 +371,8 @@ public class PanelKhoVatTuModern extends JPanel {
         pnlSearch.setOpaque(false);
         txtTimKiemThuoc = ModernUITheme.createTextField(18);
         txtTimKiemThuoc.setToolTipText("Tìm mã, tên thuốc, hoạt chất...");
-        btnTimKiemThuoc = ModernUITheme.createButton("🔍 Tra cứu", ModernUITheme.PRIMARY, Color.WHITE);
-        JButton btnTaiLaiThuoc = ModernUITheme.createOutlineButton("Tất cả", ModernUITheme.TEXT_MUTED);
+        btnTimKiemThuoc = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SEARCH, 15, Color.WHITE), "Tra cứu", ModernUITheme.PRIMARY, Color.WHITE);
+        JButton btnTaiLaiThuoc = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 14, ModernUITheme.TEXT_MUTED), "Tất cả", ModernUITheme.TEXT_MUTED);
 
         pnlSearch.add(new JLabel("Tìm thuốc:"));
         pnlSearch.add(txtTimKiemThuoc);
@@ -436,11 +436,11 @@ public class PanelKhoVatTuModern extends JPanel {
         // Buttons
         JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         btns.setOpaque(false);
-        btnLamMoiThuoc = ModernUITheme.createOutlineButton("🔄 Làm mới", ModernUITheme.TEXT_MUTED);
-        btnNhapXuatThuoc = ModernUITheme.createButton("📥 Nhập/Xuất kho", ModernUITheme.ACCENT, Color.WHITE);
-        btnXoaThuoc = ModernUITheme.createButton("🗑️ Xóa thuốc", ModernUITheme.DANGER, Color.WHITE);
-        btnCapNhatThuoc = ModernUITheme.createButton("💾 Cập nhật", ModernUITheme.ACCENT, Color.WHITE);
-        btnThemThuoc = ModernUITheme.createButton("➕ Thêm thuốc", ModernUITheme.PRIMARY, Color.WHITE);
+        btnLamMoiThuoc = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 14, ModernUITheme.TEXT_MUTED), "Làm mới", ModernUITheme.TEXT_MUTED);
+        btnNhapXuatThuoc = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.INVENTORY, 14, Color.WHITE), "Nhập/Xuất kho", ModernUITheme.ACCENT, Color.WHITE);
+        btnXoaThuoc = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.DELETE, 14, Color.WHITE), "Xóa thuốc", ModernUITheme.DANGER, Color.WHITE);
+        btnCapNhatThuoc = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SAVE, 14, Color.WHITE), "Cập nhật", ModernUITheme.ACCENT, Color.WHITE);
+        btnThemThuoc = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.PLUS, 14, Color.WHITE), "Thêm thuốc", ModernUITheme.PRIMARY, Color.WHITE);
 
         btns.add(btnLamMoiThuoc);
         btns.add(btnNhapXuatThuoc);

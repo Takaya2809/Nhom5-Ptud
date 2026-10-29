@@ -58,8 +58,8 @@ public class PanelLichTrucModern extends JPanel {
         pnlSearch.setOpaque(false);
         txtTimKiem = ModernUITheme.createTextField(16);
         txtTimKiem.setToolTipText("Tìm bác sĩ, ca trực...");
-        btnLoc = ModernUITheme.createButton("🔍 Tra cứu", ModernUITheme.PRIMARY, Color.WHITE);
-        JButton btnTaiLai = ModernUITheme.createOutlineButton("Tất cả", ModernUITheme.TEXT_MUTED);
+        btnLoc = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SEARCH, 14, Color.WHITE), "Tra cứu", ModernUITheme.PRIMARY, Color.WHITE);
+        JButton btnTaiLai = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 13, ModernUITheme.TEXT_MUTED), "Tất cả", ModernUITheme.TEXT_MUTED);
 
         pnlSearch.add(new JLabel("Tra cứu:"));
         pnlSearch.add(txtTimKiem);
@@ -94,7 +94,7 @@ public class PanelLichTrucModern extends JPanel {
         JPanel pnlFormCard = ModernUITheme.createCardPanel();
         pnlFormCard.setLayout(new BorderLayout(12, 12));
 
-        JLabel lblFormTitle = new JLabel("📅 PHÂN CÔNG BÁC SĨ VÀO CA TRỰC PHÒNG KHÁM");
+        JLabel lblFormTitle = new JLabel("PHÂN CÔNG BÁC SĨ VÀO CA TRỰC PHÒNG KHÁM");
         lblFormTitle.setFont(ModernUITheme.FONT_TITLE);
         lblFormTitle.setForeground(ModernUITheme.PRIMARY_DARK);
         pnlFormCard.add(lblFormTitle, BorderLayout.NORTH);
@@ -119,11 +119,11 @@ public class PanelLichTrucModern extends JPanel {
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlButtons.setOpaque(false);
 
-        btnThemCa = ModernUITheme.createOutlineButton("⏰ Tạo ca trực mới", ModernUITheme.PRIMARY);
-        btnDiemDanh = ModernUITheme.createButton("✅ Điểm danh", ModernUITheme.ACCENT, Color.WHITE);
-        btnHuyPhanCong = ModernUITheme.createButton("❌ Hủy phân công", ModernUITheme.DANGER, Color.WHITE);
-        btnLamMoi = ModernUITheme.createOutlineButton("🔄 Làm mới", ModernUITheme.TEXT_MUTED);
-        btnPhanCong = ModernUITheme.createButton("➕ Xác nhận phân công", ModernUITheme.PRIMARY, Color.WHITE);
+        btnThemCa = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.CLOCK, 14, ModernUITheme.PRIMARY), "Tạo ca trực mới", ModernUITheme.PRIMARY);
+        btnDiemDanh = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.CHECK, 14, Color.WHITE), "Điểm danh", ModernUITheme.ACCENT, Color.WHITE);
+        btnHuyPhanCong = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.CLOSE, 14, Color.WHITE), "Hủy phân công", ModernUITheme.DANGER, Color.WHITE);
+        btnLamMoi = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 14, ModernUITheme.TEXT_MUTED), "Làm mới", ModernUITheme.TEXT_MUTED);
+        btnPhanCong = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.PLUS, 14, Color.WHITE), "Xác nhận phân công", ModernUITheme.PRIMARY, Color.WHITE);
 
         pnlButtons.add(btnLamMoi);
         pnlButtons.add(btnThemCa);
@@ -208,6 +208,22 @@ public class PanelLichTrucModern extends JPanel {
             });
         }
         xoaTrangForm();
+    }
+
+    public void selectPhanCong(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) return;
+        String clean = keyword.trim().toLowerCase();
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            for (int col = 0; col < tableModel.getColumnCount(); col++) {
+                Object val = tableModel.getValueAt(i, col);
+                if (val != null && val.toString().toLowerCase().contains(clean)) {
+                    table.setRowSelectionInterval(i, i);
+                    table.scrollRectToVisible(table.getCellRect(i, 0, true));
+                    napFormTuBang(i);
+                    return;
+                }
+            }
+        }
     }
 
     private void napFormTuBang(int row) {
@@ -420,7 +436,7 @@ public class PanelLichTrucModern extends JPanel {
 
         JPanel pnlBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         JButton btnHuy = ModernUITheme.createOutlineButton("Hủy", ModernUITheme.TEXT_MUTED);
-        JButton btnLuu = ModernUITheme.createButton("💾 Lưu Ca Trực Vào DB", ModernUITheme.PRIMARY, Color.WHITE);
+        JButton btnLuu = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SAVE, 14, Color.WHITE), "Lưu Ca Trực Vào DB", ModernUITheme.PRIMARY, Color.WHITE);
         pnlBtns.add(btnHuy);
         pnlBtns.add(btnLuu);
         dlg.add(pnlBtns, BorderLayout.SOUTH);
