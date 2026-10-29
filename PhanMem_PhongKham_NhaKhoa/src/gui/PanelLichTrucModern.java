@@ -10,6 +10,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.sql.Date;
+import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
@@ -26,7 +28,7 @@ public class PanelLichTrucModern extends JPanel {
 
     private JComboBox<String> cbNhanVien, cbCaTruc, cbVaiTro;
     private JTextField txtGhiChu, txtTimKiem;
-    private JButton btnPhanCong, btnHuyPhanCong, btnLamMoi, btnLoc;
+    private JButton btnPhanCong, btnHuyPhanCong, btnLamMoi, btnLoc, btnDiemDanh, btnThemCa;
 
     public PanelLichTrucModern() {
         setLayout(new BorderLayout(0, 16));
@@ -117,11 +119,15 @@ public class PanelLichTrucModern extends JPanel {
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlButtons.setOpaque(false);
 
-        btnPhanCong = ModernUITheme.createButton("➕ Xác nhận phân công", ModernUITheme.PRIMARY, Color.WHITE);
+        btnThemCa = ModernUITheme.createOutlineButton("⏰ Tạo ca trực mới", ModernUITheme.PRIMARY);
+        btnDiemDanh = ModernUITheme.createButton("✅ Điểm danh", ModernUITheme.ACCENT, Color.WHITE);
         btnHuyPhanCong = ModernUITheme.createButton("❌ Hủy phân công", ModernUITheme.DANGER, Color.WHITE);
         btnLamMoi = ModernUITheme.createOutlineButton("🔄 Làm mới", ModernUITheme.TEXT_MUTED);
+        btnPhanCong = ModernUITheme.createButton("➕ Xác nhận phân công", ModernUITheme.PRIMARY, Color.WHITE);
 
         pnlButtons.add(btnLamMoi);
+        pnlButtons.add(btnThemCa);
+        pnlButtons.add(btnDiemDanh);
         pnlButtons.add(btnHuyPhanCong);
         pnlButtons.add(btnPhanCong);
         pnlFormCard.add(pnlButtons, BorderLayout.SOUTH);
@@ -130,11 +136,23 @@ public class PanelLichTrucModern extends JPanel {
         add(splitPane, BorderLayout.CENTER);
 
         // Events
+        table.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && table.getSelectedRow() != -1) {
+                napFormTuBang(table.getSelectedRow());
+            }
+        });
+
         btnPhanCong.addActionListener(e -> xuLyPhanCong());
         btnHuyPhanCong.addActionListener(e -> xuLyHuy());
+        btnDiemDanh.addActionListener(e -> xuLyDiemDanh());
+        btnThemCa.addActionListener(e -> xuLyThemCa());
         btnLamMoi.addActionListener(e -> xoaTrangForm());
         btnLoc.addActionListener(e -> xuLyLoc());
-        btnTaiLai.addActionListener(e -> taiDuLieu());
+        txtTimKiem.addActionListener(e -> xuLyLoc());
+        btnTaiLai.addActionListener(e -> {
+            txtTimKiem.setText("");
+            taiDuLieu();
+        });
 
         napCombobox();
         taiDuLieu();
@@ -155,34 +173,62 @@ public class PanelLichTrucModern extends JPanel {
         cbNhanVien.removeAllItems();
         cbCaTruc.removeAllItems();
 
-        // Danh sách mẫu hiển thị giao diện
-        cbNhanVien.addItem("NV001 - BS. CKII Nguyễn Văn An (Bác sĩ)");
-        cbNhanVien.addItem("NV002 - ThS. BS Lê Thị Thảo (Bác sĩ)");
-        cbNhanVien.addItem("NV003 - BS. Trần Minh Trí (Bác sĩ)");
-        cbNhanVien.addItem("NV004 - Y tá Đỗ Thùy Trang (Điều dưỡng)");
+        List<NhanVien> dsNV = nhanVienDAO.getAllNhanVien();
+        for (NhanVien nv : dsNV) {
+            cbNhanVien.addItem(nv.getMaNV() + " - " + nv.getHoTen() + " (" + nv.getChucDanh() + ")");
+        }
 
-        cbCaTruc.addItem("CA01 - Ca Sáng (08:00 - 12:00)");
-        cbCaTruc.addItem("CA02 - Ca Chiều (13:30 - 17:30)");
-        cbCaTruc.addItem("CA03 - Ca Tối (18:00 - 21:00)");
+        List<CaTruc> dsCa = caTrucDAO.getAllCaTruc();
+        for (CaTruc ct : dsCa) {
+            String gio = "";
+            if (ct.getGioBatDau() != null && ct.getGioKetThuc() != null) {
+                gio = " (" + ct.getGioBatDau().toString().substring(0, 5) + " - " + ct.getGioKetThuc().toString().substring(0, 5) + ")";
+            }
+            cbCaTruc.addItem(ct.getMaCa() + " - " + ct.getTenCa() + gio);
+        }
+
+        if (cbCaTruc.getItemCount() == 0) {
+            cbCaTruc.addItem("CA_20261023_SANG - Ca Sáng (08:00 - 12:00)");
+            cbCaTruc.addItem("CA_20261023_CHIEU - Ca Chiều (13:30 - 17:30)");
+            cbCaTruc.addItem("CA_20261023_TOI - Ca Tối (18:00 - 21:00)");
+        }
     }
 
     private void taiDuLieu() {
-        // TODO: Cài đặt tải danh sách phân công ca trực từ CSDL tại đây
-        napDuLieuMau();
+        tableModel.setRowCount(0);
+        List<PhanCongCaTruc> list = caTrucDAO.getAllPhanCong();
+        for (PhanCongCaTruc pc : list) {
+            tableModel.addRow(new Object[] {
+                "PC" + String.format("%03d", pc.getMaPhanCong()),
+                pc.getHoTenNV() != null ? pc.getHoTenNV() : pc.getMaNV(),
+                pc.getTenCa() != null ? pc.getTenCa() : pc.getMaCa(),
+                pc.getVaiTroTrongCa() != null ? pc.getVaiTroTrongCa() : "Bác sĩ chính",
+                pc.getTrangThaiDiemDanh() != null ? pc.getTrangThaiDiemDanh() : "Chưa đến",
+                pc.getGhiChu() != null ? pc.getGhiChu() : ""
+            });
+        }
+        xoaTrangForm();
     }
 
-    private void napDuLieuMau() {
-        tableModel.setRowCount(0);
-        tableModel.addRow(new Object[] { "PC001", "BS. CKII Nguyễn Văn An", "Ca Sáng (08:00 - 12:00)", "Bác sĩ chính",
-                "Đã đến", "Phòng Cấy ghép Implant Ghế 01" });
-        tableModel.addRow(new Object[] { "PC002", "ThS. BS Lê Thị Thảo", "Ca Sáng (08:00 - 12:00)", "Bác sĩ chính",
-                "Đã đến", "Phòng Chỉnh nha Niềng răng Ghế 02" });
-        tableModel.addRow(new Object[] { "PC003", "BS. Trần Minh Trí", "Ca Chiều (13:30 - 17:30)", "Bác sĩ chính",
-                "Chưa đến", "Phòng Tiểu phẫu Nhổ răng Ghế 03" });
-        tableModel.addRow(new Object[] { "PC004", "Y tá Đỗ Thùy Trang", "Ca Sáng (08:00 - 12:00)", "Phụ tá ghế",
-                "Đã đến", "Phụ tá ghế nha khoa & Khử trùng" });
-        tableModel.addRow(new Object[] { "PC005", "BS. CKII Nguyễn Văn An", "Ca Tối (18:00 - 21:00)", "Bác sĩ chính",
-                "Chưa đến", "Khám ngoài giờ chuyên gia" });
+    private void napFormTuBang(int row) {
+        if (row < 0 || row >= tableModel.getRowCount()) return;
+        String tenNV = tableModel.getValueAt(row, 1).toString();
+        for (int i = 0; i < cbNhanVien.getItemCount(); i++) {
+            if (cbNhanVien.getItemAt(i).contains(tenNV)) {
+                cbNhanVien.setSelectedIndex(i);
+                break;
+            }
+        }
+        String tenCa = tableModel.getValueAt(row, 2).toString();
+        for (int i = 0; i < cbCaTruc.getItemCount(); i++) {
+            if (cbCaTruc.getItemAt(i).contains(tenCa) || tenCa.contains(cbCaTruc.getItemAt(i).split(" - ")[0])) {
+                cbCaTruc.setSelectedIndex(i);
+                break;
+            }
+        }
+        String vt = tableModel.getValueAt(row, 3) != null ? tableModel.getValueAt(row, 3).toString() : "Bác sĩ chính";
+        cbVaiTro.setSelectedItem(vt);
+        txtGhiChu.setText(tableModel.getValueAt(row, 5) != null ? tableModel.getValueAt(row, 5).toString() : "");
     }
 
     private void xoaTrangForm() {
@@ -196,18 +242,213 @@ public class PanelLichTrucModern extends JPanel {
     }
 
     private void xuLyPhanCong() {
-        // TODO: Cài đặt chức năng phân công ca trực vào CSDL tại đây
-        JOptionPane.showMessageDialog(this, "Chức năng Phân công ca trực đã sẵn sàng để cài đặt!", "Thông báo",
-                JOptionPane.INFORMATION_MESSAGE);
+        if (cbNhanVien.getSelectedItem() == null || cbCaTruc.getSelectedItem() == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên và ca trực!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String itemNV = cbNhanVien.getSelectedItem().toString();
+        String maNV = itemNV.split(" - ")[0].trim();
+        String hoTenNV = itemNV.contains(" - ") ? itemNV.substring(itemNV.indexOf(" - ") + 3).trim() : maNV;
+        if (hoTenNV.contains(" (")) {
+            hoTenNV = hoTenNV.substring(0, hoTenNV.indexOf(" (")).trim();
+        }
+
+        String itemCa = cbCaTruc.getSelectedItem().toString();
+        String maCa = itemCa.split(" - ")[0].trim();
+        String tenCa = itemCa.contains(" - ") ? itemCa.substring(itemCa.indexOf(" - ") + 3).trim() : maCa;
+
+        String vaiTro = cbVaiTro.getSelectedItem() != null ? cbVaiTro.getSelectedItem().toString() : "Bác sĩ chính";
+        String ghiChu = txtGhiChu.getText().trim();
+
+        PhanCongCaTruc pc = new PhanCongCaTruc(0, maNV, maCa, vaiTro, "Chưa đến", ghiChu);
+        pc.setHoTenNV(hoTenNV);
+        pc.setTenCa(tenCa);
+
+        boolean thanhCong = caTrucDAO.themPhanCong(pc);
+        if (thanhCong) {
+            JOptionPane.showMessageDialog(this, "Phân công [" + hoTenNV + "] vào [" + tenCa + "] thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            taiDuLieu();
+        } else {
+            JOptionPane.showMessageDialog(this, "Phân công thất bại. Vui lòng thử lại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void xuLyHuy() {
-        // TODO: Cài đặt chức năng hủy phân công ca trực trong CSDL tại đây
-        JOptionPane.showMessageDialog(this, "Chức năng Hủy phân công đã sẵn sàng để cài đặt!", "Thông báo",
-                JOptionPane.INFORMATION_MESSAGE);
+        int row = table.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 lượt phân công trong bảng để hủy!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String maPCStr = tableModel.getValueAt(row, 0).toString().replaceAll("[^0-9]", "");
+        int maPC = Integer.parseInt(maPCStr);
+        String tenNV = tableModel.getValueAt(row, 1).toString();
+
+        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn hủy phân công ca trực của [" + tenNV + "]?", "Xác nhận hủy", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            boolean thanhCong = caTrucDAO.xoaPhanCong(maPC);
+            if (thanhCong) {
+                JOptionPane.showMessageDialog(this, "Đã hủy phân công ca trực thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                taiDuLieu();
+            } else {
+                JOptionPane.showMessageDialog(this, "Hủy phân công thất bại. Vui lòng thử lại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 
     private void xuLyLoc() {
-        // TODO: Cài đặt chức năng lọc danh sách ca trực tại đây
+        String keyword = txtTimKiem.getText();
+        if (keyword == null || keyword.trim().isEmpty()) {
+            taiDuLieu();
+            return;
+        }
+        keyword = keyword.trim().toLowerCase();
+        List<PhanCongCaTruc> all = caTrucDAO.getAllPhanCong();
+        tableModel.setRowCount(0);
+        for (PhanCongCaTruc pc : all) {
+            boolean match = (pc.getHoTenNV() != null && pc.getHoTenNV().toLowerCase().contains(keyword)) ||
+                            (pc.getMaNV() != null && pc.getMaNV().toLowerCase().contains(keyword)) ||
+                            (pc.getTenCa() != null && pc.getTenCa().toLowerCase().contains(keyword)) ||
+                            (pc.getMaCa() != null && pc.getMaCa().toLowerCase().contains(keyword)) ||
+                            (pc.getVaiTroTrongCa() != null && pc.getVaiTroTrongCa().toLowerCase().contains(keyword)) ||
+                            (pc.getGhiChu() != null && pc.getGhiChu().toLowerCase().contains(keyword));
+            if (match) {
+                tableModel.addRow(new Object[] {
+                    "PC" + String.format("%03d", pc.getMaPhanCong()),
+                    pc.getHoTenNV() != null ? pc.getHoTenNV() : pc.getMaNV(),
+                    pc.getTenCa() != null ? pc.getTenCa() : pc.getMaCa(),
+                    pc.getVaiTroTrongCa() != null ? pc.getVaiTroTrongCa() : "Bác sĩ chính",
+                    pc.getTrangThaiDiemDanh() != null ? pc.getTrangThaiDiemDanh() : "Chưa đến",
+                    pc.getGhiChu() != null ? pc.getGhiChu() : ""
+                });
+            }
+        }
+        if (tableModel.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy lượt phân công nào khớp với từ khóa: \"" + keyword + "\"", "Kết quả tra cứu", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void xuLyDiemDanh() {
+        int r = table.getSelectedRow();
+        if (r < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 lượt phân công trong bảng để điểm danh!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        int maPC = Integer.parseInt(tableModel.getValueAt(r, 0).toString().replaceAll("[^0-9]", ""));
+        String tenNV = tableModel.getValueAt(r, 1).toString();
+        String currentTT = tableModel.getValueAt(r, 4).toString();
+
+        String[] options = {"Đã đến trực", "Đang trực", "Vắng mặt", "Đổi ca", "Hoàn thành ca"};
+        Object selected = JOptionPane.showInputDialog(this, 
+            "Chọn trạng thái điểm danh cho nhân sự [" + tenNV + "]:", 
+            "Điểm danh ca trực phòng khám", 
+            JOptionPane.QUESTION_MESSAGE, null, options, currentTT);
+
+        if (selected != null) {
+            boolean ok = caTrucDAO.diemDanh(maPC, selected.toString());
+            if (ok) {
+                JOptionPane.showMessageDialog(this, "Cập nhật điểm danh cho [" + tenNV + "] thành: " + selected, "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                taiDuLieu();
+            } else {
+                JOptionPane.showMessageDialog(this, "Cập nhật điểm danh thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void xuLyThemCa() {
+        JDialog dlg = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Tạo Ca Trực Nha Khoa Mới", true);
+        dlg.setSize(480, 420);
+        dlg.setLocationRelativeTo(this);
+        dlg.setLayout(new BorderLayout(15, 15));
+
+        JPanel pnlContent = new JPanel(new GridLayout(6, 2, 10, 10));
+        pnlContent.setBorder(new EmptyBorder(15, 20, 15, 20));
+
+        SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
+        String todayStr = sdfDate.format(new java.util.Date());
+        String defaultMaCa = "CA_" + todayStr.replace("-", "") + "_SANG";
+
+        JTextField txtDlgMa = ModernUITheme.createTextField(14);
+        txtDlgMa.setText(defaultMaCa);
+        JComboBox<String> cbDlgTen = new JComboBox<>(new String[]{"Ca Sáng (08:00 - 12:00)", "Ca Chiều (13:30 - 17:30)", "Ca Tối (18:00 - 21:00)", "Ca Cấp Cứu Ngoài Giờ"});
+        JTextField txtDlgNgay = ModernUITheme.createTextField(10);
+        txtDlgNgay.setText(todayStr);
+        JTextField txtDlgGioBD = ModernUITheme.createTextField(8);
+        txtDlgGioBD.setText("08:00:00");
+        JTextField txtDlgGioKT = ModernUITheme.createTextField(8);
+        txtDlgGioKT.setText("12:00:00");
+        JTextField txtDlgMaxBN = ModernUITheme.createTextField(6);
+        txtDlgMaxBN.setText("15");
+
+        cbDlgTen.addActionListener(e -> {
+            int idx = cbDlgTen.getSelectedIndex();
+            String prefix = "CA_" + txtDlgNgay.getText().trim().replace("-", "") + "_";
+            if (idx == 0) {
+                txtDlgMa.setText(prefix + "SANG");
+                txtDlgGioBD.setText("08:00:00");
+                txtDlgGioKT.setText("12:00:00");
+            } else if (idx == 1) {
+                txtDlgMa.setText(prefix + "CHIEU");
+                txtDlgGioBD.setText("13:30:00");
+                txtDlgGioKT.setText("17:30:00");
+            } else if (idx == 2) {
+                txtDlgMa.setText(prefix + "TOI");
+                txtDlgGioBD.setText("18:00:00");
+                txtDlgGioKT.setText("21:00:00");
+            } else {
+                txtDlgMa.setText(prefix + "CAPCUU");
+                txtDlgGioBD.setText("21:00:00");
+                txtDlgGioKT.setText("23:59:00");
+            }
+        });
+
+        pnlContent.add(new JLabel("Mã ca trực (*):"));
+        pnlContent.add(txtDlgMa);
+        pnlContent.add(new JLabel("Tên ca:"));
+        pnlContent.add(cbDlgTen);
+        pnlContent.add(new JLabel("Ngày trực (yyyy-MM-dd):"));
+        pnlContent.add(txtDlgNgay);
+        pnlContent.add(new JLabel("Giờ bắt đầu:"));
+        pnlContent.add(txtDlgGioBD);
+        pnlContent.add(new JLabel("Giờ kết thúc:"));
+        pnlContent.add(txtDlgGioKT);
+        pnlContent.add(new JLabel("Số BN tối đa tiếp nhận:"));
+        pnlContent.add(txtDlgMaxBN);
+
+        dlg.add(pnlContent, BorderLayout.CENTER);
+
+        JPanel pnlBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        JButton btnHuy = ModernUITheme.createOutlineButton("Hủy", ModernUITheme.TEXT_MUTED);
+        JButton btnLuu = ModernUITheme.createButton("💾 Lưu Ca Trực Vào DB", ModernUITheme.PRIMARY, Color.WHITE);
+        pnlBtns.add(btnHuy);
+        pnlBtns.add(btnLuu);
+        dlg.add(pnlBtns, BorderLayout.SOUTH);
+
+        btnHuy.addActionListener(ev -> dlg.dispose());
+        btnLuu.addActionListener(ev -> {
+            try {
+                String ma = txtDlgMa.getText().trim();
+                String ten = cbDlgTen.getSelectedItem().toString();
+                Date ngay = Date.valueOf(txtDlgNgay.getText().trim());
+                Time bd = Time.valueOf(txtDlgGioBD.getText().trim());
+                Time kt = Time.valueOf(txtDlgGioKT.getText().trim());
+                int maxBN = Integer.parseInt(txtDlgMaxBN.getText().trim());
+
+                CaTruc ct = new CaTruc(ma, ten, ngay, bd, kt, 1, 1, maxBN, "Đã lên lịch");
+                boolean ok = caTrucDAO.themCaTruc(ct);
+                if (ok) {
+                    JOptionPane.showMessageDialog(dlg, "Đã thêm ca trực [" + ma + "] vào cơ sở dữ liệu thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                    napCombobox();
+                    dlg.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(dlg, "Không thể thêm ca trực. Có thể mã ca đã tồn tại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dlg, "Định dạng ngày (yyyy-MM-dd), giờ (HH:mm:ss) hoặc số lượng không hợp lệ!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        dlg.setVisible(true);
     }
 }

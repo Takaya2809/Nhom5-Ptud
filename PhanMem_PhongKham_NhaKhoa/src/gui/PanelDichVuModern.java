@@ -21,7 +21,7 @@ public class PanelDichVuModern extends JPanel {
 
     private JTextField txtMaDV, txtTenDV, txtDonGia, txtThoiGian, txtMoTa, txtTimKiem;
     private JComboBox<String> cbTrangThai;
-    private JButton btnThem, btnCapNhat, btnLamMoi, btnTimKiem;
+    private JButton btnThem, btnCapNhat, btnLamMoi, btnTimKiem, btnXoa;
     private DecimalFormat df = new DecimalFormat("#,### VNĐ");
 
     public PanelDichVuModern() {
@@ -69,10 +69,13 @@ public class PanelDichVuModern extends JPanel {
         splitPane.setOpaque(false);
 
         // BẢNG DỊCH VỤ
-        String[] cols = {"Mã Dịch Vụ", "Tên Dịch Vụ Nha Khoa", "Đơn Giá Niêm Yết", "Thời Gian (Phút)", "Trạng Thái", "Mô Tả Kỹ Thuật"};
+        String[] cols = { "Mã Dịch Vụ", "Tên Dịch Vụ Nha Khoa", "Đơn Giá Niêm Yết", "Thời Gian (Phút)", "Trạng Thái",
+                "Mô Tả Kỹ Thuật" };
         tableModel = new DefaultTableModel(cols, 0) {
             @Override
-            public boolean isCellEditable(int row, int col) { return false; }
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
         };
         table = new JTable(tableModel);
         ModernUITheme.formatModernTable(table);
@@ -101,7 +104,7 @@ public class PanelDichVuModern extends JPanel {
         txtDonGia = ModernUITheme.createTextField(12);
         txtThoiGian = ModernUITheme.createTextField(8);
         txtThoiGian.setText("45");
-        cbTrangThai = new JComboBox<>(new String[]{"Đang cung cấp", "Tạm ngừng cung cấp"});
+        cbTrangThai = new JComboBox<>(new String[] { "Đang cung cấp", "Tạm ngừng cung cấp" });
         txtMoTa = ModernUITheme.createTextField(25);
 
         pnlFields.add(createFieldItem("Mã dịch vụ:", txtMaDV));
@@ -119,9 +122,11 @@ public class PanelDichVuModern extends JPanel {
 
         btnThem = ModernUITheme.createButton("Thêm dịch vụ", ModernUITheme.PRIMARY, Color.WHITE);
         btnCapNhat = ModernUITheme.createButton("Cập nhật giá", ModernUITheme.ACCENT, Color.WHITE);
+        btnXoa = ModernUITheme.createButton("🗑️ Xóa / Ngừng DV", ModernUITheme.DANGER, Color.WHITE);
         btnLamMoi = ModernUITheme.createOutlineButton("Làm mới", ModernUITheme.TEXT_MUTED);
 
         pnlButtons.add(btnLamMoi);
+        pnlButtons.add(btnXoa);
         pnlButtons.add(btnCapNhat);
         pnlButtons.add(btnThem);
         pnlFormCard.add(pnlButtons, BorderLayout.SOUTH);
@@ -138,9 +143,14 @@ public class PanelDichVuModern extends JPanel {
 
         btnThem.addActionListener(e -> xuLyThem());
         btnCapNhat.addActionListener(e -> xuLyCapNhat());
+        btnXoa.addActionListener(e -> xuLyXoa());
         btnLamMoi.addActionListener(e -> xoaTrangForm());
         btnTimKiem.addActionListener(e -> xuLyTimKiem());
-        btnTaiLai.addActionListener(e -> taiDuLieu());
+        txtTimKiem.addActionListener(e -> xuLyTimKiem());
+        btnTaiLai.addActionListener(e -> {
+            txtTimKiem.setText("");
+            taiDuLieu();
+        });
 
         taiDuLieu();
     }
@@ -157,34 +167,36 @@ public class PanelDichVuModern extends JPanel {
     }
 
     private void taiDuLieu() {
-        // TODO: Cài đặt tải danh mục dịch vụ từ CSDL tại đây
-        napDuLieuMau();
+        tableModel.setRowCount(0);
+        List<DichVu> list = dichVuDAO.getAllDichVu();
+        for (DichVu dv : list) {
+            tableModel.addRow(new Object[] {
+                    dv.getMaDichVu(),
+                    dv.getTenDichVu(),
+                    df.format(dv.getGiaNiemYet()),
+                    dv.getThoiGianDuKien(),
+                    dv.getTrangThai() != null ? dv.getTrangThai() : "Đang cung cấp",
+                    dv.getMoTa() != null ? dv.getMoTa() : ""
+            });
+        }
         xoaTrangForm();
     }
 
-    private void napDuLieuMau() {
-        tableModel.setRowCount(0);
-        tableModel.addRow(new Object[]{"DV001", "Cấy ghép Implant Straumann Thụy Sĩ", df.format(22000000), 60, "Đang cung cấp", "Trụ Titanium cao cấp tích hợp xương nhanh"});
-        tableModel.addRow(new Object[]{"DV002", "Niềng răng mắc cài kim loại tự buộc", df.format(30000000), 90, "Đang cung cấp", "Thời gian điều trị 18-24 tháng"});
-        tableModel.addRow(new Object[]{"DV003", "Bọc răng toàn sứ Cercon HT", df.format(4500000), 45, "Đang cung cấp", "Độ cứng 1200 MPa, bảo hành chính hãng 10 năm"});
-        tableModel.addRow(new Object[]{"DV004", "Nhổ răng khôn mọc lệch bằng máy Piezotome", df.format(2000000), 30, "Đang cung cấp", "Nhổ bằng sóng siêu âm không đau, liền thương nhanh"});
-        tableModel.addRow(new Object[]{"DV005", "Trám răng thẩm mỹ Composite 3M", df.format(400000), 30, "Đang cung cấp", "Vật liệu Composite trùng màu men răng"});
-        tableModel.addRow(new Object[]{"DV006", "Tẩy trắng răng công nghệ Laser Whitening", df.format(1800000), 45, "Đang cung cấp", "Trắng bật 2-3 tone chỉ sau 45 phút"});
-        tableModel.addRow(new Object[]{"DV007", "Lấy cao răng siêu âm & Đánh bóng", df.format(200000), 20, "Đang cung cấp", "Làm sạch mảng bám không ê buốt"});
-    }
-
     private void napFormTuBang(int row) {
+        if (row < 0 || row >= tableModel.getRowCount())
+            return;
         txtMaDV.setText(tableModel.getValueAt(row, 0).toString());
         txtTenDV.setText(tableModel.getValueAt(row, 1).toString());
         String dgStr = tableModel.getValueAt(row, 2).toString().replaceAll("[^0-9]", "");
         txtDonGia.setText(dgStr);
         txtThoiGian.setText(tableModel.getValueAt(row, 3) != null ? tableModel.getValueAt(row, 3).toString() : "30");
-        cbTrangThai.setSelectedItem(tableModel.getValueAt(row, 4) != null ? tableModel.getValueAt(row, 4).toString() : "Đang cung cấp");
+        cbTrangThai.setSelectedItem(
+                tableModel.getValueAt(row, 4) != null ? tableModel.getValueAt(row, 4).toString() : "Đang cung cấp");
         txtMoTa.setText(tableModel.getValueAt(row, 5) != null ? tableModel.getValueAt(row, 5).toString() : "");
     }
 
     private void xoaTrangForm() {
-        txtMaDV.setText("DV001");
+        txtMaDV.setText(dichVuDAO.sinhMaDVMoi());
         txtTenDV.setText("");
         txtDonGia.setText("");
         txtThoiGian.setText("45");
@@ -194,21 +206,154 @@ public class PanelDichVuModern extends JPanel {
     }
 
     private void xuLyThem() {
-        // TODO: Cài đặt chức năng thêm dịch vụ mới vào CSDL tại đây
-        JOptionPane.showMessageDialog(this, "Chức năng Thêm dịch vụ đã sẵn sàng để cài đặt!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        if (!kiemTraHopLe())
+            return;
+
+        String maDV = txtMaDV.getText().trim();
+        if (maDV.isEmpty()) {
+            maDV = dichVuDAO.sinhMaDVMoi();
+        }
+        String tenDV = txtTenDV.getText().trim();
+        double donGia = Double.parseDouble(txtDonGia.getText().trim().replaceAll("[^0-9]", ""));
+        int thoiGian = 30;
+        try {
+            thoiGian = Integer.parseInt(txtThoiGian.getText().trim());
+        } catch (Exception ignored) {
+        }
+        String trangThai = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString()
+                : "Đang cung cấp";
+        String moTa = txtMoTa.getText().trim();
+
+        DichVu dv = new DichVu(maDV, tenDV, donGia, thoiGian, trangThai, moTa);
+        boolean thanhCong = dichVuDAO.themDichVu(dv);
+        if (thanhCong) {
+            JOptionPane.showMessageDialog(this, "Thêm dịch vụ [" + maDV + " - " + tenDV + "] thành công!", "Thông báo",
+                    JOptionPane.INFORMATION_MESSAGE);
+            taiDuLieu();
+        } else {
+            JOptionPane.showMessageDialog(this, "Không thể thêm dịch vụ. Tên dịch vụ có thể đã tồn tại!", "Lỗi",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void xuLyCapNhat() {
-        // TODO: Cài đặt chức năng cập nhật thông tin dịch vụ vào CSDL tại đây
-        JOptionPane.showMessageDialog(this, "Chức năng Cập nhật dịch vụ đã sẵn sàng để cài đặt!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        int row = table.getSelectedRow();
+        String maDV = txtMaDV.getText().trim();
+        if (row < 0 && (maDV.isEmpty() || maDV.equals(dichVuDAO.sinhMaDVMoi()))) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 dịch vụ trong danh sách để cập nhật!", "Nhắc nhở",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (!kiemTraHopLe())
+            return;
+
+        String tenDV = txtTenDV.getText().trim();
+        double donGia = Double.parseDouble(txtDonGia.getText().trim().replaceAll("[^0-9]", ""));
+        int thoiGian = 30;
+        try {
+            thoiGian = Integer.parseInt(txtThoiGian.getText().trim());
+        } catch (Exception ignored) {
+        }
+        String trangThai = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString()
+                : "Đang cung cấp";
+        String moTa = txtMoTa.getText().trim();
+
+        DichVu dv = new DichVu(maDV, tenDV, donGia, thoiGian, trangThai, moTa);
+        boolean thanhCong = dichVuDAO.capNhatDichVu(dv);
+        if (thanhCong) {
+            JOptionPane.showMessageDialog(this, "Cập nhật dịch vụ [" + maDV + "] thành công!", "Thông báo",
+                    JOptionPane.INFORMATION_MESSAGE);
+            taiDuLieu();
+        } else {
+            JOptionPane.showMessageDialog(this, "Cập nhật thất bại. Vui lòng thử lại!", "Lỗi",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void xuLyTimKiem() {
-        // TODO: Cài đặt chức năng tìm kiếm dịch vụ trong CSDL tại đây
+        String keyword = txtTimKiem.getText();
+        if (keyword == null || keyword.trim().isEmpty()) {
+            taiDuLieu();
+            return;
+        }
+        keyword = keyword.trim();
+        List<DichVu> list = dichVuDAO.timKiem(keyword);
+        tableModel.setRowCount(0);
+        for (DichVu dv : list) {
+            tableModel.addRow(new Object[] {
+                    dv.getMaDichVu(),
+                    dv.getTenDichVu(),
+                    df.format(dv.getGiaNiemYet()),
+                    dv.getThoiGianDuKien(),
+                    dv.getTrangThai() != null ? dv.getTrangThai() : "Đang cung cấp",
+                    dv.getMoTa() != null ? dv.getMoTa() : ""
+            });
+        }
+        if (list.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy dịch vụ nào khớp với từ khóa: \"" + keyword + "\"",
+                    "Kết quả tra cứu", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     private boolean kiemTraHopLe() {
-        // TODO: Cài đặt kiểm tra tính hợp lệ dữ liệu nhập tại đây
+        String tenDV = txtTenDV.getText().trim();
+        if (tenDV.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Tên dịch vụ không được để trống!", "Lỗi dữ liệu",
+                    JOptionPane.ERROR_MESSAGE);
+            txtTenDV.requestFocus();
+            return false;
+        }
+        String dgStr = txtDonGia.getText().trim().replaceAll("[^0-9]", "");
+        if (dgStr.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Đơn giá niêm yết không được để trống!", "Lỗi dữ liệu",
+                    JOptionPane.ERROR_MESSAGE);
+            txtDonGia.requestFocus();
+            return false;
+        }
+        try {
+            double dg = Double.parseDouble(dgStr);
+            if (dg < 0) {
+                JOptionPane.showMessageDialog(this, "Đơn giá phải là số dương!", "Lỗi dữ liệu",
+                        JOptionPane.ERROR_MESSAGE);
+                txtDonGia.requestFocus();
+                return false;
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Đơn giá không hợp lệ!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+            txtDonGia.requestFocus();
+            return false;
+        }
+        String tgStr = txtThoiGian.getText().trim();
+        if (!tgStr.isEmpty() && !tgStr.matches("\\d+")) {
+            JOptionPane.showMessageDialog(this, "Thời gian dự kiến phải là số phút nguyên dương!", "Lỗi dữ liệu",
+                    JOptionPane.ERROR_MESSAGE);
+            txtThoiGian.requestFocus();
+            return false;
+        }
         return true;
+    }
+
+    private void xuLyXoa() {
+        int row = table.getSelectedRow();
+        String maDV = txtMaDV.getText().trim();
+        if (row < 0 && (maDV.isEmpty() || maDV.equals(dichVuDAO.sinhMaDVMoi()))) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 dịch vụ cần xóa hoặc tạm ngừng!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (row >= 0) {
+            maDV = tableModel.getValueAt(row, 0).toString();
+        }
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Bạn có chắc muốn xóa hoặc tạm ngừng dịch vụ [" + maDV + "]?\n(Nếu dịch vụ đã từng được xuất hóa đơn, hệ thống sẽ tự động cập nhật trạng thái thành 'Tạm ngừng cung cấp')",
+            "Xác nhận xóa / Ngừng dịch vụ", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (confirm == JOptionPane.YES_OPTION) {
+            boolean kq = dichVuDAO.xoaDichVu(maDV);
+            if (kq) {
+                JOptionPane.showMessageDialog(this, "Đã cập nhật/xóa dịch vụ [" + maDV + "] thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                taiDuLieu();
+            } else {
+                JOptionPane.showMessageDialog(this, "Không thể xóa dịch vụ này!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 }

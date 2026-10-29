@@ -21,7 +21,7 @@ public class PanelUuDaiModern extends JPanel {
 
     private JTextField txtMaUD, txtTenUD, txtPhanTramGiam, txtNgayBD, txtNgayKT, txtDieuKien, txtTimKiem;
     private JComboBox<String> cbTrangThai;
-    private JButton btnThem, btnCapNhat, btnDoiTrangThai, btnLamMoi, btnTimKiem;
+    private JButton btnThem, btnCapNhat, btnDoiTrangThai, btnLamMoi, btnTimKiem, btnXoa;
 
     public PanelUuDaiModern() {
         setLayout(new BorderLayout(0, 16));
@@ -124,9 +124,11 @@ public class PanelUuDaiModern extends JPanel {
         btnThem = ModernUITheme.createButton("➕ Thêm ưu đãi", ModernUITheme.PRIMARY, Color.WHITE);
         btnCapNhat = ModernUITheme.createButton("💾 Cập nhật", ModernUITheme.ACCENT, Color.WHITE);
         btnDoiTrangThai = ModernUITheme.createButton("🔄 Bật / Tắt trạng thái", ModernUITheme.WARNING, Color.WHITE);
+        btnXoa = ModernUITheme.createButton("🗑️ Xóa ưu đãi", ModernUITheme.DANGER, Color.WHITE);
         btnLamMoi = ModernUITheme.createOutlineButton("🔄 Làm mới", ModernUITheme.TEXT_MUTED);
 
         pnlButtons.add(btnLamMoi);
+        pnlButtons.add(btnXoa);
         pnlButtons.add(btnDoiTrangThai);
         pnlButtons.add(btnCapNhat);
         pnlButtons.add(btnThem);
@@ -145,9 +147,14 @@ public class PanelUuDaiModern extends JPanel {
         btnThem.addActionListener(e -> xuLyThem());
         btnCapNhat.addActionListener(e -> xuLyCapNhat());
         btnDoiTrangThai.addActionListener(e -> xuLyDoiTrangThai());
+        btnXoa.addActionListener(e -> xuLyXoa());
         btnLamMoi.addActionListener(e -> xoaTrangForm());
         btnTimKiem.addActionListener(e -> xuLyTimKiem());
-        btnTaiLai.addActionListener(e -> taiDuLieu());
+        txtTimKiem.addActionListener(e -> xuLyTimKiem());
+        btnTaiLai.addActionListener(e -> {
+            txtTimKiem.setText("");
+            taiDuLieu();
+        });
 
         taiDuLieu();
     }
@@ -164,20 +171,24 @@ public class PanelUuDaiModern extends JPanel {
     }
 
     private void taiDuLieu() {
-        // TODO: Cài đặt tải danh sách chính sách ưu đãi từ CSDL tại đây
-        napDuLieuMau();
+        tableModel.setRowCount(0);
+        List<UuDai> list = uuDaiDAO.getAllUuDai();
+        for (UuDai ud : list) {
+            tableModel.addRow(new Object[]{
+                ud.getMaUuDai(),
+                ud.getTenUuDai(),
+                (int)ud.getPhanTramGiam() + "%",
+                ud.getNgayBD() != null ? ud.getNgayBD().toString() : "",
+                ud.getNgayKT() != null ? ud.getNgayKT().toString() : "",
+                ud.getDieuKien() != null ? ud.getDieuKien() : "",
+                ud.getTrangThai() != null ? ud.getTrangThai() : "Đang áp dụng"
+            });
+        }
         xoaTrangForm();
     }
 
-    private void napDuLieuMau() {
-        tableModel.setRowCount(0);
-        tableModel.addRow(new Object[]{"UD001", "Chào Hè Nụ Cười Xinh", "15%", "2026-06-01", "2026-08-31", "Áp dụng niềng răng & bọc sứ", "Đang áp dụng"});
-        tableModel.addRow(new Object[]{"UD002", "Tri Ân Khách Hàng Thân Thiết", "10%", "2026-01-01", "2026-12-31", "Áp dụng khách có thẻ VIP", "Đang áp dụng"});
-        tableModel.addRow(new Object[]{"UD003", "Trợ Giá Trồng Răng Implant", "20%", "2026-09-01", "2026-10-31", "Cho bệnh nhân từ 50 tuổi", "Đang áp dụng"});
-        tableModel.addRow(new Object[]{"UD004", "Tẩy Trắng Răng Đón Tết", "25%", "2026-01-01", "2026-02-15", "Tất cả khách hàng", "Hết hạn"});
-    }
-
     private void napFormTuBang(int row) {
+        if (row < 0 || row >= tableModel.getRowCount()) return;
         txtMaUD.setText(tableModel.getValueAt(row, 0).toString());
         txtTenUD.setText(tableModel.getValueAt(row, 1).toString());
         String pt = tableModel.getValueAt(row, 2).toString().replace("%", "").trim();
@@ -189,37 +200,166 @@ public class PanelUuDaiModern extends JPanel {
     }
 
     private void xoaTrangForm() {
-        txtMaUD.setText("UD001");
+        txtMaUD.setText(uuDaiDAO.sinhMaUuDaiMoi());
         txtTenUD.setText("");
         txtPhanTramGiam.setText("10");
         txtNgayBD.setText("2026-10-01");
         txtNgayKT.setText("2026-12-31");
-        txtDieuKien.setText("Hóa đơn từ 1.000.000 VNĐ");
+        txtDieuKien.setText("Áp dụng khách hàng điều trị");
         cbTrangThai.setSelectedIndex(0);
         table.clearSelection();
     }
 
     private void xuLyThem() {
-        // TODO: Cài đặt chức năng thêm chính sách ưu đãi vào CSDL tại đây
-        JOptionPane.showMessageDialog(this, "Chức năng Thêm ưu đãi đã sẵn sàng để cài đặt!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        if (!kiemTraHopLe()) return;
+
+        String maUD = txtMaUD.getText().trim();
+        if (maUD.isEmpty()) {
+            maUD = uuDaiDAO.sinhMaUuDaiMoi();
+        }
+        String tenUD = txtTenUD.getText().trim();
+        double pt = Double.parseDouble(txtPhanTramGiam.getText().trim());
+        Date nb = Date.valueOf(txtNgayBD.getText().trim());
+        Date nk = Date.valueOf(txtNgayKT.getText().trim());
+        String dk = txtDieuKien.getText().trim();
+        String tt = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString() : "Đang áp dụng";
+
+        UuDai ud = new UuDai(maUD, tenUD, pt, dk, nb, nk, tt);
+        boolean thanhCong = uuDaiDAO.themUuDai(ud);
+        if (thanhCong) {
+            JOptionPane.showMessageDialog(this, "Thêm chính sách ưu đãi [" + maUD + " - " + tenUD + "] thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            taiDuLieu();
+        } else {
+            JOptionPane.showMessageDialog(this, "Thêm ưu đãi thất bại. Mã có thể đã tồn tại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void xuLyCapNhat() {
-        // TODO: Cài đặt chức năng cập nhật chính sách ưu đãi trong CSDL tại đây
-        JOptionPane.showMessageDialog(this, "Chức năng Cập nhật ưu đãi đã sẵn sàng để cài đặt!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        int row = table.getSelectedRow();
+        String maUD = txtMaUD.getText().trim();
+        if (row < 0 && (maUD.isEmpty() || maUD.equals(uuDaiDAO.sinhMaUuDaiMoi()))) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 ưu đãi trong danh sách để cập nhật!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (!kiemTraHopLe()) return;
+
+        String tenUD = txtTenUD.getText().trim();
+        double pt = Double.parseDouble(txtPhanTramGiam.getText().trim());
+        Date nb = Date.valueOf(txtNgayBD.getText().trim());
+        Date nk = Date.valueOf(txtNgayKT.getText().trim());
+        String dk = txtDieuKien.getText().trim();
+        String tt = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString() : "Đang áp dụng";
+
+        UuDai ud = new UuDai(maUD, tenUD, pt, dk, nb, nk, tt);
+        boolean thanhCong = uuDaiDAO.capNhatUuDai(ud);
+        if (thanhCong) {
+            JOptionPane.showMessageDialog(this, "Cập nhật ưu đãi [" + maUD + "] thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            taiDuLieu();
+        } else {
+            JOptionPane.showMessageDialog(this, "Cập nhật thất bại. Vui lòng thử lại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void xuLyDoiTrangThai() {
-        // TODO: Cài đặt chức năng thay đổi trạng thái ưu đãi trong CSDL tại đây
-        JOptionPane.showMessageDialog(this, "Chức năng Bật/Tắt trạng thái ưu đãi đã sẵn sàng để cài đặt!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        int row = table.getSelectedRow();
+        String maUD = txtMaUD.getText().trim();
+        if (row < 0 && maUD.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 ưu đãi trong bảng để bật/tắt trạng thái!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        String ttHienTai = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString() : "Đang áp dụng";
+        String ttMoi = "Đang áp dụng".equalsIgnoreCase(ttHienTai) ? "Hết hạn" : "Đang áp dụng";
+        boolean thanhCong = uuDaiDAO.doiTrangThai(maUD, ttMoi);
+        if (thanhCong) {
+            JOptionPane.showMessageDialog(this, "Đã chuyển trạng thái ưu đãi [" + maUD + "] sang: " + ttMoi, "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            taiDuLieu();
+        }
     }
 
     private void xuLyTimKiem() {
-        // TODO: Cài đặt chức năng tra cứu ưu đãi tại đây
+        String keyword = txtTimKiem.getText();
+        if (keyword == null || keyword.trim().isEmpty()) {
+            taiDuLieu();
+            return;
+        }
+        keyword = keyword.trim();
+        List<UuDai> list = uuDaiDAO.timKiemUuDai(keyword);
+        tableModel.setRowCount(0);
+        for (UuDai ud : list) {
+            tableModel.addRow(new Object[]{
+                ud.getMaUuDai(),
+                ud.getTenUuDai(),
+                (int)ud.getPhanTramGiam() + "%",
+                ud.getNgayBD() != null ? ud.getNgayBD().toString() : "",
+                ud.getNgayKT() != null ? ud.getNgayKT().toString() : "",
+                ud.getDieuKien() != null ? ud.getDieuKien() : "",
+                ud.getTrangThai() != null ? ud.getTrangThai() : "Đang áp dụng"
+            });
+        }
+        if (list.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy chương trình ưu đãi nào khớp với từ khóa: \"" + keyword + "\"", "Kết quả tra cứu", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     private boolean kiemTraHopLe() {
-        // TODO: Cài đặt kiểm tra tính hợp lệ dữ liệu nhập tại đây
+        String tenUD = txtTenUD.getText().trim();
+        if (tenUD.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Tên chương trình ưu đãi không được để trống!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+            txtTenUD.requestFocus();
+            return false;
+        }
+        String ptStr = txtPhanTramGiam.getText().trim();
+        try {
+            double pt = Double.parseDouble(ptStr);
+            if (pt <= 0 || pt > 100) {
+                JOptionPane.showMessageDialog(this, "Phần trăm giảm giá phải nằm trong khoảng từ 1% đến 100%!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+                txtPhanTramGiam.requestFocus();
+                return false;
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Phần trăm giảm giá không hợp lệ!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+            txtPhanTramGiam.requestFocus();
+            return false;
+        }
+        String nbStr = txtNgayBD.getText().trim();
+        String nkStr = txtNgayKT.getText().trim();
+        if (!nbStr.matches("\\d{4}-\\d{2}-\\d{2}") || !nkStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            JOptionPane.showMessageDialog(this, "Ngày bắt đầu và ngày kết thúc phải theo định dạng yyyy-MM-dd!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        try {
+            Date nb = Date.valueOf(nbStr);
+            Date nk = Date.valueOf(nkStr);
+            if (nk.before(nb)) {
+                JOptionPane.showMessageDialog(this, "Ngày kết thúc không được trước ngày bắt đầu!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+                txtNgayKT.requestFocus();
+                return false;
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Định dạng ngày tháng không hợp lệ!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
         return true;
+    }
+
+    private void xuLyXoa() {
+        int row = table.getSelectedRow();
+        String maUD = txtMaUD.getText().trim();
+        if (row < 0 && (maUD.isEmpty() || maUD.equals(uuDaiDAO.sinhMaUDMoi()))) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 chương trình ưu đãi trong bảng để xóa!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (row >= 0) maUD = tableModel.getValueAt(row, 0).toString();
+
+        int cf = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa mã ưu đãi [" + maUD + "] khỏi hệ thống CSDL?", "Xác nhận xóa ưu đãi", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (cf == JOptionPane.YES_OPTION) {
+            boolean ok = uuDaiDAO.xoaUuDai(maUD);
+            if (ok) {
+                JOptionPane.showMessageDialog(this, "Đã xóa ưu đãi [" + maUD + "] thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                taiDuLieu();
+            } else {
+                JOptionPane.showMessageDialog(this, "Không thể xóa ưu đãi này!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 }

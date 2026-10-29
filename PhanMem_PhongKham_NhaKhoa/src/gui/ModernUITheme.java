@@ -40,6 +40,7 @@ public class ModernUITheme {
 
     public static final Color BG_MAIN = new Color(241, 245, 249);// Slate 100 (Canvas)
     public static final Color CARD_BG = Color.WHITE;
+    public static final Color SECONDARY = new Color(100, 116, 139); // Slate 500
     public static final Color BORDER_LIGHT = new Color(226, 232, 240);// Slate 200
 
     public static final Color TEXT_MAIN = new Color(15, 23, 42); // Slate 900

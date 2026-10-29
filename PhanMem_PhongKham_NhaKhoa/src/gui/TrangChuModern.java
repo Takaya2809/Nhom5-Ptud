@@ -55,7 +55,6 @@ public class TrangChuModern extends JFrame {
         setMinimumSize(new Dimension(1180, 700));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
 
         // 1. WEST: SIDEBAR MENU NAVIGATION (Menu dọc hiện đại)
@@ -75,7 +74,7 @@ public class TrangChuModern extends JFrame {
 
         // Khởi tạo các panels
         pnlDashboard = new PanelDashboardModern(this::switchTab);
-        pnlBenhNhan  = new PanelBenhNhanModern(laNhaSi(currentUser));
+        pnlBenhNhan  = new PanelBenhNhanModern();
         pnlDichVu    = new PanelDichVuModern();
         pnlKhoVatTu  = new PanelKhoVatTuModern();
         pnlLichTruc  = new PanelLichTrucModern();
@@ -104,8 +103,7 @@ public class TrangChuModern extends JFrame {
         // Mặc định chọn tab phù hợp nhất theo từng vị trí
         String defaultTab = "DASHBOARD";
         String rLower = this.currentUser.getTenVaiTro() != null ? this.currentUser.getTenVaiTro().toLowerCase() : "";
-        String roleCode = this.currentUser.getMaVaiTro() != null ? this.currentUser.getMaVaiTro().toUpperCase() : "";
-        if (rLower.contains("nha sĩ") || rLower.contains("bác sĩ") || roleCode.contains("BS")) {
+        if (rLower.contains("nha sĩ") || rLower.contains("bác sĩ")) {
             defaultTab = "BENH_NHAN";
         } else if (rLower.contains("lễ tân") || rLower.contains("tiếp tân")) {
             defaultTab = "BENH_NHAN";
@@ -237,10 +235,10 @@ public class TrangChuModern extends JFrame {
 
         if (role.contains("nha sĩ") || role.contains("bác sĩ") || maRole.contains("BS")) {
             // VỊ TRÍ NHA SĨ: Chỉ hiển thị các chức năng của Nha sĩ
-            addCategoryHeader(pnlMenuItems, "KHÁM & ĐIỀU TRỊ");
-            addMenuItem(pnlMenuItems, "Tra cứu bệnh nhân", "BENH_NHAN");
-            addMenuItem(pnlMenuItems, "Dịch vụ điều trị", "DICH_VU");
-            addMenuItem(pnlMenuItems, "Lịch trực & ca khám", "LICH_TRUC");
+            addCategoryHeader(pnlMenuItems, "CHỨC NĂNG NHA SĨ");
+            addMenuItem(pnlMenuItems, "Hồ Sơ Bệnh Nhân", "BENH_NHAN");
+            addMenuItem(pnlMenuItems, "Dịch Vụ & Bảng Giá", "DICH_VU");
+            addMenuItem(pnlMenuItems, "Lịch Trực & Ca Khám", "LICH_TRUC");
 
         } else if (role.contains("lễ tân") || role.contains("tiếp tân") || maRole.contains("LT")) {
             // VỊ TRÍ LỄ TÂN: Đón tiếp, tạo hồ sơ, xếp lịch hẹn, xem bảng giá và ưu đãi
@@ -287,12 +285,6 @@ public class TrangChuModern extends JFrame {
         }
     }
 
-    private boolean laNhaSi(TaiKhoan user) {
-        String role = user.getTenVaiTro() != null ? user.getTenVaiTro().toLowerCase() : "";
-        String code = user.getMaVaiTro() != null ? user.getMaVaiTro().toUpperCase() : "";
-        return role.contains("nha sĩ") || role.contains("bác sĩ") || code.contains("BS");
-    }
-
     private void addCategoryHeader(JPanel parent, String title) {
         JLabel lbl = new JLabel(title);
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 10));
@@ -337,7 +329,12 @@ public class TrangChuModern extends JFrame {
         JPanel pnlRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
         pnlRight.setOpaque(false);
 
-        JLabel lblDbStatus = ModernUITheme.createBadge("CSDL SQL Server: Đang hoạt động", ModernUITheme.SUCCESS_LIGHT, ModernUITheme.SUCCESS);
+        boolean dbOk = connectDB.ConnectDB.getConnection() != null;
+        JLabel lblDbStatus = ModernUITheme.createBadge(
+            dbOk ? "CSDL SQL Server: Đã kết nối" : "CSDL SQL Server: Ngoại tuyến",
+            dbOk ? ModernUITheme.SUCCESS_LIGHT : ModernUITheme.WARNING_LIGHT,
+            dbOk ? ModernUITheme.SUCCESS : ModernUITheme.WARNING
+        );
 
         lblClock = new JLabel();
         lblClock.setFont(ModernUITheme.FONT_SMALL);

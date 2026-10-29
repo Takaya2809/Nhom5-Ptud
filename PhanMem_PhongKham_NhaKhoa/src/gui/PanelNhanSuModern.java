@@ -21,7 +21,7 @@ public class PanelNhanSuModern extends JPanel {
 
     private JTextField txtMaNV, txtHoTen, txtNgaySinh, txtSDT, txtEmail, txtBangCap, txtNgayVaoLam, txtTimKiem;
     private JComboBox<String> cbGioiTinh, cbChucDanh, cbTrangThai;
-    private JButton btnThem, btnCapNhat, btnLamMoi, btnTimKiem;
+    private JButton btnThem, btnCapNhat, btnLamMoi, btnTimKiem, btnXoa;
 
     public PanelNhanSuModern() {
         setLayout(new BorderLayout(0, 16));
@@ -135,9 +135,11 @@ public class PanelNhanSuModern extends JPanel {
 
         btnThem = ModernUITheme.createButton("➕ Thêm nhân sự", ModernUITheme.PRIMARY, Color.WHITE);
         btnCapNhat = ModernUITheme.createButton("💾 Cập nhật hồ sơ", ModernUITheme.ACCENT, Color.WHITE);
+        btnXoa = ModernUITheme.createButton("🗑️ Xóa / Nghỉ việc", ModernUITheme.DANGER, Color.WHITE);
         btnLamMoi = ModernUITheme.createOutlineButton("🔄 Làm mới", ModernUITheme.TEXT_MUTED);
 
         pnlButtons.add(btnLamMoi);
+        pnlButtons.add(btnXoa);
         pnlButtons.add(btnCapNhat);
         pnlButtons.add(btnThem);
         pnlFormCard.add(pnlButtons, BorderLayout.SOUTH);
@@ -145,7 +147,7 @@ public class PanelNhanSuModern extends JPanel {
         splitPane.setBottomComponent(pnlFormCard);
         add(splitPane, BorderLayout.CENTER);
 
-        // Listeners
+        // Sự kiện
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && table.getSelectedRow() != -1) {
                 napFormTuBang(table.getSelectedRow());
@@ -154,9 +156,21 @@ public class PanelNhanSuModern extends JPanel {
 
         btnThem.addActionListener(e -> xuLyThem());
         btnCapNhat.addActionListener(e -> xuLyCapNhat());
+        btnXoa.addActionListener(e -> xuLyXoa());
         btnLamMoi.addActionListener(e -> xoaTrangForm());
         btnTimKiem.addActionListener(e -> xuLyTimKiem());
-        btnTaiLai.addActionListener(e -> taiDuLieu());
+        txtTimKiem.addActionListener(e -> xuLyTimKiem());
+        btnTaiLai.addActionListener(e -> {
+            txtTimKiem.setText("");
+            taiDuLieu();
+        });
+
+        cbChucDanh.addActionListener(e -> {
+            if (table.getSelectedRow() == -1) {
+                String cd = cbChucDanh.getSelectedItem() != null ? cbChucDanh.getSelectedItem().toString() : "Nha sĩ";
+                txtMaNV.setText(nhanVienDAO.sinhMaNVMoi(cd));
+            }
+        });
 
         taiDuLieu();
     }
@@ -173,35 +187,46 @@ public class PanelNhanSuModern extends JPanel {
     }
 
     private void taiDuLieu() {
-        // TODO: Cài đặt tải danh sách nhân sự từ CSDL tại đây
-        napDuLieuMau();
+        tableModel.setRowCount(0);
+        List<NhanVien> list = nhanVienDAO.getAllNhanVien();
+        for (NhanVien nv : list) {
+            tableModel.addRow(new Object[] {
+                    nv.getMaNV(),
+                    nv.getHoTen(),
+                    nv.getNgaySinh() != null ? nv.getNgaySinh().toString() : "",
+                    nv.getGioiTinh() != null ? nv.getGioiTinh() : "Nam",
+                    nv.getSoDienThoai(),
+                    nv.getEmail() != null ? nv.getEmail() : "",
+                    nv.getChucDanh() != null ? nv.getChucDanh() : "",
+                    nv.getBangCapChungChi() != null ? nv.getBangCapChungChi() : "",
+                    nv.getNgayVaoLam() != null ? nv.getNgayVaoLam().toString() : "",
+                    nv.getTrangThai() != null ? nv.getTrangThai() : "Đang làm việc"
+            });
+        }
         xoaTrangForm();
     }
 
-    private void napDuLieuMau() {
-        tableModel.setRowCount(0);
-        tableModel.addRow(new Object[]{"BS001", "BS. CKII Nguyễn Văn An", "1978-02-14", "Nam", "0901234567", "an.nguyen@nhakhoaabc.vn", "Bác sĩ Trưởng khoa", "BS. CKII Implant ĐHYD", "2020-03-01", "Đang làm việc"});
-        tableModel.addRow(new Object[]{"BS002", "ThS. BS Lê Thị Thảo", "1985-09-21", "Nữ", "0902345678", "thao.le@nhakhoaabc.vn", "Bác sĩ Chỉnh nha", "ThS Chỉnh hình Răng Mặt", "2021-06-15", "Đang làm việc"});
-        tableModel.addRow(new Object[]{"BS003", "BS. Trần Minh Trí", "1990-11-05", "Nam", "0903456789", "tri.tran@nhakhoaabc.vn", "Bác sĩ Chuyên khoa RHM", "BS Răng Hàm Mặt Chính quy", "2022-09-01", "Đang làm việc"});
-        tableModel.addRow(new Object[]{"QL001", "Trần Thị Hoàng Lan", "1983-04-12", "Nữ", "0904567890", "lan.tran@nhakhoaabc.vn", "Quản lý", "ThS Quản lý Y tế", "2019-11-10", "Đang làm việc"});
-        tableModel.addRow(new Object[]{"YT001", "Đỗ Thùy Trang", "1997-08-30", "Nữ", "0905678901", "trang.do@nhakhoaabc.vn", "Y tá / Phụ tá", "Cử nhân Điều dưỡng Nha khoa", "2023-02-20", "Đang làm việc"});
-    }
-
     private void napFormTuBang(int row) {
+        if (row < 0 || row >= tableModel.getRowCount())
+            return;
         txtMaNV.setText(tableModel.getValueAt(row, 0).toString());
         txtHoTen.setText(tableModel.getValueAt(row, 1).toString());
         txtNgaySinh.setText(tableModel.getValueAt(row, 2) != null ? tableModel.getValueAt(row, 2).toString() : "");
-        cbGioiTinh.setSelectedItem(tableModel.getValueAt(row, 3) != null ? tableModel.getValueAt(row, 3).toString() : "Nam");
+        cbGioiTinh.setSelectedItem(
+                tableModel.getValueAt(row, 3) != null ? tableModel.getValueAt(row, 3).toString() : "Nam");
         txtSDT.setText(tableModel.getValueAt(row, 4).toString());
         txtEmail.setText(tableModel.getValueAt(row, 5) != null ? tableModel.getValueAt(row, 5).toString() : "");
-        cbChucDanh.setSelectedItem(tableModel.getValueAt(row, 6) != null ? tableModel.getValueAt(row, 6).toString() : "Bác sĩ Chuyên khoa RHM");
+        cbChucDanh.setSelectedItem(tableModel.getValueAt(row, 6) != null ? tableModel.getValueAt(row, 6).toString()
+                : "Bác sĩ Chuyên khoa RHM");
         txtBangCap.setText(tableModel.getValueAt(row, 7) != null ? tableModel.getValueAt(row, 7).toString() : "");
         txtNgayVaoLam.setText(tableModel.getValueAt(row, 8) != null ? tableModel.getValueAt(row, 8).toString() : "");
-        cbTrangThai.setSelectedItem(tableModel.getValueAt(row, 9) != null ? tableModel.getValueAt(row, 9).toString() : "Đang làm việc");
+        cbTrangThai.setSelectedItem(
+                tableModel.getValueAt(row, 9) != null ? tableModel.getValueAt(row, 9).toString() : "Đang làm việc");
     }
 
     private void xoaTrangForm() {
-        txtMaNV.setText("NV001");
+        String cd = cbChucDanh.getSelectedItem() != null ? cbChucDanh.getSelectedItem().toString() : "Nha sĩ";
+        txtMaNV.setText(nhanVienDAO.sinhMaNVMoi(cd));
         txtHoTen.setText("");
         txtNgaySinh.setText("1990-01-01");
         cbGioiTinh.setSelectedIndex(0);
@@ -214,21 +239,176 @@ public class PanelNhanSuModern extends JPanel {
     }
 
     private void xuLyThem() {
-        // TODO: Cài đặt chức năng thêm nhân sự vào CSDL tại đây
-        JOptionPane.showMessageDialog(this, "Chức năng Thêm nhân sự đã sẵn sàng để cài đặt!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        if (!kiemTraHopLe())
+            return;
+
+        String cd = cbChucDanh.getSelectedItem() != null ? cbChucDanh.getSelectedItem().toString() : "Nha sĩ";
+        String maNV = txtMaNV.getText().trim();
+        if (maNV.isEmpty()) {
+            maNV = nhanVienDAO.sinhMaNVMoi(cd);
+        }
+        String hoTen = txtHoTen.getText().trim();
+        Date ngaySinh = Date.valueOf(txtNgaySinh.getText().trim());
+        String gioiTinh = cbGioiTinh.getSelectedItem() != null ? cbGioiTinh.getSelectedItem().toString() : "Nam";
+        String sdt = txtSDT.getText().trim();
+        String email = txtEmail.getText().trim();
+        if (email.isEmpty()) {
+            email = maNV.toLowerCase() + "@nhakhoaabc.vn";
+        }
+        String bangCap = txtBangCap.getText().trim();
+        Date ngayVaoLam;
+        try {
+            ngayVaoLam = Date.valueOf(txtNgayVaoLam.getText().trim());
+        } catch (Exception e) {
+            ngayVaoLam = new Date(System.currentTimeMillis());
+        }
+        String trangThai = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString()
+                : "Đang làm việc";
+
+        NhanVien nv = new NhanVien(maNV, hoTen, ngaySinh, gioiTinh, sdt, email, cd, bangCap, ngayVaoLam, trangThai);
+        boolean thanhCong = nhanVienDAO.themNhanVien(nv);
+        if (thanhCong) {
+            JOptionPane.showMessageDialog(this, "Thêm nhân sự [" + maNV + " - " + hoTen + "] thành công!", "Thông báo",
+                    JOptionPane.INFORMATION_MESSAGE);
+            taiDuLieu();
+        } else {
+            JOptionPane.showMessageDialog(this, "Không thể thêm nhân sự. Vui lòng kiểm tra lại SĐT hoặc Email trùng!",
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void xuLyCapNhat() {
-        // TODO: Cài đặt chức năng cập nhật hồ sơ nhân sự vào CSDL tại đây
-        JOptionPane.showMessageDialog(this, "Chức năng Cập nhật hồ sơ nhân sự đã sẵn sàng để cài đặt!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        int row = table.getSelectedRow();
+        String maNV = txtMaNV.getText().trim();
+        if (row < 0 && maNV.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 nhân sự trong danh sách để cập nhật!", "Nhắc nhở",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (!kiemTraHopLe())
+            return;
+
+        String hoTen = txtHoTen.getText().trim();
+        Date ngaySinh = Date.valueOf(txtNgaySinh.getText().trim());
+        String gioiTinh = cbGioiTinh.getSelectedItem() != null ? cbGioiTinh.getSelectedItem().toString() : "Nam";
+        String sdt = txtSDT.getText().trim();
+        String email = txtEmail.getText().trim();
+        String cd = cbChucDanh.getSelectedItem() != null ? cbChucDanh.getSelectedItem().toString() : "Nha sĩ";
+        String bangCap = txtBangCap.getText().trim();
+        Date ngayVaoLam;
+        try {
+            ngayVaoLam = Date.valueOf(txtNgayVaoLam.getText().trim());
+        } catch (Exception e) {
+            ngayVaoLam = new Date(System.currentTimeMillis());
+        }
+        String trangThai = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString()
+                : "Đang làm việc";
+
+        NhanVien nv = new NhanVien(maNV, hoTen, ngaySinh, gioiTinh, sdt, email, cd, bangCap, ngayVaoLam, trangThai);
+        boolean thanhCong = nhanVienDAO.capNhatNhanVien(nv);
+        if (thanhCong) {
+            JOptionPane.showMessageDialog(this, "Cập nhật nhân sự [" + maNV + "] thành công!", "Thông báo",
+                    JOptionPane.INFORMATION_MESSAGE);
+            taiDuLieu();
+        } else {
+            JOptionPane.showMessageDialog(this, "Cập nhật thất bại. Vui lòng thử lại!", "Lỗi",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void xuLyTimKiem() {
-        // TODO: Cài đặt chức năng tìm kiếm nhân sự trong CSDL tại đây
+        String keyword = txtTimKiem.getText();
+        if (keyword == null || keyword.trim().isEmpty()) {
+            taiDuLieu();
+            return;
+        }
+        keyword = keyword.trim();
+        List<NhanVien> list = nhanVienDAO.timKiem(keyword);
+        tableModel.setRowCount(0);
+        for (NhanVien nv : list) {
+            tableModel.addRow(new Object[] {
+                    nv.getMaNV(),
+                    nv.getHoTen(),
+                    nv.getNgaySinh() != null ? nv.getNgaySinh().toString() : "",
+                    nv.getGioiTinh() != null ? nv.getGioiTinh() : "Nam",
+                    nv.getSoDienThoai(),
+                    nv.getEmail() != null ? nv.getEmail() : "",
+                    nv.getChucDanh() != null ? nv.getChucDanh() : "",
+                    nv.getBangCapChungChi() != null ? nv.getBangCapChungChi() : "",
+                    nv.getNgayVaoLam() != null ? nv.getNgayVaoLam().toString() : "",
+                    nv.getTrangThai() != null ? nv.getTrangThai() : "Đang làm việc"
+            });
+        }
+        if (list.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy nhân sự nào khớp với từ khóa: \"" + keyword + "\"",
+                    "Kết quả tra cứu", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     private boolean kiemTraHopLe() {
-        // TODO: Cài đặt kiểm tra tính hợp lệ dữ liệu nhập tại đây
+        String hoTen = txtHoTen.getText().trim();
+        if (hoTen.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Họ và tên nhân sự không được để trống!", "Lỗi dữ liệu",
+                    JOptionPane.ERROR_MESSAGE);
+            txtHoTen.requestFocus();
+            return false;
+        }
+        String sdt = txtSDT.getText().trim();
+        if (sdt.isEmpty() || !sdt.matches("0[0-9]{9,10}")) {
+            JOptionPane.showMessageDialog(this, "Số điện thoại phải từ 10-11 chữ số và bắt đầu bằng số 0!",
+                    "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+            txtSDT.requestFocus();
+            return false;
+        }
+        String nsStr = txtNgaySinh.getText().trim();
+        if (!nsStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            JOptionPane.showMessageDialog(this, "Ngày sinh phải theo định dạng yyyy-MM-dd!", "Lỗi dữ liệu",
+                    JOptionPane.ERROR_MESSAGE);
+            txtNgaySinh.requestFocus();
+            return false;
+        }
+        try {
+            Date.valueOf(nsStr);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Ngày sinh không hợp lệ!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+            txtNgaySinh.requestFocus();
+            return false;
+        }
+        String nvlStr = txtNgayVaoLam.getText().trim();
+        if (!nvlStr.isEmpty()) {
+            try {
+                Date.valueOf(nvlStr);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Ngày vào làm phải theo định dạng yyyy-MM-dd!", "Lỗi dữ liệu",
+                        JOptionPane.ERROR_MESSAGE);
+                txtNgayVaoLam.requestFocus();
+                return false;
+            }
+        }
         return true;
+    }
+
+    private void xuLyXoa() {
+        int row = table.getSelectedRow();
+        String maNV = txtMaNV.getText().trim();
+        if (row < 0 && maNV.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân sự cần xóa hoặc cho nghỉ việc!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (row >= 0) {
+            maNV = tableModel.getValueAt(row, 0).toString();
+        }
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Bạn có chắc chắn muốn xóa hoặc cho nhân sự [" + maNV + "] nghỉ việc?\n(Nếu nhân sự đã có lịch trực hoặc hồ sơ khám liên kết, trạng thái sẽ tự động đổi sang 'Đã nghỉ việc')",
+            "Xác nhận xóa / Nghỉ việc", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (confirm == JOptionPane.YES_OPTION) {
+            boolean kq = nhanVienDAO.xoaNhanVien(maNV);
+            if (kq) {
+                JOptionPane.showMessageDialog(this, "Đã cập nhật/xóa nhân sự [" + maNV + "] thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                taiDuLieu();
+            } else {
+                JOptionPane.showMessageDialog(this, "Không thể xóa hoặc cập nhật nhân sự này!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 }

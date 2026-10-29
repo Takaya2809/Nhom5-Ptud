@@ -231,30 +231,22 @@ public class LoginModern extends JFrame {
             case "Quản lý":
                 txtUsername.setText("admin");
                 txtPassword.setText("123456");
-                lblHintAccount.setText("<html><b>Gợi ý tài khoản Quản lý:</b> admin (Mật khẩu: 123456)</html>");
                 break;
             case "Nha sĩ":
                 txtUsername.setText("bacsi_tuan");
                 txtPassword.setText("123456");
-                lblHintAccount
-                        .setText("<html><b>Gợi ý tài khoản Nha sĩ:</b> bacsi_tuan / nhasi (Mật khẩu: 123456)</html>");
                 break;
             case "Lễ tân":
                 txtUsername.setText("letan_tram");
                 txtPassword.setText("123456");
-                lblHintAccount
-                        .setText("<html><b>Gợi ý tài khoản Lễ tân:</b> letan_tram / letan (Mật khẩu: 123456)</html>");
                 break;
             case "Thu ngân":
                 txtUsername.setText("thungan_phuong");
                 txtPassword.setText("123456");
-                lblHintAccount.setText(
-                        "<html><b>Gợi ý tài khoản Thu ngân:</b> thungan_phuong / thungan (Mật khẩu: 123456)</html>");
                 break;
             case "Y tá":
                 txtUsername.setText("yta_oanh");
                 txtPassword.setText("123456");
-                lblHintAccount.setText("<html><b>Gợi ý tài khoản Y tá:</b> yta_oanh / yta (Mật khẩu: 123456)</html>");
                 break;
         }
     }

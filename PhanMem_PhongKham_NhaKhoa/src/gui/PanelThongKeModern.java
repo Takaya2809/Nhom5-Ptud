@@ -120,23 +120,20 @@ public class PanelThongKeModern extends JPanel {
         modelDichVu.setRowCount(0);
         modelBacSi.setRowCount(0);
 
-        // TODO: Cài đặt tính toán báo cáo thống kê từ CSDL tại đây
-        double tongDT = 186500000;
-        int tongLK = 142;
-        int tongBN = 380;
-        int canhBaoVT = 3;
+        double tongDT = thongKeDAO.getTongDoanhThu();
+        int tongLK = thongKeDAO.getTongLuotKham();
+        int tongBN = thongKeDAO.getTongBenhNhan();
+        int canhBaoVT = thongKeDAO.getSoVatTuCanhBao();
 
-        modelDichVu.addRow(new Object[] { "Cấy ghép Implant Straumann", df.format(176000000) });
-        modelDichVu.addRow(new Object[] { "Niềng răng mắc cài tự buộc", df.format(150000000) });
-        modelDichVu.addRow(new Object[] { "Bọc răng toàn sứ Cercon", df.format(63000000) });
-        modelDichVu.addRow(new Object[] { "Nhổ răng khôn Piezotome", df.format(44000000) });
-        modelDichVu.addRow(new Object[] { "Trám răng thẩm mỹ Composite", df.format(18000000) });
-        modelDichVu.addRow(new Object[] { "Tẩy trắng răng Laser", df.format(27000000) });
-        modelDichVu.addRow(new Object[] { "Lấy cao răng siêu âm", df.format(7600000) });
+        Map<String, Double> mapDV = thongKeDAO.getDoanhThuTheoDichVu();
+        for (Map.Entry<String, Double> entry : mapDV.entrySet()) {
+            modelDichVu.addRow(new Object[] { entry.getKey(), df.format(entry.getValue()) });
+        }
 
-        modelBacSi.addRow(new Object[] { "BS. CKII Nguyễn Văn An", "58 lượt khám" });
-        modelBacSi.addRow(new Object[] { "ThS. BS Lê Thị Thảo", "52 lượt khám" });
-        modelBacSi.addRow(new Object[] { "BS. Trần Minh Trí", "32 lượt khám" });
+        Map<String, Integer> mapBS = thongKeDAO.getHieuSuatBacSi();
+        for (Map.Entry<String, Integer> entry : mapBS.entrySet()) {
+            modelBacSi.addRow(new Object[] { entry.getKey(), entry.getValue() + " lượt khám" });
+        }
 
         pnlKPIContainer.add(ModernUITheme.createKPICard("TỔNG DOANH THU", df.format(tongDT), "Doanh thu thực tế đã thu",
                 ModernUITheme.SUCCESS, "💰"));

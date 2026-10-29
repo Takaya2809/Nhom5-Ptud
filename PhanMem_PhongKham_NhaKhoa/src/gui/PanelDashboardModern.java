@@ -1,24 +1,46 @@
 package gui;
 
+import dao.CaTrucDAO;
+import dao.HoSoBenhAnDAO;
+import dao.LichHenDAO;
+import dao.NhanVienDAO;
 import dao.ThongKeDAO;
+import entity.HoSoBenhAn;
+import entity.LichHen;
+import entity.NhanVien;
+import entity.PhanCongCaTruc;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
  * Giao diện Dashboard Tổng quan y tế - Phòng Khám Nha Khoa ABC
- * Hiển thị KPI thời gian thực, hàng đợi khám chữa bệnh, ghế nha khoa hoạt động
+ * Kết nối 100% CSDL SQL Server: KPI thời gian thực, điều phối hàng đợi khám chữa bệnh, bác sĩ trực
  */
 public class PanelDashboardModern extends JPanel {
 
     private Consumer<String> navigationCallback;
+    private ThongKeDAO thongKeDAO = new ThongKeDAO();
+    private LichHenDAO lichHenDAO = new LichHenDAO();
+    private CaTrucDAO caTrucDAO = new CaTrucDAO();
+    private NhanVienDAO nhanVienDAO = new NhanVienDAO();
+    private HoSoBenhAnDAO hoSoBenhAnDAO = new HoSoBenhAnDAO();
+
+    private JPanel pnlKPIContainer;
     private DefaultTableModel modelQueue;
     private JTable tableQueue;
-    private JLabel lblDoanhThuVal, lblLuotKhamVal, lblBenhNhanVal, lblCanhBaoVal;
+    private List<LichHen> allAppointments = new ArrayList<>();
+    private String currentFilter = "ALL";
+
+    private JButton btnAll, btnWaiting, btnInChair, btnDone;
+    private JPanel pnlDocList, pnlServList;
     private DecimalFormat df = new DecimalFormat("#,### VNĐ");
 
     public PanelDashboardModern(Consumer<String> navCallback) {
@@ -36,7 +58,11 @@ public class PanelDashboardModern extends JPanel {
         pnlBody.setOpaque(false);
 
         // A. KPI Cards Section
-        pnlBody.add(createKPICardsSection());
+        pnlKPIContainer = new JPanel(new GridLayout(1, 4, 16, 0));
+        pnlKPIContainer.setOpaque(false);
+        pnlKPIContainer.setMaximumSize(new Dimension(Integer.MAX_VALUE, 115));
+        pnlKPIContainer.setPreferredSize(new Dimension(1000, 115));
+        pnlBody.add(pnlKPIContainer);
         pnlBody.add(Box.createVerticalStrut(16));
 
         // B. Dual Panels Section (Queue Table + Doctor & Service Widget)
@@ -50,7 +76,7 @@ public class PanelDashboardModern extends JPanel {
 
         add(scrollPane, BorderLayout.CENTER);
 
-        // Load data initially
+        // Load data initially from database
         refreshData();
     }
 
@@ -58,7 +84,6 @@ public class PanelDashboardModern extends JPanel {
         JPanel pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setOpaque(false);
 
-        // Left: Title & Subtitle
         JPanel pnlTitles = new JPanel(new GridLayout(2, 1, 0, 4));
         pnlTitles.setOpaque(false);
 
@@ -67,7 +92,7 @@ public class PanelDashboardModern extends JPanel {
         lblTitle.setForeground(ModernUITheme.TEXT_MAIN);
 
         JLabel lblSub = new JLabel(
-                "Giám sát chỉ số khám chữa bệnh, doanh thu và điều phối hàng đợi bệnh nhân thời gian thực");
+                "Giám sát chỉ số khám chữa bệnh, doanh thu và điều phối hàng đợi bệnh nhân thời gian thực từ CSDL");
         lblSub.setFont(ModernUITheme.FONT_SMALL);
         lblSub.setForeground(ModernUITheme.TEXT_MUTED);
 
@@ -75,7 +100,6 @@ public class PanelDashboardModern extends JPanel {
         pnlTitles.add(lblSub);
         pnlHeader.add(pnlTitles, BorderLayout.WEST);
 
-        // Right: Action Buttons
         JPanel pnlActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlActions.setOpaque(false);
 
@@ -91,7 +115,7 @@ public class PanelDashboardModern extends JPanel {
                 navigationCallback.accept("THANH_TOAN");
         });
 
-        JButton btnRefresh = ModernUITheme.createOutlineButton("Cập nhật", ModernUITheme.TEXT_MUTED);
+        JButton btnRefresh = ModernUITheme.createOutlineButton("Cập nhật CSDL", ModernUITheme.TEXT_MUTED);
         btnRefresh.addActionListener(e -> refreshData());
 
         pnlActions.add(btnRefresh);
@@ -100,29 +124,6 @@ public class PanelDashboardModern extends JPanel {
 
         pnlHeader.add(pnlActions, BorderLayout.EAST);
         return pnlHeader;
-    }
-
-    private JPanel createKPICardsSection() {
-        JPanel pnlKPI = new JPanel(new GridLayout(1, 4, 16, 0));
-        pnlKPI.setOpaque(false);
-        pnlKPI.setMaximumSize(new Dimension(Integer.MAX_VALUE, 115));
-        pnlKPI.setPreferredSize(new Dimension(1000, 115));
-
-        JPanel card1 = ModernUITheme.createKPICard("LƯỢT KHÁM HÔM NAY", "48 ca", "+14% so với hôm qua",
-                ModernUITheme.PRIMARY, "");
-        JPanel card2 = ModernUITheme.createKPICard("DOANH THU TRONG NGÀY", "38.650.000 đ", "+8.2% mục tiêu ngày",
-                ModernUITheme.SUCCESS, "");
-        JPanel card3 = ModernUITheme.createKPICard("HỒ SƠ BỆNH NHÂN", "16 người", "12 ca đặt hẹn trước",
-                ModernUITheme.ACCENT, "");
-        JPanel card4 = ModernUITheme.createKPICard("CẢNH BÁO KHO VẬT TƯ", "3 mặt hàng", "Cần bổ sung thuốc/vật tư",
-                ModernUITheme.DANGER, "");
-
-        pnlKPI.add(card1);
-        pnlKPI.add(card2);
-        pnlKPI.add(card3);
-        pnlKPI.add(card4);
-
-        return pnlKPI;
     }
 
     private JPanel createDualColumnsSection() {
@@ -144,10 +145,15 @@ public class PanelDashboardModern extends JPanel {
         JPanel pnlFilters = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         pnlFilters.setOpaque(false);
 
-        JButton btnAll = ModernUITheme.createButton("Tất cả (8)", ModernUITheme.PRIMARY, Color.WHITE);
-        JButton btnWaiting = ModernUITheme.createOutlineButton("Chờ khám (3)", ModernUITheme.WARNING);
-        JButton btnInChair = ModernUITheme.createOutlineButton("Đang điều trị (2)", ModernUITheme.PRIMARY);
-        JButton btnDone = ModernUITheme.createOutlineButton("Đã hoàn tất (3)", ModernUITheme.SUCCESS);
+        btnAll = ModernUITheme.createButton("Tất cả", ModernUITheme.PRIMARY, Color.WHITE);
+        btnWaiting = ModernUITheme.createOutlineButton("Chờ khám", ModernUITheme.WARNING);
+        btnInChair = ModernUITheme.createOutlineButton("Đang khám", ModernUITheme.PRIMARY);
+        btnDone = ModernUITheme.createOutlineButton("Đã hoàn tất", ModernUITheme.SUCCESS);
+
+        btnAll.addActionListener(e -> { currentFilter = "ALL"; renderQueueTable(); });
+        btnWaiting.addActionListener(e -> { currentFilter = "WAITING"; renderQueueTable(); });
+        btnInChair.addActionListener(e -> { currentFilter = "IN_CHAIR"; renderQueueTable(); });
+        btnDone.addActionListener(e -> { currentFilter = "DONE"; renderQueueTable(); });
 
         pnlFilters.add(btnAll);
         pnlFilters.add(btnWaiting);
@@ -159,32 +165,13 @@ public class PanelDashboardModern extends JPanel {
         pnlLeftCard.add(pnlQueueHeader, BorderLayout.NORTH);
 
         // Table
-        String[] cols = { "Mã BN", "Họ và Tên", "Bác sĩ phụ trách", "Dịch vụ chỉ định", "Giờ hẹn", "Ghế/Phòng",
-                "Trạng thái" };
+        String[] cols = { "Mã Lịch Hẹn", "Mã BN", "Họ và Tên", "Bác sĩ phụ trách", "Nội dung khám", "Giờ hẹn", "Trạng thái" };
         modelQueue = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int row, int col) {
                 return false;
             }
         };
-
-        // Dữ liệu mẫu thực tế nha khoa
-        modelQueue.addRow(new Object[] { "BN001", "Nguyễn Văn Tuấn", "BS. CKII Nguyễn Văn An",
-                "Trồng răng Implant Straumann", "08:30", "Ghế 01", "Đang điều trị" });
-        modelQueue.addRow(new Object[] { "BN002", "Trần Mai Phương", "BS. Lê Thị Thảo", "Niềng răng mắc cài tự buộc",
-                "09:00", "Ghế 02", "Đang điều trị" });
-        modelQueue.addRow(new Object[] { "BN003", "Phạm Quốc Dũng", "ThS. BS Trần Minh Trí",
-                "Nhổ răng khôn Piezotome #38", "09:30", "Phòng Tiểu Phẫu", "Chờ khám" });
-        modelQueue.addRow(new Object[] { "BN004", "Vũ Bích Ngọc", "BS. Lê Thị Thảo", "Bọc răng toàn sứ Cercon", "10:00",
-                "Phòng Chờ 1", "Chờ khám" });
-        modelQueue.addRow(new Object[] { "BN005", "Đặng Hoàng Nam", "BS. CKII Nguyễn Văn An",
-                "Tẩy trắng răng Laser Whitening", "10:15", "Phòng Chờ 2", "Chờ khám" });
-        modelQueue.addRow(new Object[] { "BN006", "Lê Thanh Hương", "ThS. BS Trần Minh Trí",
-                "Trám răng thẩm mỹ Composite", "08:00", "Ghế 03", "Hoàn tất" });
-        modelQueue.addRow(new Object[] { "BN007", "Hoàng Kim Liên", "BS. Lê Thị Thảo",
-                "Lấy cao răng siêu âm & Đánh bóng", "08:15", "Ghế 02", "Hoàn tất" });
-        modelQueue.addRow(new Object[] { "BN008", "Ngô Quốc Huy", "BS. CKII Nguyễn Văn An",
-                "Tái khám sau cấy ghép Implant", "08:20", "Ghế 01", "Hoàn tất" });
 
         tableQueue = new JTable(modelQueue);
         ModernUITheme.formatModernTable(tableQueue);
@@ -204,10 +191,17 @@ public class PanelDashboardModern extends JPanel {
         btnMoiVao.addActionListener(e -> {
             int row = tableQueue.getSelectedRow();
             if (row >= 0) {
-                modelQueue.setValueAt("Đang điều trị", row, 6);
-                JOptionPane.showMessageDialog(this,
-                        "Đã gọi bệnh nhân " + modelQueue.getValueAt(row, 1) + " vào ghế khám!", "Thông báo",
-                        JOptionPane.INFORMATION_MESSAGE);
+                String maLH = modelQueue.getValueAt(row, 0).toString();
+                String tenBN = modelQueue.getValueAt(row, 2).toString();
+                boolean ok = lichHenDAO.capNhatTrangThai(maLH, "Đang khám");
+                if (ok) {
+                    JOptionPane.showMessageDialog(this,
+                            "Đã gọi bệnh nhân [" + tenBN + "] vào ghế khám (Cập nhật CSDL thành công)!", "Thông báo",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    refreshData();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Không thể cập nhật trạng thái trong CSDL!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
             } else {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 bệnh nhân trong hàng đợi!", "Nhắc nhở",
                         JOptionPane.WARNING_MESSAGE);
@@ -217,12 +211,31 @@ public class PanelDashboardModern extends JPanel {
         btnHoanTat.addActionListener(e -> {
             int row = tableQueue.getSelectedRow();
             if (row >= 0) {
-                modelQueue.setValueAt("Hoàn tất", row, 6);
-                JOptionPane.showMessageDialog(this, "Ca điều trị đã hoàn tất. Chuyển thông tin sang bộ phận Thu ngân!",
-                        "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                String maLH = modelQueue.getValueAt(row, 0).toString();
+                String tenBN = modelQueue.getValueAt(row, 2).toString();
+                boolean ok = lichHenDAO.capNhatTrangThai(maLH, "Hoàn thành");
+                if (ok) {
+                    JOptionPane.showMessageDialog(this,
+                            "Ca điều trị của [" + tenBN + "] đã hoàn tất. Chuyển thông tin sang bộ phận Thu ngân!",
+                            "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                    refreshData();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Không thể cập nhật trạng thái trong CSDL!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
             } else {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 bệnh nhân cần hoàn tất!", "Nhắc nhở",
                         JOptionPane.WARNING_MESSAGE);
+            }
+        });
+
+        btnChiTiet.addActionListener(e -> {
+            int row = tableQueue.getSelectedRow();
+            if (row >= 0) {
+                String maBN = modelQueue.getValueAt(row, 1).toString();
+                String tenBN = modelQueue.getValueAt(row, 2).toString();
+                hienThiBenhAnChiTiet(maBN, tenBN);
+            } else {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 bệnh nhân trong danh sách để xem bệnh án!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
             }
         });
 
@@ -248,16 +261,8 @@ public class PanelDashboardModern extends JPanel {
         lblDocTitle.setForeground(ModernUITheme.TEXT_MAIN);
         cardDoctors.add(lblDocTitle, BorderLayout.NORTH);
 
-        JPanel pnlDocList = new JPanel(new GridLayout(3, 1, 0, 8));
+        pnlDocList = new JPanel(new GridLayout(0, 1, 0, 8));
         pnlDocList.setOpaque(false);
-
-        pnlDocList.add(createDoctorItem("BS. CKII Nguyễn Văn An", "Trưởng khoa Implant & Chỉnh nha",
-                "Ghế 01 (Đang bận)", ModernUITheme.DANGER));
-        pnlDocList.add(createDoctorItem("ThS. BS Lê Thị Thảo", "Chuyên khoa Răng Trẻ Em & Thẩm Mỹ", "Ghế 02 (Đang bận)",
-                ModernUITheme.DANGER));
-        pnlDocList.add(createDoctorItem("BS. Trần Minh Trí", "Chuyên khoa Phẫu Thuật Răng Hàm Mặt",
-                "Ghế 03 (Đang rảnh)", ModernUITheme.SUCCESS));
-
         cardDoctors.add(pnlDocList, BorderLayout.CENTER);
         pnlRight.add(cardDoctors);
         pnlRight.add(Box.createVerticalStrut(16));
@@ -271,20 +276,98 @@ public class PanelDashboardModern extends JPanel {
         lblServTitle.setForeground(ModernUITheme.TEXT_MAIN);
         cardServices.add(lblServTitle, BorderLayout.NORTH);
 
-        JPanel pnlServList = new JPanel(new GridLayout(4, 1, 0, 8));
+        pnlServList = new JPanel(new GridLayout(0, 1, 0, 8));
         pnlServList.setOpaque(false);
-
-        pnlServList.add(createServiceProgressItem("Cấy ghép Implant", "15.000.000 đ", 85, ModernUITheme.PRIMARY));
-        pnlServList.add(createServiceProgressItem("Niềng răng mắc cài", "25.000.000 đ", 70, ModernUITheme.ACCENT));
-        pnlServList.add(createServiceProgressItem("Răng sứ Cercon HT", "4.500.000 đ", 92, ModernUITheme.SUCCESS));
-        pnlServList.add(createServiceProgressItem("Nhổ răng khôn Piezotome", "2.000.000 đ", 60, ModernUITheme.WARNING));
-
         cardServices.add(pnlServList, BorderLayout.CENTER);
         pnlRight.add(cardServices);
 
         pnlDual.add(pnlRight, BorderLayout.EAST);
 
         return pnlDual;
+    }
+
+    private void renderQueueTable() {
+        modelQueue.setRowCount(0);
+        int cntWaiting = 0;
+        int cntInChair = 0;
+        int cntDone = 0;
+
+        for (LichHen lh : allAppointments) {
+            String tt = lh.getTrangThai() != null ? lh.getTrangThai() : "Đã lên lịch";
+            String ttLower = tt.toLowerCase();
+            if (ttLower.contains("chờ") || ttLower.contains("xác nhận") || ttLower.contains("lên lịch")) {
+                cntWaiting++;
+            } else if (ttLower.contains("khám") || ttLower.contains("trị")) {
+                cntInChair++;
+            } else if (ttLower.contains("hoàn") || ttLower.contains("xong")) {
+                cntDone++;
+            }
+
+            boolean show = false;
+            if ("ALL".equals(currentFilter)) {
+                show = true;
+            } else if ("WAITING".equals(currentFilter)) {
+                show = ttLower.contains("chờ") || ttLower.contains("xác nhận") || ttLower.contains("lên lịch");
+            } else if ("IN_CHAIR".equals(currentFilter)) {
+                show = ttLower.contains("khám") || ttLower.contains("trị");
+            } else if ("DONE".equals(currentFilter)) {
+                show = ttLower.contains("hoàn") || ttLower.contains("xong");
+            }
+
+            if (show) {
+                String gio = lh.getGioHen() != null ? lh.getGioHen().toString().substring(0, 5) : "08:30";
+                modelQueue.addRow(new Object[] {
+                        lh.getMaLichHen(),
+                        lh.getMaBN(),
+                        lh.getTenBenhNhan() != null ? lh.getTenBenhNhan() : lh.getMaBN(),
+                        lh.getTenNhaSi() != null ? lh.getTenNhaSi() : "BS phụ trách",
+                        lh.getLyDoKham() != null ? lh.getLyDoKham() : "Khám tổng quát",
+                        gio,
+                        tt
+                });
+            }
+        }
+
+        btnAll.setText("Tất cả (" + allAppointments.size() + ")");
+        btnWaiting.setText("Chờ khám (" + cntWaiting + ")");
+        btnInChair.setText("Đang khám (" + cntInChair + ")");
+        btnDone.setText("Đã hoàn tất (" + cntDone + ")");
+    }
+
+    private void hienThiBenhAnChiTiet(String maBN, String tenBN) {
+        List<HoSoBenhAn> dsHoSo = hoSoBenhAnDAO.getHoSoByBenhNhan(maBN);
+        StringBuilder sb = new StringBuilder();
+        sb.append("========================================================================\n");
+        sb.append("                  HỒ SƠ BỆNH ÁN ĐIỆN TỬ NHA KHOA                        \n");
+        sb.append("========================================================================\n");
+        sb.append("Mã bệnh nhân: ").append(maBN).append(" | Họ và tên: ").append(tenBN).append("\n");
+        sb.append("Tổng số ca/lần điều trị đã lưu trong CSDL: ").append(dsHoSo.size()).append("\n");
+        sb.append("------------------------------------------------------------------------\n\n");
+
+        if (dsHoSo.isEmpty()) {
+            sb.append("Chưa có hồ sơ bệnh án nào được ghi nhận cho bệnh nhân này.\n");
+            sb.append("(Bác sĩ có thể tạo bệnh án mới khi hoàn tất ca khám)\n");
+        } else {
+            for (int i = 0; i < dsHoSo.size(); i++) {
+                HoSoBenhAn hs = dsHoSo.get(i);
+                sb.append("[").append(i + 1).append("] Mã bệnh án: ").append(hs.getMaHoSo()).append("\n");
+                sb.append("    - Ngày khám: ").append(hs.getNgayKham() != null ? hs.getNgayKham().toString() : "Hôm nay").append("\n");
+                sb.append("    - Bác sĩ điều trị: ").append(hs.getTenNhaSi() != null ? hs.getTenNhaSi() : hs.getMaNhaSi()).append("\n");
+                sb.append("    - Triệu chứng lâm sàng: ").append(hs.getTrieuChung()).append("\n");
+                sb.append("    - Chẩn đoán y khoa: ").append(hs.getChanDoan()).append("\n");
+                sb.append("    - Kết quả điều trị: ").append(hs.getKetQuaDieuTri() != null ? hs.getKetQuaDieuTri() : "Tốt").append("\n");
+                sb.append("    - Lời dặn / Ghi chú: ").append(hs.getGhiChu() != null ? hs.getGhiChu() : "Tái khám theo hẹn").append("\n");
+                sb.append("    - Trạng thái hồ sơ: ").append(hs.getTrangThai()).append("\n");
+                sb.append("------------------------------------------------------------------------\n");
+            }
+        }
+
+        JTextArea ta = new JTextArea(sb.toString(), 18, 55);
+        ta.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        ta.setEditable(false);
+        ta.setCaretPosition(0);
+
+        JOptionPane.showMessageDialog(this, new JScrollPane(ta), "Bệnh án điện tử: " + tenBN + " (" + maBN + ")", JOptionPane.PLAIN_MESSAGE);
     }
 
     private JPanel createDoctorItem(String name, String spec, String status, Color statusColor) {
@@ -347,6 +430,74 @@ public class PanelDashboardModern extends JPanel {
     }
 
     public void refreshData() {
-        // TODO: Cập nhật số liệu KPI từ CSDL tại đây
+        // 1. Cập nhật số liệu KPI từ CSDL
+        pnlKPIContainer.removeAll();
+        double tongDT = thongKeDAO.getTongDoanhThu();
+        int tongLK = thongKeDAO.getTongLuotKham();
+        int tongBN = thongKeDAO.getTongBenhNhan();
+        int canhBaoVT = thongKeDAO.getSoVatTuCanhBao();
+
+        pnlKPIContainer.add(ModernUITheme.createKPICard("LƯỢT KHÁM HÔM NAY", tongLK + " ca", "Tổng ca điều trị trong CSDL",
+                ModernUITheme.PRIMARY, "🩺"));
+        pnlKPIContainer.add(ModernUITheme.createKPICard("DOANH THU ĐÃ THU", df.format(tongDT), "Tổng doanh thu thực tế",
+                ModernUITheme.SUCCESS, "💰"));
+        pnlKPIContainer.add(ModernUITheme.createKPICard("HỒ SƠ BỆNH NHÂN", tongBN + " người", "Bệnh nhân đã đăng ký",
+                ModernUITheme.ACCENT, "👥"));
+        pnlKPIContainer.add(ModernUITheme.createKPICard("CẢNH BÁO KHO DƯỢC", canhBaoVT + " mặt hàng", "Cần bổ sung vật tư/thuốc",
+                ModernUITheme.DANGER, "⚠️"));
+        pnlKPIContainer.revalidate();
+        pnlKPIContainer.repaint();
+
+        // 2. Tải hàng đợi lịch hẹn từ CSDL
+        allAppointments = lichHenDAO.getAllLichHen();
+        renderQueueTable();
+
+        // 3. Tải danh sách bác sĩ trực từ CSDL
+        pnlDocList.removeAll();
+        List<PhanCongCaTruc> dsPhanCong = caTrucDAO.getAllPhanCong();
+        int docCount = 0;
+        for (PhanCongCaTruc pc : dsPhanCong) {
+            String vt = pc.getVaiTroTrongCa() != null ? pc.getVaiTroTrongCa() : "";
+            if (vt.contains("Bác sĩ") || vt.contains("Nha sĩ") || pc.getMaNV().startsWith("BS") || pc.getMaNV().startsWith("NV")) {
+                pnlDocList.add(createDoctorItem(
+                        pc.getHoTenNV() != null ? pc.getHoTenNV() : pc.getMaNV(),
+                        pc.getTenCa() != null ? pc.getTenCa() : "Ca trực",
+                        "Đã điểm danh".equals(pc.getTrangThaiDiemDanh()) ? "Đang trực" : "Chưa đến",
+                        "Đã điểm danh".equals(pc.getTrangThaiDiemDanh()) ? ModernUITheme.SUCCESS : ModernUITheme.WARNING));
+                docCount++;
+                if (docCount >= 3) break;
+            }
+        }
+        if (docCount == 0) {
+            List<NhanVien> dsNV = nhanVienDAO.getAllNhanVien();
+            for (NhanVien nv : dsNV) {
+                if (nv.getChucDanh() != null && (nv.getChucDanh().contains("Bác sĩ") || nv.getChucDanh().contains("Nha sĩ"))) {
+                    pnlDocList.add(createDoctorItem(nv.getHoTen(), nv.getBangCapChungChi() != null ? nv.getBangCapChungChi() : "Nha sĩ", "Sẵn sàng", ModernUITheme.SUCCESS));
+                    docCount++;
+                    if (docCount >= 3) break;
+                }
+            }
+        }
+        pnlDocList.revalidate();
+        pnlDocList.repaint();
+
+        // 4. Tải Top dịch vụ chỉ định cao từ CSDL
+        pnlServList.removeAll();
+        Map<String, Double> mapDV = thongKeDAO.getDoanhThuTheoDichVu();
+        double maxRev = 1;
+        for (double v : mapDV.values()) {
+            if (v > maxRev) maxRev = v;
+        }
+        int servCount = 0;
+        Color[] barColors = { ModernUITheme.PRIMARY, ModernUITheme.ACCENT, ModernUITheme.SUCCESS, ModernUITheme.WARNING };
+        for (Map.Entry<String, Double> entry : mapDV.entrySet()) {
+            int pct = (int) Math.round((entry.getValue() / maxRev) * 100);
+            Color c = barColors[servCount % barColors.length];
+            pnlServList.add(createServiceProgressItem(entry.getKey(), df.format(entry.getValue()), pct, c));
+            servCount++;
+            if (servCount >= 4) break;
+        }
+        pnlServList.revalidate();
+        pnlServList.repaint();
     }
 }
