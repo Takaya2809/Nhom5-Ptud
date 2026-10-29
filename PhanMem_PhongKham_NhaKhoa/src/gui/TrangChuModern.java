@@ -35,6 +35,8 @@ public class TrangChuModern extends JFrame {
     private PanelDichVuModern pnlDichVu;
     private PanelKhoVatTuModern pnlKhoVatTu;
     private PanelLichTrucModern pnlLichTruc;
+    private PanelLichHenModern pnlLichHen;
+    private PanelKhamDieuTriModern pnlKhamDieuTri;
     private PanelNhanSuModern pnlNhanSu;
     private PanelTaiKhoanModern pnlTaiKhoan;
     private PanelThanhToanModern pnlThanhToan;
@@ -90,6 +92,8 @@ public class TrangChuModern extends JFrame {
         pnlDichVu = new PanelDichVuModern();
         pnlKhoVatTu = new PanelKhoVatTuModern();
         pnlLichTruc = new PanelLichTrucModern();
+        pnlLichHen = new PanelLichHenModern();
+        pnlKhamDieuTri = new PanelKhamDieuTriModern(currentUser);
         pnlNhanSu = new PanelNhanSuModern();
         pnlTaiKhoan = new PanelTaiKhoanModern(currentUser);
         pnlThanhToan = new PanelThanhToanModern();
@@ -102,6 +106,8 @@ public class TrangChuModern extends JFrame {
         pnlContentArea.add(pnlDichVu, "DICH_VU");
         pnlContentArea.add(pnlKhoVatTu, "KHO_VAT_TU");
         pnlContentArea.add(pnlLichTruc, "LICH_TRUC");
+        pnlContentArea.add(pnlLichHen, "LICH_HEN");
+        pnlContentArea.add(pnlKhamDieuTri, "NHA_SI");
         pnlContentArea.add(pnlNhanSu, "NHAN_SU");
         pnlContentArea.add(pnlTaiKhoan, "TAI_KHOAN");
         pnlContentArea.add(pnlThanhToan, "THANH_TOAN");
@@ -116,7 +122,7 @@ public class TrangChuModern extends JFrame {
         String defaultTab = "DASHBOARD";
         String rLower = this.currentUser.getTenVaiTro() != null ? this.currentUser.getTenVaiTro().toLowerCase() : "";
         if (rLower.contains("nha sĩ") || rLower.contains("bác sĩ")) {
-            defaultTab = "BENH_NHAN";
+            defaultTab = "NHA_SI";
         } else if (rLower.contains("lễ tân") || rLower.contains("tiếp tân")) {
             defaultTab = "BENH_NHAN";
         } else if (rLower.contains("thu ngân")) {
@@ -260,12 +266,15 @@ public class TrangChuModern extends JFrame {
         if (role.contains("nha sĩ") || role.contains("bác sĩ") || maRole.contains("BS")) {
             addCategoryHeader(pnlMenuItems, "CHỨC NĂNG NHA SĨ");
             addMenuItem(pnlMenuItems, AppIcon.Type.PATIENT, "Hồ Sơ Bệnh Nhân", "BENH_NHAN");
+            addMenuItem(pnlMenuItems, AppIcon.Type.PATIENT, "Khám & Điều Trị", "NHA_SI");
             addMenuItem(pnlMenuItems, AppIcon.Type.SERVICE, "Dịch Vụ & Bảng Giá", "DICH_VU");
+            addMenuItem(pnlMenuItems, AppIcon.Type.CALENDAR, "Lịch Hẹn", "LICH_HEN");
             addMenuItem(pnlMenuItems, AppIcon.Type.CALENDAR, "Lịch Trực & Ca Khám", "LICH_TRUC");
 
         } else if (role.contains("lễ tân") || role.contains("tiếp tân") || maRole.contains("LT")) {
             addCategoryHeader(pnlMenuItems, "TIẾP ĐÓN & ĐẶT LỊCH");
             addMenuItem(pnlMenuItems, AppIcon.Type.PATIENT, "Hồ Sơ Bệnh Nhân", "BENH_NHAN");
+            addMenuItem(pnlMenuItems, AppIcon.Type.CALENDAR, "Lịch Hẹn", "LICH_HEN");
             addMenuItem(pnlMenuItems, AppIcon.Type.CALENDAR, "Lịch Trực & Ca Khám", "LICH_TRUC");
             addMenuItem(pnlMenuItems, AppIcon.Type.SERVICE, "Dịch Vụ & Bảng Giá", "DICH_VU");
             addMenuItem(pnlMenuItems, AppIcon.Type.DISCOUNT, "Chính Sách Ưu Đãi", "UU_DAI");
@@ -293,6 +302,7 @@ public class TrangChuModern extends JFrame {
             addMenuItem(pnlMenuItems, AppIcon.Type.PATIENT, "Hồ Sơ Bệnh Nhân", "BENH_NHAN");
             addMenuItem(pnlMenuItems, AppIcon.Type.SERVICE, "Dịch Vụ & Bảng Giá", "DICH_VU");
             addMenuItem(pnlMenuItems, AppIcon.Type.CALENDAR, "Lịch Trực & Ca Khám", "LICH_TRUC");
+            addMenuItem(pnlMenuItems, AppIcon.Type.CALENDAR, "Lịch Hẹn", "LICH_HEN");
 
             addCategoryHeader(pnlMenuItems, "TÀI CHÍNH & VẬT TƯ");
             addMenuItem(pnlMenuItems, AppIcon.Type.PAYMENT, "Thu Ngân & Hóa Đơn", "THANH_TOAN");
@@ -617,6 +627,7 @@ public class TrangChuModern extends JFrame {
 
     public void switchTab(String cardKey) {
         cardLayout.show(pnlContentArea, cardKey);
+        if ("NHA_SI".equals(cardKey) && pnlKhamDieuTri != null) pnlKhamDieuTri.refresh();
 
         // Cập nhật trạng thái active sidebar
         for (SidebarMenuItem item : menuItems) {
