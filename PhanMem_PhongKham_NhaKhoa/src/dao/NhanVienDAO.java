@@ -245,6 +245,20 @@ public class NhanVienDAO {
         return dbOk || conn == null;
     }
 
+    public List<NhanVien> getDanhSachBacSi() {
+        List<NhanVien> list = new ArrayList<>();
+        for (NhanVien nv : getAllNhanVien()) {
+            String cd = nv.getChucDanh() != null ? nv.getChucDanh().toLowerCase() : "";
+            if (cd.contains("bác sĩ") || cd.contains("nha sĩ") || nv.getMaNV().startsWith("BS")) {
+                list.add(nv);
+            }
+        }
+        if (list.isEmpty()) {
+            list.addAll(getAllNhanVien());
+        }
+        return list;
+    }
+
     public String sinhMaNVMoi(String chucDanh) {
         String prefix = "NV";
         if (chucDanh != null) {
