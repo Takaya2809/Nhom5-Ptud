@@ -6,14 +6,10 @@ import java.sql.DriverManager;
 public class ConnectDB {
 
     private static Connection conn = null;
-    private static String lastError;
-
-    public static String getLastError() { return lastError; }
 
     public static Connection getConnection() {
         try {
             if (conn != null && !conn.isClosed()) {
-                lastError = null;
                 return conn;
             }
 
@@ -26,16 +22,14 @@ public class ConnectDB {
                 try {
                     conn = DriverManager.getConnection(url, user, pwd);
                     if (conn != null && !conn.isClosed()) {
-                        lastError = null;
                         return conn;
                     }
-                } catch (Exception e) { lastError = e.getMessage(); }
+                } catch (Exception ignored) {}
             }
 
             // Nếu không đăng nhập được bằng các mật khẩu trên, in cảnh báo hướng dẫn
             System.err.println("[ConnectDB] Chưa kết nối được SQL Server (QLPHONGKHAM). Đang hoạt động ở chế độ Demo/Offline.");
         } catch (Exception e) {
-            lastError = e.getMessage();
             System.err.println("Lỗi kết nối CSDL QLPHONGKHAM: " + e.getMessage());
         }
         return null;
