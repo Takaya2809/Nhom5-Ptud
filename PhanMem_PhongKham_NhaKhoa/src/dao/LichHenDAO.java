@@ -17,6 +17,9 @@ import java.util.List;
  */
 public class LichHenDAO {
 
+    private String lastError;
+    public String getLastError() { return lastError; }
+
     private static final List<LichHen> MOCK_LICH_HEN = new ArrayList<>();
 
     static {
@@ -50,6 +53,7 @@ public class LichHenDAO {
     }
 
     public List<LichHen> getAllLichHen() {
+        lastError = null;
         List<LichHen> list = new ArrayList<>();
         Connection conn = ConnectDB.getConnection();
         if (conn != null) {
@@ -80,6 +84,7 @@ public class LichHenDAO {
                     }
                 }
             } catch (Exception e) {
+                lastError = e.getMessage();
                 System.err.println("LichHenDAO.getAllLichHen DB error: " + e.getMessage());
             }
         }
@@ -95,6 +100,7 @@ public class LichHenDAO {
     }
 
     public boolean themLichHen(LichHen lh) {
+        lastError = null;
         if (lh == null)
             return false;
         Connection conn = ConnectDB.getConnection();
@@ -116,6 +122,7 @@ public class LichHenDAO {
                     dbOk = stmt.executeUpdate() > 0;
                 }
             } catch (Exception e) {
+                lastError = e.getMessage();
                 System.err.println("LichHenDAO.themLichHen DB error: " + e.getMessage());
             }
         }
@@ -124,6 +131,7 @@ public class LichHenDAO {
     }
 
     public boolean capNhatTrangThai(String maLichHen, String trangThai) {
+        lastError = null;
         if (maLichHen == null)
             return false;
         Connection conn = ConnectDB.getConnection();
@@ -137,6 +145,7 @@ public class LichHenDAO {
                     dbOk = stmt.executeUpdate() > 0;
                 }
             } catch (Exception e) {
+                lastError = e.getMessage();
                 System.err.println("LichHenDAO.capNhatTrangThai DB error: " + e.getMessage());
             }
         }
@@ -185,6 +194,32 @@ public class LichHenDAO {
             if (match) res.add(lh);
         }
         return res;
+    }
+
+    public List<String[]> getBenhNhanOptions() {
+        List<String[]> rows = new ArrayList<>(); lastError = null;
+        Connection c = ConnectDB.getConnection();
+        if (c == null) { lastError = ConnectDB.getLastError(); return rows; }
+        try (Statement st = c.createStatement(); ResultSet rs = st.executeQuery("SELECT maBN, hoTen, soDienThoai FROM BenhNhan ORDER BY hoTen")) {
+            while (rs.next()) rows.add(new String[]{rs.getString(1), rs.getString(2), rs.getString(3)});
+        } catch (Exception e) { lastError = e.getMessage(); }
+        return rows;
+    }
+
+    public List<String[]> getNhaSiOptions() {
+        List<String[]> rows = new ArrayList<>(); lastError = null;
+        Connection c = ConnectDB.getConnection();
+        if (c == null) { lastError = ConnectDB.getLastError(); return rows; }
+        try (Statement st = c.createStatement(); ResultSet rs = st.executeQuery("SELECT maNV, hoTen FROM NhanVien WHERE maNV LIKE 'BS%' ORDER BY hoTen")) {
+            while (rs.next()) rows.add(new String[]{rs.getString(1), rs.getString(2)});
+        } catch (Exception e) { lastError = e.getMessage(); }
+        return rows;
+    }
+
+    public List<LichHen> timKiem(String keyword, Date date) {
+        List<LichHen> rows = timKiem(keyword);
+        if (date != null) rows.removeIf(lh -> lh.getNgayHen() == null || !date.equals(lh.getNgayHen()));
+        return rows;
     }
 
     public String sinhMaLichHenMoi() {

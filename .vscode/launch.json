@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    
+    {
+      "type": "java",
+      "name": "Run Dental Clinic",
+      "request": "launch",
+      "mainClass": "gui.LoginModern",
+      "projectName": "PhanMem_PhongKham_NhaKhoa",
+      "classPaths": [
+        "${workspaceFolder}/PhanMem_PhongKham_NhaKhoa/bin",
+        "${workspaceFolder}/PhanMem_PhongKham_NhaKhoa/lib/mssql-jdbc-13.2.1.jre11.jar"
+      ],
+      "vmArgs": "-Djava.library.path=\"${workspaceFolder}/PhanMem_PhongKham_NhaKhoa/lib\" --enable-native-access=ALL-UNNAMED"
+    }
+  ]
+}
