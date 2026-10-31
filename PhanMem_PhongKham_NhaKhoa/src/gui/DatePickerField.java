@@ -98,6 +98,10 @@ public class DatePickerField extends JPanel {
         return selectedDate != null ? Date.valueOf(selectedDate) : null;
     }
 
+    public void setLocalDate(LocalDate date) {
+        setDate(date);
+    }
+
     public void setDate(LocalDate date) {
         if (date != null) {
             if (maxDate != null && date.isAfter(maxDate)) {

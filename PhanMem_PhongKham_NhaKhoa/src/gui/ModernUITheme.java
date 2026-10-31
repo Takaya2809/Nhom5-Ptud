@@ -32,6 +32,7 @@ public class ModernUITheme {
 
     public static final Color BG_MAIN = new Color(248, 250, 252);     // #F8FAFC
     public static final Color CARD_BG = Color.WHITE;                  // #FFFFFF
+    public static final Color BG_CARD = CARD_BG;
     public static final Color BORDER_LIGHT = new Color(226, 232, 240);// #E2E8F0
 
     public static final Color TEXT_MAIN = new Color(15, 23, 42);      // #0F172A
