@@ -7,17 +7,24 @@ public class DichVu {
     private int thoiGianDuKien;
     private String trangThai; // Đang cung cấp, Tạm ngừng cung cấp
     private String moTa;
+    private String nhomDichVu; // Khám & tư vấn, Nhổ răng, Trám & nội nha, Phục hình sứ, Implant, Chỉnh nha, Tẩy trắng, Nha chu...
 
     public DichVu() {}
 
     public DichVu(String maDichVu, String tenDichVu, double giaNiemYet,
                   int thoiGianDuKien, String trangThai, String moTa) {
+        this(maDichVu, tenDichVu, giaNiemYet, thoiGianDuKien, trangThai, moTa, "Khám & tư vấn");
+    }
+
+    public DichVu(String maDichVu, String tenDichVu, double giaNiemYet,
+                  int thoiGianDuKien, String trangThai, String moTa, String nhomDichVu) {
         this.maDichVu = maDichVu;
         this.tenDichVu = tenDichVu;
         this.giaNiemYet = giaNiemYet;
         this.thoiGianDuKien = thoiGianDuKien;
         this.trangThai = trangThai;
         this.moTa = moTa;
+        this.nhomDichVu = (nhomDichVu != null && !nhomDichVu.trim().isEmpty()) ? nhomDichVu : "Khám & tư vấn";
     }
 
     public String getMaDichVu() { return maDichVu; }
@@ -37,6 +44,9 @@ public class DichVu {
 
     public String getMoTa() { return moTa; }
     public void setMoTa(String moTa) { this.moTa = moTa; }
+
+    public String getNhomDichVu() { return nhomDichVu; }
+    public void setNhomDichVu(String nhomDichVu) { this.nhomDichVu = nhomDichVu; }
 
     @Override
     public String toString() {

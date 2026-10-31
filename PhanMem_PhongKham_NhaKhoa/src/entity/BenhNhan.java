@@ -12,12 +12,19 @@ public class BenhNhan {
     private String tienSuBenh;
     private String loaiKhach; // Khách mới, Thường, Thân thiết, VIP
     private int diemTichLuy;
+    private String trangThai; // Đang theo dõi, Ngừng theo dõi
 
     public BenhNhan() {}
 
     public BenhNhan(String maBN, String hoTen, String soDienThoai, String diaChi,
                     String gioiTinh, Date ngaySinh, String tienSuBenh,
                     String loaiKhach, int diemTichLuy) {
+        this(maBN, hoTen, soDienThoai, diaChi, gioiTinh, ngaySinh, tienSuBenh, loaiKhach, diemTichLuy, TrangThaiConstants.BN_DANG_THEO_DOI);
+    }
+
+    public BenhNhan(String maBN, String hoTen, String soDienThoai, String diaChi,
+                    String gioiTinh, Date ngaySinh, String tienSuBenh,
+                    String loaiKhach, int diemTichLuy, String trangThai) {
         this.maBN = maBN;
         this.hoTen = hoTen;
         this.soDienThoai = soDienThoai;
@@ -27,6 +34,7 @@ public class BenhNhan {
         this.tienSuBenh = tienSuBenh;
         this.loaiKhach = loaiKhach;
         this.diemTichLuy = diemTichLuy;
+        this.trangThai = (trangThai != null && !trangThai.trim().isEmpty()) ? trangThai : TrangThaiConstants.BN_DANG_THEO_DOI;
     }
 
     public String getMaBN() { return maBN; }
@@ -55,6 +63,9 @@ public class BenhNhan {
 
     public int getDiemTichLuy() { return diemTichLuy; }
     public void setDiemTichLuy(int diemTichLuy) { this.diemTichLuy = diemTichLuy; }
+
+    public String getTrangThai() { return trangThai; }
+    public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
 
     @Override
     public String toString() {

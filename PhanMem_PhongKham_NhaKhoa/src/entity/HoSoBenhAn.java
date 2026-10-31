@@ -17,9 +17,6 @@ public class HoSoBenhAn {
     // Trường bổ trợ
     private String tenBenhNhan;
     private String tenNhaSi;
-    private String tinhTrangLamSang, ketQuaCanLamSang, viTriRang, keHoachDieuTri;
-    private String noiDungCanThiep, donThuoc, huongDanSauDieuTri;
-    private java.sql.Date ngayTaiKham;
 
     public HoSoBenhAn() {}
 
@@ -70,23 +67,6 @@ public class HoSoBenhAn {
 
     public String getTenBenhNhan() { return tenBenhNhan; }
     public void setTenBenhNhan(String tenBenhNhan) { this.tenBenhNhan = tenBenhNhan; }
-
-    public String getTinhTrangLamSang() { return tinhTrangLamSang; }
-    public void setTinhTrangLamSang(String v) { tinhTrangLamSang = v; }
-    public String getKetQuaCanLamSang() { return ketQuaCanLamSang; }
-    public void setKetQuaCanLamSang(String v) { ketQuaCanLamSang = v; }
-    public String getViTriRang() { return viTriRang; }
-    public void setViTriRang(String v) { viTriRang = v; }
-    public String getKeHoachDieuTri() { return keHoachDieuTri; }
-    public void setKeHoachDieuTri(String v) { keHoachDieuTri = v; }
-    public String getNoiDungCanThiep() { return noiDungCanThiep; }
-    public void setNoiDungCanThiep(String v) { noiDungCanThiep = v; }
-    public String getDonThuoc() { return donThuoc; }
-    public void setDonThuoc(String v) { donThuoc = v; }
-    public String getHuongDanSauDieuTri() { return huongDanSauDieuTri; }
-    public void setHuongDanSauDieuTri(String v) { huongDanSauDieuTri = v; }
-    public java.sql.Date getNgayTaiKham() { return ngayTaiKham; }
-    public void setNgayTaiKham(java.sql.Date v) { ngayTaiKham = v; }
 
     public String getTenNhaSi() { return tenNhaSi; }
     public void setTenNhaSi(String tenNhaSi) { this.tenNhaSi = tenNhaSi; }
