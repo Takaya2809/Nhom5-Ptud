@@ -80,7 +80,7 @@ public class CaTrucDAO {
                 System.err.println("CaTrucDAO.getAllCaTruc DB error: " + e.getMessage());
             }
         }
-        if (list.isEmpty()) {
+        if (list.isEmpty() && conn == null) {
             list.addAll(MOCK_CA_TRUC);
         }
         return list;
@@ -183,7 +183,7 @@ public class CaTrucDAO {
                 System.err.println("CaTrucDAO.getAllPhanCong DB error: " + e.getMessage());
             }
         }
-        if (list.isEmpty()) {
+        if (list.isEmpty() && conn == null) {
             list.addAll(MOCK_PHAN_CONG);
         }
         return list;
@@ -198,6 +198,82 @@ public class CaTrucDAO {
             }
         }
         return res;
+    }
+
+    public List<PhanCongCaTruc> getPhanCongTheoNV(String maNV) {
+        List<PhanCongCaTruc> all = getAllPhanCong();
+        if (maNV == null || maNV.trim().isEmpty()) return all;
+        List<PhanCongCaTruc> res = new ArrayList<>();
+        for (PhanCongCaTruc pc : all) {
+            if (pc.getMaNV() != null && pc.getMaNV().equalsIgnoreCase(maNV)) {
+                res.add(pc);
+            }
+        }
+        return res;
+    }
+
+    public List<PhanCongCaTruc> getPhanCongHomNay() {
+        List<PhanCongCaTruc> list = new ArrayList<>();
+        Connection conn = ConnectDB.getConnection();
+        if (conn != null) {
+            try {
+                String sql = "SELECT pc.maPhanCong, pc.maNV, pc.maCa, pc.vaiTroTrongCa, pc.trangThaiDiemDanh, pc.ghiChu, " +
+                             "nv.hoTen, ct.tenCa, ct.gioBatDau, ct.gioKetThuc, " +
+                             "CASE WHEN CAST(GETDATE() AS TIME) BETWEEN ct.gioBatDau AND ct.gioKetThuc THEN 1 ELSE 0 END AS DangDienRa " +
+                             "FROM PhanCongCaTruc pc " +
+                             "JOIN CaTruc ct ON pc.maCa = ct.maCa " +
+                             "LEFT JOIN NhanVien nv ON pc.maNV = nv.maNV " +
+                             "WHERE ct.ngayTruc = CAST(GETDATE() AS DATE) " +
+                             "ORDER BY DangDienRa DESC, ct.gioBatDau ASC";
+                try (Statement stmt = conn.createStatement();
+                     ResultSet rs = stmt.executeQuery(sql)) {
+                    while (rs.next()) {
+                        PhanCongCaTruc pc = new PhanCongCaTruc(
+                            rs.getInt("maPhanCong"),
+                            rs.getString("maNV"),
+                            rs.getString("maCa"),
+                            rs.getString("vaiTroTrongCa"),
+                            rs.getString("trangThaiDiemDanh"),
+                            rs.getString("ghiChu")
+                        );
+                        pc.setHoTenNV(rs.getString("hoTen"));
+                        String tenCa = rs.getString("tenCa");
+                        Time gb = rs.getTime("gioBatDau");
+                        Time gk = rs.getTime("gioKetThuc");
+                        if (tenCa != null) {
+                            pc.setTenCa(tenCa + (gb != null && gk != null ? " (" + gb.toString().substring(0, 5) + " - " + gk.toString().substring(0, 5) + ")" : ""));
+                        }
+                        list.add(pc);
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("CaTrucDAO.getPhanCongHomNay error: " + e.getMessage());
+            }
+        }
+        return list;
+    }
+
+    public boolean kiemTraTrungCaNhanVien(String maNV, String maCaMoi) {
+        Connection conn = ConnectDB.getConnection();
+        if (conn != null && maNV != null && maCaMoi != null) {
+            try {
+                String sql = "SELECT COUNT(*) FROM PhanCongCaTruc pc " +
+                             "JOIN CaTruc ct ON pc.maCa = ct.maCa " +
+                             "JOIN CaTruc ctMoi ON ctMoi.maCa = ? " +
+                             "WHERE pc.maNV = ? AND ct.ngayTruc = ctMoi.ngayTruc " +
+                             "  AND ((ctMoi.gioBatDau < ct.gioKetThuc AND ctMoi.gioKetThuc > ct.gioBatDau))";
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setString(1, maCaMoi);
+                    stmt.setString(2, maNV);
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) return rs.getInt(1) > 0;
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("CaTrucDAO.kiemTraTrungCaNhanVien error: " + e.getMessage());
+            }
+        }
+        return false;
     }
 
     public boolean themPhanCong(PhanCongCaTruc pc) {

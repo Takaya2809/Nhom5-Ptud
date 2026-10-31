@@ -227,6 +227,65 @@ public class BenhNhanDAO {
         return list;
     }
 
+    public String kiemTraTrungSoDienThoai(String sdt, String maBNBoQua) {
+        if (sdt == null || sdt.trim().isEmpty()) return null;
+        String cleanSDT = sdt.trim();
+        Connection conn = ConnectDB.getConnection();
+        if (conn != null) {
+            try {
+                String sql = "SELECT maBN, hoTen FROM BenhNhan WHERE soDienThoai = ? ";
+                if (maBNBoQua != null && !maBNBoQua.trim().isEmpty()) {
+                    sql += " AND maBN != ? ";
+                }
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setString(1, cleanSDT);
+                    if (maBNBoQua != null && !maBNBoQua.trim().isEmpty()) {
+                        stmt.setString(2, maBNBoQua.trim());
+                    }
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) {
+                            return rs.getString("maBN") + " - " + rs.getString("hoTen");
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("BenhNhanDAO.kiemTraTrungSoDienThoai error: " + e.getMessage());
+            }
+        }
+        for (BenhNhan bn : MOCK_BENH_NHAN) {
+            if (bn.getSoDienThoai() != null && bn.getSoDienThoai().trim().equals(cleanSDT)) {
+                if (maBNBoQua == null || !bn.getMaBN().equalsIgnoreCase(maBNBoQua.trim())) {
+                    return bn.getMaBN() + " - " + bn.getHoTen();
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean coDuLieuLienQuan(String maBN) {
+        if (maBN == null) return false;
+        Connection conn = ConnectDB.getConnection();
+        if (conn != null) {
+            try {
+                String sql = "SELECT " +
+                             "(SELECT COUNT(*) FROM HoaDonKham WHERE maBN = ?) + " +
+                             "(SELECT COUNT(*) FROM HoSoBenhAn WHERE maBN = ?) + " +
+                             "(SELECT COUNT(*) FROM LichHen WHERE maBN = ?)";
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setString(1, maBN);
+                    stmt.setString(2, maBN);
+                    stmt.setString(3, maBN);
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) return rs.getInt(1) > 0;
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("BenhNhanDAO.coDuLieuLienQuan error: " + e.getMessage());
+            }
+        }
+        return false;
+    }
+
     public boolean xoaBenhNhan(String maBN) {
         if (maBN == null || maBN.trim().isEmpty()) return false;
         maBN = maBN.trim();
@@ -234,13 +293,23 @@ public class BenhNhanDAO {
         boolean dbOk = false;
         if (conn != null) {
             try {
-                String sql = "DELETE FROM BenhNhan WHERE maBN = ?";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, maBN);
-                    dbOk = stmt.executeUpdate() > 0;
+                if (coDuLieuLienQuan(maBN)) {
+                    // Soft delete
+                    String sqlUpdate = "UPDATE BenhNhan SET trangThai = N'Ngừng theo dõi' WHERE maBN = ?";
+                    try (PreparedStatement stmt2 = conn.prepareStatement(sqlUpdate)) {
+                        stmt2.setString(1, maBN);
+                        dbOk = stmt2.executeUpdate() > 0;
+                    }
+                } else {
+                    // Hard delete nếu chưa từng phát sinh dữ liệu
+                    String sql = "DELETE FROM BenhNhan WHERE maBN = ?";
+                    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                        stmt.setString(1, maBN);
+                        dbOk = stmt.executeUpdate() > 0;
+                    }
                 }
             } catch (Exception e) {
-                System.err.println("BenhNhanDAO.xoaBenhNhan DB error (foreign key dependency, fallback soft delete): " + e.getMessage());
+                System.err.println("BenhNhanDAO.xoaBenhNhan error: " + e.getMessage());
                 try {
                     String sqlUpdate = "UPDATE BenhNhan SET trangThai = N'Ngừng theo dõi' WHERE maBN = ?";
                     try (PreparedStatement stmt2 = conn.prepareStatement(sqlUpdate)) {
