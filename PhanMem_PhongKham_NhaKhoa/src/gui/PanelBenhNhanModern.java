@@ -73,7 +73,7 @@ public class PanelBenhNhanModern extends JPanel {
 
         JPanel pnlTitle = new JPanel(new GridLayout(2, 1, 0, 3));
         pnlTitle.setOpaque(false);
-        JLabel lblTitle = new JLabel("HỒ SƠ BỆNH NHÂN & QUẢN LÝ ĐIỀU TRỊ");
+        JLabel lblTitle = new JLabel("HỒ SƠ BỆNH NHÂN");
         lblTitle.setFont(ModernUITheme.FONT_HERO);
         lblTitle.setForeground(ModernUITheme.TEXT_MAIN);
 

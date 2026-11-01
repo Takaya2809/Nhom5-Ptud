@@ -75,4 +75,19 @@ public class HoSoBenhAn {
     public String toString() {
         return "HoSoBenhAn[" + maHoSo + ", BN=" + maBN + ", Chẩn đoán=" + chanDoan + "]";
     }
+
+	public String getTinhTrangLamSang() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String getViTriRang() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String getKeHoachDieuTri() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

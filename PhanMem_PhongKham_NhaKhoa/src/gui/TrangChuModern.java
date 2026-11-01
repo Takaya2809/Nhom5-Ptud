@@ -41,6 +41,9 @@ public class TrangChuModern extends JFrame {
     private PanelUuDaiModern pnlUuDai;
     private PanelQuyDinhModern pnlQuyDinh;
     private PanelThongKeModern pnlThongKe;
+    private PanelVatTuTieuHaoModern pnlVatTuTieuHao;
+    private PanelTheoDoiKhuKhuanModern pnlTheoDoiKhuKhuan;
+    private PanelThongKeCuoiNgayModern pnlThongKeCuoiNgay;
 
     // Các DAO phục vụ tìm kiếm nhanh trên Topbar
     private BenhNhanDAO benhNhanDAO = new BenhNhanDAO();
@@ -86,6 +89,9 @@ public class TrangChuModern extends JFrame {
         pnlContentArea.setBackground(ModernUITheme.BG_MAIN);
 
         // Khởi tạo các panels
+        pnlThongKeCuoiNgay = new PanelThongKeCuoiNgayModern();
+        pnlTheoDoiKhuKhuan = new PanelTheoDoiKhuKhuanModern();
+        pnlVatTuTieuHao = new PanelVatTuTieuHaoModern();
         pnlDashboard = new PanelDashboardModern(this::switchTab);
         pnlBenhNhan = new PanelBenhNhanModern();
         pnlDichVu = new PanelDichVuModern();
@@ -98,6 +104,7 @@ public class TrangChuModern extends JFrame {
         pnlQuyDinh = new PanelQuyDinhModern();
         pnlThongKe = new PanelThongKeModern();
 
+        pnlContentArea.add(pnlVatTuTieuHao, "VAT_TU_TIEU_HAO");
         pnlContentArea.add(pnlDashboard, "DASHBOARD");
         pnlContentArea.add(pnlBenhNhan, "BENH_NHAN");
         pnlContentArea.add(pnlDichVu, "DICH_VU");
@@ -109,6 +116,8 @@ public class TrangChuModern extends JFrame {
         pnlContentArea.add(pnlUuDai, "UU_DAI");
         pnlContentArea.add(pnlQuyDinh, "QUY_DINH");
         pnlContentArea.add(pnlThongKe, "THONG_KE");
+        pnlContentArea.add(pnlTheoDoiKhuKhuan, "KHU_KHUAN");
+        pnlContentArea.add(pnlThongKeCuoiNgay, "THONG_KE_CUOI_NGAY");
 
         pnlMainWorkspace.add(pnlContentArea, BorderLayout.CENTER);
         add(pnlMainWorkspace, BorderLayout.CENTER);
@@ -280,9 +289,15 @@ public class TrangChuModern extends JFrame {
         } else if (role.contains("y tá") || role.contains("phụ tá") || role.contains("điều dưỡng")
                 || maRole.contains("YT")) {
             addCategoryHeader(pnlMenuItems, "HỖ TRỢ & VẬT TƯ");
-            addMenuItem(pnlMenuItems, AppIcon.Type.INVENTORY, "Kho Dược & Vật Tư", "KHO_VAT_TU");
-            addMenuItem(pnlMenuItems, AppIcon.Type.PATIENT, "Hồ Sơ Bệnh Nhân", "BENH_NHAN");
-            addMenuItem(pnlMenuItems, AppIcon.Type.CALENDAR, "Lịch Trực & Ca Khám", "LICH_TRUC");
+            addMenuItem(pnlMenuItems, AppIcon.Type.INVENTORY, "Vật Tư Tiêu Hao Theo Ca", "VAT_TU_TIEU_HAO");
+            addMenuItem(pnlMenuItems, AppIcon.Type.SHIELD, "Theo Dõi Khử Khuẩn", "KHU_KHUAN");
+            addCategoryHeader(pnlMenuItems, "LỊCH HẸN & BỆNH NHÂN");
+            addMenuItem(pnlMenuItems, AppIcon.Type.PATIENT, "Hồ sơ bệnh nhân", "BENH_NHAN");
+            addMenuItem(pnlMenuItems, AppIcon.Type.CALENDAR, "Lịch Trực & Lịch Hẹn Khám", "LICH_TRUC");
+            addCategoryHeader(pnlMenuItems, "BÁO CÁO QUẢN LÝ");
+            addMenuItem(pnlMenuItems, AppIcon.Type.CHART, "Thống Kê Cuối Ngày", "THONG_KE_CUOI_NGAY");
+            
+           
 
         } else {
             // VỊ TRÍ QUẢN LÝ / ADMIN: Toàn quyền truy cập tất cả chức năng
