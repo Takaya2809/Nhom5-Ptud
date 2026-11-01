@@ -42,4 +42,12 @@ public class ConnectDB {
             } catch (Exception ignored) {}
         }
     }
+    
+	public static String getLastError() {
+		// TODO Auto-generated method stub
+		return "Lỗi kết nối hoặc thao tác CSDL";
+	}
+
+	
+	
 }

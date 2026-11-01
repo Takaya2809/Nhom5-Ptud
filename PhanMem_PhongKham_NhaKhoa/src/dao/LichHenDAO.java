@@ -308,4 +308,5 @@ public class LichHenDAO {
         }
         return String.format("LH%03d", max + 1);
     }
+   
 }

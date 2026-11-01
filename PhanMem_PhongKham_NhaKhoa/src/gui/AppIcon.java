@@ -39,7 +39,9 @@ public class AppIcon implements Icon {
         FILTER,
         DOLLAR,
         TOOTH,
-        USER
+        USER, 
+        SHIELD,
+        CHART
     }
 
     private final Type type;
@@ -294,6 +296,21 @@ public class AppIcon implements Icon {
                 g2.draw(warn);
                 g2.draw(new Line2D.Float(8, 6, 8, 9.5f));
                 g2.fill(new Ellipse2D.Float(7.3f, 11, 1.4f, 1.4f));
+                break;
+            case SHIELD:
+                Path2D shield1 = new Path2D.Float();
+                shield1.moveTo(8.0f, 1.5f);
+                shield1.lineTo(13.5f, 3.5f);
+                shield1.lineTo(13.5f, 8.5f);
+                shield1.curveTo(13.5f, 12.0f, 10.5f, 14.0f, 8.0f, 15.0f);
+                shield1.curveTo(5.5f, 14.0f, 2.5f, 12.0f, 2.5f, 8.5f);
+                shield1.lineTo(2.5f, 3.5f);
+                shield1.closePath();
+                g2.draw(shield1);
+                
+                
+                g2.draw(new Line2D.Float(8.0f, 5.5f, 8.0f, 11.0f));
+                g2.draw(new Line2D.Float(5.5f, 8.25f, 10.5f, 8.25f));
                 break;
         }
 
