@@ -56,11 +56,4 @@ public class VatTu {
     public String toString() {
         return tenVatTu + " (" + soLuongTon + " " + donViTinh + ")";
     }
-
-	public Object getGiaTien() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	
 }
