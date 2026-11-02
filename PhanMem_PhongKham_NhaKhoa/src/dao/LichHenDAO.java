@@ -1,7 +1,9 @@
 package dao;
 
 import connectDB.ConnectDB;
+import entity.BenhNhan;
 import entity.LichHen;
+import entity.NhanVien;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -292,6 +294,39 @@ public class LichHenDAO {
             if (match) res.add(lh);
         }
         return res;
+    }
+
+    public List<LichHen> timKiem(String keyword, Date ngay) {
+        List<LichHen> matches = timKiem(keyword);
+        if (ngay == null) return matches;
+        List<LichHen> filtered = new ArrayList<>();
+        for (LichHen lh : matches) {
+            if (ngay.equals(lh.getNgayHen())) filtered.add(lh);
+        }
+        return filtered;
+    }
+
+    public List<String[]> getBenhNhanOptions() {
+        List<String[]> options = new ArrayList<>();
+        for (BenhNhan bn : new BenhNhanDAO().getAllBenhNhan()) {
+            options.add(new String[]{bn.getMaBN(), bn.getHoTen(), bn.getSoDienThoai()});
+        }
+        return options;
+    }
+
+    public List<String[]> getNhaSiOptions() {
+        List<String[]> options = new ArrayList<>();
+        for (NhanVien nv : new NhanVienDAO().getAllNhanVien()) {
+            String title = nv.getChucDanh() == null ? "" : nv.getChucDanh().toLowerCase();
+            if (title.contains("nha sĩ") || title.contains("nha si") || title.contains("bác sĩ") || title.contains("bac si")) {
+                options.add(new String[]{nv.getMaNV(), nv.getHoTen()});
+            }
+        }
+        return options;
+    }
+
+    public String getLastError() {
+        return ConnectDB.getLastError();
     }
 
     public String sinhMaLichHenMoi() {

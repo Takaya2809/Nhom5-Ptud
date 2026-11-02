@@ -29,7 +29,6 @@ public class NhanVienDAO {
         MOCK_NHAN_VIEN.add(new NhanVien("NV003", "BS. Trần Minh Trí", Date.valueOf("1994-10-05"), "Nam", "0915776655", "tri.tran@nhakhoaabc.vn", "Nha sĩ", "Bác sĩ Răng Hàm Mặt", Date.valueOf("2022-05-20"), "Đang làm việc"));
         MOCK_NHAN_VIEN.add(new NhanVien("LT001", "Phạm Ngọc Trâm", Date.valueOf("1998-04-25"), "Nữ", "0934567890", "tram.pham@nhakhoaabc.vn", "Lễ tân", "Cử nhân Quan hệ Quốc tế", Date.valueOf("2022-02-01"), "Đang làm việc"));
         MOCK_NHAN_VIEN.add(new NhanVien("LT002", "Đỗ Thùy Trang", Date.valueOf("2000-08-14"), "Nữ", "0935123456", "trang.do@nhakhoaabc.vn", "Lễ tân", "Cử nhân Ngoại ngữ", Date.valueOf("2023-03-01"), "Đang làm việc"));
-        MOCK_NHAN_VIEN.add(new NhanVien("TN001", "Đỗ Hoài Phương", Date.valueOf("1997-09-18"), "Nữ", "0945678901", "phuong.do@nhakhoaabc.vn", "Thu ngân", "Cử nhân Kế toán Doanh nghiệp", Date.valueOf("2022-03-10"), "Đang làm việc"));
         MOCK_NHAN_VIEN.add(new NhanVien("YT001", "Nguyễn Thị Kim Oanh", Date.valueOf("1995-12-05"), "Nữ", "0978901234", "oanh.nguyen@nhakhoaabc.vn", "Y tá", "Cử nhân Điều dưỡng Đa khoa", Date.valueOf("2021-08-01"), "Đang làm việc"));
         MOCK_NHAN_VIEN.add(new NhanVien("YT002", "Võ Thị Mỹ Duyên", Date.valueOf("1999-07-20"), "Nữ", "0971239876", "duyen.vo@nhakhoaabc.vn", "Y tá", "Điều dưỡng Nha khoa", Date.valueOf("2023-04-15"), "Đang làm việc"));
     }
