@@ -2,16 +2,14 @@ package gui;
 
 import dao.TaiKhoanDAO;
 import entity.TaiKhoan;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 public class LoginModern extends JFrame {
 
@@ -187,7 +185,6 @@ public class LoginModern extends JFrame {
                 "Quản lý",
                 "Nha sĩ",
                 "Lễ tân",
-                "Thu ngân",
                 "Y tá"
         });
         cboVaiTro.setFont(ModernUITheme.FONT_REGULAR);
@@ -294,10 +291,6 @@ public class LoginModern extends JFrame {
                 break;
             case "Lễ tân":
                 txtUsername.setText("letan_tram");
-                txtPassword.setText("123456");
-                break;
-            case "Thu ngân":
-                txtUsername.setText("thungan_phuong");
                 txtPassword.setText("123456");
                 break;
             case "Y tá":

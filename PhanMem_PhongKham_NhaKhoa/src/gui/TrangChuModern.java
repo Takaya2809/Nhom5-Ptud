@@ -32,6 +32,7 @@ public class TrangChuModern extends JFrame {
     // Các Panels
     private PanelDashboardModern pnlDashboard;
     private PanelBenhNhanModern pnlBenhNhan;
+    private PanelKhamDieuTriModern pnlKhamDieuTri;
     private PanelDichVuModern pnlDichVu;
     private PanelKhoVatTuModern pnlKhoVatTu;
     private PanelLichTrucModern pnlLichTruc;
@@ -94,6 +95,7 @@ public class TrangChuModern extends JFrame {
         pnlVatTuTieuHao = new PanelVatTuTieuHaoModern();
         pnlDashboard = new PanelDashboardModern(this::switchTab);
         pnlBenhNhan = new PanelBenhNhanModern();
+        pnlKhamDieuTri = new PanelKhamDieuTriModern(currentUser);
         pnlDichVu = new PanelDichVuModern();
         pnlKhoVatTu = new PanelKhoVatTuModern();
         pnlLichTruc = new PanelLichTrucModern();
@@ -107,6 +109,8 @@ public class TrangChuModern extends JFrame {
         pnlContentArea.add(pnlVatTuTieuHao, "VAT_TU_TIEU_HAO");
         pnlContentArea.add(pnlDashboard, "DASHBOARD");
         pnlContentArea.add(pnlBenhNhan, "BENH_NHAN");
+        pnlContentArea.add(pnlKhamDieuTri, "NHA_SI");
+        pnlContentArea.add(pnlKhamDieuTri, "KHAM_DIEU_TRI");
         pnlContentArea.add(pnlDichVu, "DICH_VU");
         pnlContentArea.add(pnlKhoVatTu, "KHO_VAT_TU");
         pnlContentArea.add(pnlLichTruc, "LICH_TRUC");
@@ -125,14 +129,15 @@ public class TrangChuModern extends JFrame {
         // Mặc định chọn tab phù hợp theo từng vị trí
         String defaultTab = "DASHBOARD";
         String rLower = this.currentUser.getTenVaiTro() != null ? this.currentUser.getTenVaiTro().toLowerCase() : "";
-        if (rLower.contains("nha sĩ") || rLower.contains("bác sĩ")) {
+        String mUpper = this.currentUser.getMaVaiTro() != null ? this.currentUser.getMaVaiTro().toUpperCase() : "";
+        if (rLower.contains("nha sĩ") || rLower.contains("bác sĩ") || mUpper.contains("BS")) {
+            defaultTab = "NHA_SI_TIEP_NHAN";
+        } else if (rLower.contains("lễ tân") || rLower.contains("tiếp tân") || mUpper.contains("LT")) {
             defaultTab = "BENH_NHAN";
-        } else if (rLower.contains("lễ tân") || rLower.contains("tiếp tân")) {
-            defaultTab = "BENH_NHAN";
-        } else if (rLower.contains("thu ngân")) {
-            defaultTab = "THANH_TOAN";
-        } else if (rLower.contains("y tá") || rLower.contains("phụ tá")) {
-            defaultTab = "KHO_VAT_TU";
+        } else if (rLower.contains("y tá") || rLower.contains("phụ tá") || rLower.contains("điều dưỡng") || mUpper.contains("YT")) {
+            defaultTab = "VAT_TU_TIEU_HAO";
+        } else {
+            defaultTab = "DASHBOARD";
         }
 
         switchTab(defaultTab);
@@ -268,23 +273,26 @@ public class TrangChuModern extends JFrame {
         String maRole = currentUser.getMaVaiTro() != null ? currentUser.getMaVaiTro().toUpperCase() : "";
 
         if (role.contains("nha sĩ") || role.contains("bác sĩ") || maRole.contains("BS")) {
-            addCategoryHeader(pnlMenuItems, "CHỨC NĂNG NHA SĨ");
+            addCategoryHeader(pnlMenuItems, "HỒ SƠ & BỆNH ÁN");
             addMenuItem(pnlMenuItems, AppIcon.Type.PATIENT, "Hồ Sơ Bệnh Nhân", "BENH_NHAN");
-            addMenuItem(pnlMenuItems, AppIcon.Type.SERVICE, "Dịch Vụ & Bảng Giá", "DICH_VU");
+            addCategoryHeader(pnlMenuItems, "QUY TRÌNH KHÁM & ĐIỀU TRỊ");
+            addMenuItem(pnlMenuItems, AppIcon.Type.PATIENT, "Tiếp nhận và khám bệnh nhân", "NHA_SI_TIEP_NHAN");
+            addMenuItem(pnlMenuItems, AppIcon.Type.REPORT, "Chẩn đoán & Cận lâm sàng", "NHA_SI_CHAN_DOAN");
+            addMenuItem(pnlMenuItems, AppIcon.Type.SERVICE, "Tư vấn & Kế hoạch điều trị", "NHA_SI_DIEU_TRI");
+            addMenuItem(pnlMenuItems, AppIcon.Type.CALENDAR, "Tái khám & Đánh giá", "NHA_SI_TAI_KHAM");
+            addMenuItem(pnlMenuItems, AppIcon.Type.REPORT, "Hoàn tất & Theo dõi điều trị", "NHA_SI_HOAN_TAT");
+            addCategoryHeader(pnlMenuItems, "LỊCH TRỰC & DỊCH VỤ");
             addMenuItem(pnlMenuItems, AppIcon.Type.CALENDAR, "Lịch Trực & Ca Khám", "LICH_TRUC");
+            addMenuItem(pnlMenuItems, AppIcon.Type.SERVICE, "Dịch Vụ & Bảng Giá", "DICH_VU");
 
         } else if (role.contains("lễ tân") || role.contains("tiếp tân") || maRole.contains("LT")) {
             addCategoryHeader(pnlMenuItems, "TIẾP ĐÓN & ĐẶT LỊCH");
             addMenuItem(pnlMenuItems, AppIcon.Type.PATIENT, "Hồ Sơ Bệnh Nhân", "BENH_NHAN");
             addMenuItem(pnlMenuItems, AppIcon.Type.CALENDAR, "Lịch Trực & Ca Khám", "LICH_TRUC");
             addMenuItem(pnlMenuItems, AppIcon.Type.SERVICE, "Dịch Vụ & Bảng Giá", "DICH_VU");
-            addMenuItem(pnlMenuItems, AppIcon.Type.DISCOUNT, "Chính Sách Ưu Đãi", "UU_DAI");
-
-        } else if (role.contains("thu ngân") || maRole.contains("TN")) {
-            addCategoryHeader(pnlMenuItems, "NGHIỆP VỤ THU NGÂN");
+            addCategoryHeader(pnlMenuItems, "THANH TOÁN & ƯU ĐÃI");
             addMenuItem(pnlMenuItems, AppIcon.Type.PAYMENT, "Thu Ngân & Hóa Đơn", "THANH_TOAN");
             addMenuItem(pnlMenuItems, AppIcon.Type.DISCOUNT, "Chính Sách Ưu Đãi", "UU_DAI");
-            addMenuItem(pnlMenuItems, AppIcon.Type.SERVICE, "Dịch Vụ & Bảng Giá", "DICH_VU");
 
         } else if (role.contains("y tá") || role.contains("phụ tá") || role.contains("điều dưỡng")
                 || maRole.contains("YT")) {
@@ -296,11 +304,9 @@ public class TrangChuModern extends JFrame {
             addMenuItem(pnlMenuItems, AppIcon.Type.CALENDAR, "Lịch Trực & Lịch Hẹn Khám", "LICH_TRUC");
             addCategoryHeader(pnlMenuItems, "BÁO CÁO QUẢN LÝ");
             addMenuItem(pnlMenuItems, AppIcon.Type.CHART, "Thống Kê Cuối Ngày", "THONG_KE_CUOI_NGAY");
-            
-           
 
         } else {
-            // VỊ TRÍ QUẢN LÝ / ADMIN: Toàn quyền truy cập tất cả chức năng
+            // VỊ TRÍ QUẢN LÝ / ADMIN: Toàn quyền truy cập tất cả chức năng quản trị
             addCategoryHeader(pnlMenuItems, "TỔNG QUAN & ĐIỀU HÀNH");
             addMenuItem(pnlMenuItems, AppIcon.Type.DASHBOARD, "Dashboard Tổng Quan", "DASHBOARD");
             addMenuItem(pnlMenuItems, AppIcon.Type.REPORT, "Báo Cáo & Thống Kê", "THONG_KE");
@@ -616,12 +622,26 @@ public class TrangChuModern extends JFrame {
         return item;
     }
 
-    private boolean kiemTraQuyenTruyCap(String cardKey) {
-        // Kiểm tra xem menu của tài khoản có mục này không
+    public boolean hasPermission(String cardKey) {
+        if (cardKey == null) return false;
         for (SidebarMenuItem it : menuItems) {
             if (it.getCardKey().equals(cardKey)) {
                 return true;
             }
+        }
+        if (cardKey.equals("KHAM_DIEU_TRI") || cardKey.startsWith("NHA_SI")) {
+            for (SidebarMenuItem it : menuItems) {
+                if (it.getCardKey().startsWith("NHA_SI") || it.getCardKey().equals("KHAM_DIEU_TRI")) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean kiemTraQuyenTruyCap(String cardKey) {
+        if (hasPermission(cardKey)) {
+            return true;
         }
         JOptionPane.showMessageDialog(this,
                 "Vị trí công tác của bạn ["
@@ -632,7 +652,16 @@ public class TrangChuModern extends JFrame {
     }
 
     public void switchTab(String cardKey) {
-        cardLayout.show(pnlContentArea, cardKey);
+        if (cardKey == null) return;
+        String viewKey = cardKey;
+        if (cardKey.startsWith("NHA_SI") || cardKey.equals("KHAM_DIEU_TRI")) {
+            if (pnlKhamDieuTri != null) {
+                pnlKhamDieuTri.showUseCase(cardKey);
+                pnlKhamDieuTri.refresh();
+            }
+            viewKey = "NHA_SI";
+        }
+        cardLayout.show(pnlContentArea, viewKey);
 
         // Cập nhật trạng thái active sidebar
         for (SidebarMenuItem item : menuItems) {

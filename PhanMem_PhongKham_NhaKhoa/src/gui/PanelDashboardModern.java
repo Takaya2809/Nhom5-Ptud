@@ -53,6 +53,10 @@ public class PanelDashboardModern extends JPanel {
     private Timer autoRefreshTimer;
     private DecimalFormat df = new DecimalFormat("#,### VNĐ");
 
+    public PanelDashboardModern() {
+        this(null);
+    }
+
     public PanelDashboardModern(Consumer<String> navCallback) {
         this.navigationCallback = navCallback;
         setLayout(new BorderLayout(0, 16));

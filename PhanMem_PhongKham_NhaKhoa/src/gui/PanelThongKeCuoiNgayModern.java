@@ -28,7 +28,7 @@ public class PanelThongKeCuoiNgayModern extends JPanel {
 
         JPanel pnlTitleGroup = new JPanel(new GridLayout(2, 1, 0, 2));
         pnlTitleGroup.setOpaque(false);
-        JLabel lblTitle = new JLabel("UC004: THỐNG KÊ CUỐI NGÀY - VẬT TƯ TIÊU HAO");
+        JLabel lblTitle = new JLabel("THỐNG KÊ CUỐI NGÀY - VẬT TƯ TIÊU HAO");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblTitle.setForeground(new Color(33, 37, 41));
 

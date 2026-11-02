@@ -56,8 +56,10 @@ public class PanelTaiKhoanModern extends JPanel {
         pnlSearch.setOpaque(false);
         txtTimKiem = ModernUITheme.createTextField(18);
         txtTimKiem.setToolTipText("Tìm tên đăng nhập hoặc tên nhân viên...");
-        btnTimKiem = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SEARCH, 15, Color.WHITE), "Tìm kiếm", ModernUITheme.PRIMARY, Color.WHITE);
-        JButton btnTaiLai = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 14, ModernUITheme.TEXT_MUTED), "Tất cả", ModernUITheme.TEXT_MUTED);
+        btnTimKiem = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SEARCH, 15, Color.WHITE), "Tìm kiếm",
+                ModernUITheme.PRIMARY, Color.WHITE);
+        JButton btnTaiLai = ModernUITheme.createOutlineIconButton(
+                new AppIcon(AppIcon.Type.REFRESH, 14, ModernUITheme.TEXT_MUTED), "Tất cả", ModernUITheme.TEXT_MUTED);
 
         pnlSearch.add(new JLabel("Tra cứu:"));
         pnlSearch.add(txtTimKiem);
@@ -116,11 +118,16 @@ public class PanelTaiKhoanModern extends JPanel {
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlButtons.setOpaque(false);
 
-        btnThem = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.PLUS, 15, Color.WHITE), "Cấp tài khoản mới", ModernUITheme.PRIMARY, Color.WHITE);
-        btnDatLaiMK = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.LOCK, 15, Color.WHITE), "Đặt lại MK", ModernUITheme.ACCENT, Color.WHITE);
-        btnKhoa = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.ACCOUNT, 15, Color.WHITE), "Khóa / Mở khóa", ModernUITheme.SECONDARY, Color.WHITE);
-        btnXoaTK = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.DELETE, 15, Color.WHITE), "Xóa tài khoản", ModernUITheme.DANGER, Color.WHITE);
-        btnLamMoi = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 15, ModernUITheme.TEXT_MUTED), "Làm mới", ModernUITheme.TEXT_MUTED);
+        btnThem = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.PLUS, 15, Color.WHITE), "Cấp tài khoản mới",
+                ModernUITheme.PRIMARY, Color.WHITE);
+        btnDatLaiMK = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.LOCK, 15, Color.WHITE), "Đặt lại MK",
+                ModernUITheme.ACCENT, Color.WHITE);
+        btnKhoa = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.ACCOUNT, 15, Color.WHITE), "Khóa / Mở khóa",
+                ModernUITheme.SECONDARY, Color.WHITE);
+        btnXoaTK = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.DELETE, 15, Color.WHITE), "Xóa tài khoản",
+                ModernUITheme.DANGER, Color.WHITE);
+        btnLamMoi = ModernUITheme.createOutlineIconButton(
+                new AppIcon(AppIcon.Type.REFRESH, 15, ModernUITheme.TEXT_MUTED), "Làm mới", ModernUITheme.TEXT_MUTED);
 
         pnlButtons.add(btnLamMoi);
         pnlButtons.add(btnXoaTK);
@@ -183,17 +190,18 @@ public class PanelTaiKhoanModern extends JPanel {
         List<TaiKhoan> list = taiKhoanDAO.getAllTaiKhoan();
         for (TaiKhoan tk : list) {
             tableModel.addRow(new Object[] {
-                tk.getTenDangNhap(),
-                tk.getHoTenNV() != null ? tk.getHoTenNV() : tk.getMaNV(),
-                tk.getTenVaiTro() != null ? tk.getTenVaiTro() : "Nhân viên",
-                tk.getTrangThai() != null ? tk.getTrangThai() : "Hoạt động"
+                    tk.getTenDangNhap(),
+                    tk.getHoTenNV() != null ? tk.getHoTenNV() : tk.getMaNV(),
+                    tk.getTenVaiTro() != null ? tk.getTenVaiTro() : "Nhân viên",
+                    tk.getTrangThai() != null ? tk.getTrangThai() : "Hoạt động"
             });
         }
         xoaTrangForm();
     }
 
     private void napFormTuBang(int row) {
-        if (row < 0 || row >= tableModel.getRowCount()) return;
+        if (row < 0 || row >= tableModel.getRowCount())
+            return;
         txtTenDangNhap.setText(tableModel.getValueAt(row, 0).toString());
         txtTenDangNhap.setEditable(false);
         txtMatKhau.setText("••••••");
@@ -207,10 +215,10 @@ public class PanelTaiKhoanModern extends JPanel {
         String tt = tableModel.getValueAt(row, 3) != null ? tableModel.getValueAt(row, 3).toString() : "Hoạt động";
         cbTrangThai.setSelectedItem(tt);
         if ("Bị khóa".equalsIgnoreCase(tt)) {
-            btnKhoa.setText("🔓 Mở khóa tài khoản");
+            btnKhoa.setText("Mở khóa tài khoản");
             btnKhoa.setBackground(ModernUITheme.SUCCESS);
         } else {
-            btnKhoa.setText("🔒 Khóa tài khoản");
+            btnKhoa.setText("Khóa tài khoản");
             btnKhoa.setBackground(ModernUITheme.DANGER);
         }
     }
@@ -222,7 +230,7 @@ public class PanelTaiKhoanModern extends JPanel {
         if (cbNhanVien.getItemCount() > 0)
             cbNhanVien.setSelectedIndex(0);
         cbTrangThai.setSelectedIndex(0);
-        btnKhoa.setText("🔒 Khóa tài khoản");
+        btnKhoa.setText("Khóa tài khoản");
         btnKhoa.setBackground(ModernUITheme.DANGER);
         table.clearSelection();
     }
@@ -241,7 +249,8 @@ public class PanelTaiKhoanModern extends JPanel {
             return;
         }
         if (cbNhanVien.getSelectedItem() == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên được cấp tài khoản!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên được cấp tài khoản!", "Nhắc nhở",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -264,25 +273,25 @@ public class PanelTaiKhoanModern extends JPanel {
         } else if (itemLower.contains("lễ tân") || maNV.startsWith("LT")) {
             maVaiTro = "VT_LT";
             tenVaiTro = "Lễ tân";
-        } else if (itemLower.contains("thu ngân") || maNV.startsWith("TN")) {
-            maVaiTro = "VT_TN";
-            tenVaiTro = "Thu ngân";
         } else if (itemLower.contains("y tá") || itemLower.contains("điều dưỡng") || maNV.startsWith("YT")) {
             maVaiTro = "VT_YT";
             tenVaiTro = "Y tá";
         }
 
-        String trangThai = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString() : "Hoạt động";
+        String trangThai = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString()
+                : "Hoạt động";
         TaiKhoan tk = new TaiKhoan(username, password, null, trangThai, 0, maNV, maVaiTro);
         tk.setHoTenNV(hoTen);
         tk.setTenVaiTro(tenVaiTro);
 
         boolean thanhCong = taiKhoanDAO.themTaiKhoan(tk);
         if (thanhCong) {
-            JOptionPane.showMessageDialog(this, "Cấp tài khoản [" + username + "] cho " + hoTen + " thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Cấp tài khoản [" + username + "] cho " + hoTen + " thành công!",
+                    "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             taiDuLieu();
         } else {
-            JOptionPane.showMessageDialog(this, "Không thể tạo tài khoản. Tên đăng nhập có thể đã tồn tại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Không thể tạo tài khoản. Tên đăng nhập có thể đã tồn tại!", "Lỗi",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -290,26 +299,31 @@ public class PanelTaiKhoanModern extends JPanel {
         int row = table.getSelectedRow();
         String username = txtTenDangNhap.getText().trim();
         if (row < 0 && username.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn tài khoản trong danh sách!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn tài khoản trong danh sách!", "Nhắc nhở",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
         if ("admin".equalsIgnoreCase(username)) {
-            JOptionPane.showMessageDialog(this, "Không thể khóa tài khoản quản trị tối cao (admin)!", "Cảnh báo bảo mật", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Không thể khóa tài khoản quản trị tối cao (admin)!",
+                    "Cảnh báo bảo mật", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        String trangThaiHienTai = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString() : "Hoạt động";
+        String trangThaiHienTai = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString()
+                : "Hoạt động";
         boolean khoa = "Hoạt động".equalsIgnoreCase(trangThaiHienTai);
         boolean thanhCong;
         if (khoa) {
             thanhCong = taiKhoanDAO.khoaTaiKhoan(username);
             if (thanhCong) {
-                JOptionPane.showMessageDialog(this, "Đã khóa tài khoản [" + username + "] thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Đã khóa tài khoản [" + username + "] thành công!", "Thông báo",
+                        JOptionPane.INFORMATION_MESSAGE);
             }
         } else {
             thanhCong = taiKhoanDAO.moKhoaTaiKhoan(username);
             if (thanhCong) {
-                JOptionPane.showMessageDialog(this, "Đã mở khóa tài khoản [" + username + "] thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Đã mở khóa tài khoản [" + username + "] thành công!", "Thông báo",
+                        JOptionPane.INFORMATION_MESSAGE);
             }
         }
         taiDuLieu();
@@ -319,17 +333,23 @@ public class PanelTaiKhoanModern extends JPanel {
         int row = table.getSelectedRow();
         String username = txtTenDangNhap.getText().trim();
         if (row < 0 && username.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn tài khoản cần đặt lại mật khẩu!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn tài khoản cần đặt lại mật khẩu!", "Nhắc nhở",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
-        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn đặt lại mật khẩu của tài khoản [" + username + "] về mặc định: 123456?", "Xác nhận đặt lại", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Bạn có chắc chắn muốn đặt lại mật khẩu của tài khoản [" + username + "] về mặc định: 123456?",
+                "Xác nhận đặt lại", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             boolean thanhCong = taiKhoanDAO.capLaiMatKhau(username, "123456");
             if (thanhCong) {
-                JOptionPane.showMessageDialog(this, "Đã đặt lại mật khẩu tài khoản [" + username + "] về mặc định: 123456!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                        "Đã đặt lại mật khẩu tài khoản [" + username + "] về mặc định: 123456!", "Thông báo",
+                        JOptionPane.INFORMATION_MESSAGE);
                 taiDuLieu();
             } else {
-                JOptionPane.showMessageDialog(this, "Đặt lại mật khẩu thất bại. Vui lòng thử lại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Đặt lại mật khẩu thất bại. Vui lòng thử lại!", "Lỗi",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -345,21 +365,22 @@ public class PanelTaiKhoanModern extends JPanel {
         tableModel.setRowCount(0);
         for (TaiKhoan tk : all) {
             boolean match = (tk.getTenDangNhap() != null && tk.getTenDangNhap().toLowerCase().contains(keyword)) ||
-                            (tk.getHoTenNV() != null && tk.getHoTenNV().toLowerCase().contains(keyword)) ||
-                            (tk.getMaNV() != null && tk.getMaNV().toLowerCase().contains(keyword)) ||
-                            (tk.getTenVaiTro() != null && tk.getTenVaiTro().toLowerCase().contains(keyword)) ||
-                            (tk.getTrangThai() != null && tk.getTrangThai().toLowerCase().contains(keyword));
+                    (tk.getHoTenNV() != null && tk.getHoTenNV().toLowerCase().contains(keyword)) ||
+                    (tk.getMaNV() != null && tk.getMaNV().toLowerCase().contains(keyword)) ||
+                    (tk.getTenVaiTro() != null && tk.getTenVaiTro().toLowerCase().contains(keyword)) ||
+                    (tk.getTrangThai() != null && tk.getTrangThai().toLowerCase().contains(keyword));
             if (match) {
                 tableModel.addRow(new Object[] {
-                    tk.getTenDangNhap(),
-                    tk.getHoTenNV() != null ? tk.getHoTenNV() : tk.getMaNV(),
-                    tk.getTenVaiTro() != null ? tk.getTenVaiTro() : "Nhân viên",
-                    tk.getTrangThai() != null ? tk.getTrangThai() : "Hoạt động"
+                        tk.getTenDangNhap(),
+                        tk.getHoTenNV() != null ? tk.getHoTenNV() : tk.getMaNV(),
+                        tk.getTenVaiTro() != null ? tk.getTenVaiTro() : "Nhân viên",
+                        tk.getTrangThai() != null ? tk.getTrangThai() : "Hoạt động"
                 });
             }
         }
         if (tableModel.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(this, "Không tìm thấy tài khoản nào khớp với từ khóa: \"" + keyword + "\"", "Kết quả tra cứu", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Không tìm thấy tài khoản nào khớp với từ khóa: \"" + keyword + "\"",
+                    "Kết quả tra cứu", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
@@ -367,21 +388,27 @@ public class PanelTaiKhoanModern extends JPanel {
         int row = table.getSelectedRow();
         String username = txtTenDangNhap.getText().trim();
         if (row < 0 && username.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 tài khoản trong bảng để xóa!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 tài khoản trong bảng để xóa!", "Nhắc nhở",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
-        if (row >= 0) username = tableModel.getValueAt(row, 0).toString();
+        if (row >= 0)
+            username = tableModel.getValueAt(row, 0).toString();
 
         if ("admin".equalsIgnoreCase(username)) {
-            JOptionPane.showMessageDialog(this, "Không được phép xóa tài khoản quản trị hệ thống (admin)!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Không được phép xóa tài khoản quản trị hệ thống (admin)!", "Cảnh báo",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        int cf = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa tài khoản đăng nhập [" + username + "] khỏi hệ thống?", "Xác nhận xóa tài khoản", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        int cf = JOptionPane.showConfirmDialog(this,
+                "Bạn có chắc chắn muốn xóa tài khoản đăng nhập [" + username + "] khỏi hệ thống?",
+                "Xác nhận xóa tài khoản", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (cf == JOptionPane.YES_OPTION) {
             boolean ok = taiKhoanDAO.xoaTaiKhoan(username);
             if (ok) {
-                JOptionPane.showMessageDialog(this, "Đã xóa tài khoản [" + username + "] thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Đã xóa tài khoản [" + username + "] thành công!", "Thông báo",
+                        JOptionPane.INFORMATION_MESSAGE);
                 taiDuLieu();
             } else {
                 JOptionPane.showMessageDialog(this, "Không thể xóa tài khoản này!", "Lỗi", JOptionPane.ERROR_MESSAGE);

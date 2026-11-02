@@ -98,7 +98,22 @@ public class PanelTheoDoiKhuKhuanModern extends JPanel {
         // ==================== 4. SỰ KIỆN TƯƠNG TÁC ====================
         btnCapNhatTrangThai.addActionListener(e -> xuLyCapNhatTrangThai());
         
-        btnTatCa.addActionListener(e -> { txtTimKiem.setText(""); });
+        javax.swing.table.TableRowSorter<DefaultTableModel> sorter = new javax.swing.table.TableRowSorter<>(modelTable);
+        tblDungCu.setRowSorter(sorter);
+
+        btnTimKiem.addActionListener(e -> {
+            String kw = txtTimKiem.getText().trim();
+            if (kw.isEmpty()) {
+                sorter.setRowFilter(null);
+            } else {
+                sorter.setRowFilter(RowFilter.regexFilter("(?i)" + java.util.regex.Pattern.quote(kw)));
+            }
+        });
+        txtTimKiem.addActionListener(e -> btnTimKiem.doClick());
+        btnTatCa.addActionListener(e -> {
+            txtTimKiem.setText("");
+            sorter.setRowFilter(null);
+        });
     }
 
     private void styleButton(JButton btn, Color normalColor, Color pressedColor) {

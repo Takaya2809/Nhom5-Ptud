@@ -120,7 +120,7 @@ public class PanelNhanSuModern extends JPanel {
 
         cbChucDanh = new JComboBox<>(new String[]{
             "Bác sĩ Chuyên khoa RHM", "Bác sĩ Trưởng khoa", "Bác sĩ Chỉnh nha",
-            "Y tá / Phụ tá", "Kỹ thuật viên nha khoa", "Lễ tân", "Thu ngân", "Quản lý"
+            "Y tá / Phụ tá", "Kỹ thuật viên nha khoa", "Lễ tân", "Quản lý"
         });
         cbChucDanh.setFont(ModernUITheme.FONT_REGULAR);
 
