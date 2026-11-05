@@ -197,22 +197,39 @@ public class LichHenDAO {
     }
 
     public List<String[]> getBenhNhanOptions() {
-        List<String[]> rows = new ArrayList<>(); lastError = null;
+        List<String[]> rows = new ArrayList<>(); 
+        lastError = null;
         Connection c = ConnectDB.getConnection();
-        if (c == null) { lastError = ConnectDB.getLastError(); return rows; }
-        try (Statement st = c.createStatement(); ResultSet rs = st.executeQuery("SELECT maBN, hoTen, soDienThoai FROM BenhNhan ORDER BY hoTen")) {
-            while (rs.next()) rows.add(new String[]{rs.getString(1), rs.getString(2), rs.getString(3)});
-        } catch (Exception e) { lastError = e.getMessage(); }
+        if (c != null) { 
+            try (Statement st = c.createStatement(); ResultSet rs = st.executeQuery("SELECT maBN, hoTen, soDienThoai FROM BenhNhan ORDER BY hoTen")) {
+                while (rs.next()) rows.add(new String[]{rs.getString(1), rs.getString(2), rs.getString(3)});
+                return rows; // Thành công lấy từ SQL Server
+            } catch (Exception e) { lastError = e.getMessage(); }
+        }
+        
+        // NẾU KHÔNG KẾT NỐI ĐƯỢC DATABASE -> LẤY TỪ MOCK DATA CỦA BenhNhanDAO
+        BenhNhanDAO bnDAO = new BenhNhanDAO();
+        for (entity.BenhNhan bn : bnDAO.getAllBenhNhan()) {
+            rows.add(new String[]{bn.getMaBN(), bn.getHoTen(), bn.getSoDienThoai()});
+        }
         return rows;
     }
-
     public List<String[]> getNhaSiOptions() {
-        List<String[]> rows = new ArrayList<>(); lastError = null;
+        List<String[]> rows = new ArrayList<>(); 
+        lastError = null;
         Connection c = ConnectDB.getConnection();
-        if (c == null) { lastError = ConnectDB.getLastError(); return rows; }
-        try (Statement st = c.createStatement(); ResultSet rs = st.executeQuery("SELECT maNV, hoTen FROM NhanVien WHERE maNV LIKE 'BS%' ORDER BY hoTen")) {
-            while (rs.next()) rows.add(new String[]{rs.getString(1), rs.getString(2)});
-        } catch (Exception e) { lastError = e.getMessage(); }
+        if (c != null) { 
+            try (Statement st = c.createStatement(); ResultSet rs = st.executeQuery("SELECT maNV, hoTen FROM NhanVien WHERE maNV LIKE 'BS%' ORDER BY hoTen")) {
+                while (rs.next()) rows.add(new String[]{rs.getString(1), rs.getString(2)});
+                return rows; 
+            } catch (Exception e) { lastError = e.getMessage(); }
+        }
+        
+
+        NhanVienDAO nvDAO = new NhanVienDAO();
+        for (entity.NhanVien nv : nvDAO.getDanhSachBacSi()) {
+            rows.add(new String[]{nv.getMaNV(), nv.getHoTen()});
+        }
         return rows;
     }
 

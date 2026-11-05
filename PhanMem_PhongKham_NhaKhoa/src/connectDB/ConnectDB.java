@@ -42,4 +42,9 @@ public class ConnectDB {
             } catch (Exception ignored) {}
         }
     }
+
+	public static String getLastError() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

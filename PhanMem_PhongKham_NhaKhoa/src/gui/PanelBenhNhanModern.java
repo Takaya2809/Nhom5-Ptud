@@ -8,6 +8,7 @@ import entity.BenhNhan;
 import entity.HoSoBenhAn;
 import entity.LichHen;
 import entity.NhanVien;
+import entity.TaiKhoan;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -36,8 +37,11 @@ public class PanelBenhNhanModern extends JPanel {
     private DatePickerField dpNgaySinh;
     private JComboBox<String> cbGioiTinh, cbLoaiKhach;
     private JButton btnThem, btnCapNhat, btnXoa, btnXemLichSu, btnDatHen, btnLamMoi, btnTimKiem;
+    
+    private TaiKhoan currentUser;
 
-    public PanelBenhNhanModern() {
+    public PanelBenhNhanModern(TaiKhoan user) {
+    	this.currentUser = user;
         setLayout(new BorderLayout(0, 16));
         setBackground(ModernUITheme.BG_MAIN);
         setBorder(new EmptyBorder(16, 20, 20, 20));
@@ -205,22 +209,42 @@ public class PanelBenhNhanModern extends JPanel {
     private void taiDuLieu() {
         tableModel.setRowCount(0);
         List<BenhNhan> list = benhNhanDAO.getAllBenhNhan();
+        
+        // KIỂM TRA QUYỀN: Có phải Lễ tân không?
+        boolean isLeTan = currentUser != null && "Lễ tân".equalsIgnoreCase(currentUser.getTenVaiTro());
+        
+        java.util.Set<String> danhSachMaBNCoLich = new java.util.HashSet<>();
+        if (isLeTan) {
+            List<LichHen> listLichHen = lichHenDAO.getAllLichHen();
+            for (LichHen lh : listLichHen) {
+                if (lh.getMaBN() != null) {
+                    danhSachMaBNCoLich.add(lh.getMaBN().toUpperCase());
+                }
+            }
+        }
+
         for (BenhNhan bn : list) {
-            tableModel.addRow(new Object[]{
-                bn.getMaBN(),
-                bn.getHoTen(),
-                bn.getSoDienThoai(),
-                bn.getDiaChi() != null ? bn.getDiaChi() : "",
-                bn.getGioiTinh() != null ? bn.getGioiTinh() : "Nam",
-                bn.getNgaySinh() != null ? bn.getNgaySinh().toString() : "",
-                bn.getTienSuBenh() != null ? bn.getTienSuBenh() : "",
-                bn.getLoaiKhach() != null ? bn.getLoaiKhach() : "Khách mới",
-                bn.getDiemTichLuy()
-            });
+            // ĐIỀU KIỆN HIỂN THỊ: 
+            // - Nếu KHÔNG phải Lễ tân (Quản lý, Nha sĩ...) -> Luôn true (hiển thị hết)
+            // - Nếu LÀ Lễ tân -> Phải có mã BN trong danhSachMaBNCoLich mới true
+            boolean thoaDieuKien = !isLeTan || (bn.getMaBN() != null && danhSachMaBNCoLich.contains(bn.getMaBN().toUpperCase()));
+            
+            if (thoaDieuKien) {
+                tableModel.addRow(new Object[]{
+                    bn.getMaBN(),
+                    bn.getHoTen(),
+                    bn.getSoDienThoai(),
+                    bn.getDiaChi() != null ? bn.getDiaChi() : "",
+                    bn.getGioiTinh() != null ? bn.getGioiTinh() : "Nam",
+                    bn.getNgaySinh() != null ? bn.getNgaySinh().toString() : "",
+                    bn.getTienSuBenh() != null ? bn.getTienSuBenh() : "",
+                    bn.getLoaiKhach() != null ? bn.getLoaiKhach() : "Khách mới",
+                    bn.getDiemTichLuy()
+                });
+            }
         }
         xoaTrangForm();
     }
-
     private void napFormTuBang(int row) {
         if (row < 0 || row >= tableModel.getRowCount()) return;
         txtMaBN.setText(tableModel.getValueAt(row, 0).toString());
@@ -421,6 +445,7 @@ public class PanelBenhNhanModern extends JPanel {
         }
         String maBN = tableModel.getValueAt(row, 0).toString();
         String hoTen = tableModel.getValueAt(row, 1).toString();
+        String sdt = tableModel.getValueAt(row, 2).toString();
 
         JDialog dlg = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Đặt Lịch Hẹn Khám - " + hoTen, true);
         dlg.setSize(480, 420);
@@ -471,9 +496,13 @@ public class PanelBenhNhanModern extends JPanel {
         JButton btnHuy = ModernUITheme.createOutlineButton("Hủy", ModernUITheme.TEXT_MUTED);
 
         btnLuu.addActionListener(e -> {
-            String maLH = txtMaLH.getText().trim();
+        	String maLH = txtMaLH.getText().trim();
             String bsItem = cbBS.getSelectedItem() != null ? cbBS.getSelectedItem().toString() : "";
             String maBS = bsItem.contains(" - ") ? bsItem.split(" - ")[0].trim() : "BS001";
+            
+
+            String tenBS = bsItem.contains(" - ") ? bsItem.split(" - ")[1].trim() : "Bác sĩ phụ trách";
+            
             Date d = dpHen.getDate();
             if (d == null) {
                 JOptionPane.showMessageDialog(dlg, "Vui lòng chọn ngày hẹn hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -484,6 +513,12 @@ public class PanelBenhNhanModern extends JPanel {
                 String lyDo = txtLyDo.getText().trim();
 
                 LichHen lh = new LichHen(maLH, maBN, maBS, d, t, lyDo, "Đặt hẹn tại quầy tiếp đón", "Đã xác nhận");
+                
+  
+                lh.setTenBenhNhan(hoTen);
+                lh.setSdtBenhNhan(sdt);
+                lh.setTenNhaSi(tenBS);
+
                 boolean ok = lichHenDAO.themLichHen(lh);
                 if (ok) {
                     JOptionPane.showMessageDialog(dlg, "Đã đặt lịch hẹn [" + maLH + "] cho bệnh nhân [" + hoTen + "] thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
@@ -506,13 +541,16 @@ public class PanelBenhNhanModern extends JPanel {
 
     private void xuLyTimKiem() {
         String keyword = txtTimKiem.getText();
+        
         if (keyword == null || keyword.trim().isEmpty()) {
-            taiDuLieu();
+            taiDuLieu(); 
             return;
         }
+        
         keyword = keyword.trim();
         List<BenhNhan> list = benhNhanDAO.timKiem(keyword);
         tableModel.setRowCount(0);
+        
         for (BenhNhan bn : list) {
             tableModel.addRow(new Object[]{
                 bn.getMaBN(),
@@ -525,7 +563,12 @@ public class PanelBenhNhanModern extends JPanel {
                 bn.getLoaiKhach() != null ? bn.getLoaiKhach() : "Khách mới",
                 bn.getDiemTichLuy()
             });
+        
+        
+        if (list.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy hồ sơ bệnh nhân nào khớp với từ khóa: \"" + keyword + "\"", "Kết quả tra cứu", JOptionPane.INFORMATION_MESSAGE);
         }
+    }
         if (list.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Không tìm thấy hồ sơ bệnh nhân nào khớp với từ khóa: \"" + keyword + "\"", "Kết quả tra cứu", JOptionPane.INFORMATION_MESSAGE);
         }

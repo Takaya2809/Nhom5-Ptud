@@ -19,8 +19,8 @@ public class PanelLichHenModern extends JPanel {
             "Mã lịch", "Ngày", "Giờ", "Mã BN", "Bệnh nhân", "Điện thoại", "Nha sĩ", "Lý do", "Trạng thái"
     }, 0) { @Override public boolean isCellEditable(int row, int column) { return false; } };
     private final JTable table = new JTable(model);
-    private final JComboBox<Choice> cbBenhNhan = new JComboBox<>();
-    private final JComboBox<Choice> cbNhaSi = new JComboBox<>();
+    private final JTextField txtBenhNhan = ModernUITheme.createTextField(25);
+    private final JComboBox<String> cbNhaSi = new JComboBox<>();
     private final JComboBox<String> cbTrangThai = new JComboBox<>(new String[]{"Đã lên lịch", "Đã xác nhận", "Đang khám", "Đã hoàn thành", "Đã hủy"});
     private final JTextField txtNgay = ModernUITheme.createTextField(10);
     private final JTextField txtGio = ModernUITheme.createTextField(6);
@@ -59,7 +59,7 @@ public class PanelLichHenModern extends JPanel {
         JPanel fields = new JPanel(new GridLayout(2, 4, 10, 8)); fields.setOpaque(false);
         txtMaLich.setEditable(false); txtMaLich.setBackground(new Color(241,245,249));
         txtNgay.setToolTipText("yyyy-MM-dd"); txtGio.setToolTipText("HH:mm");
-        fields.add(field("Mã lịch", txtMaLich)); fields.add(field("Bệnh nhân", cbBenhNhan));
+        fields.add(field("Mã lịch", txtMaLich)); fields.add(field("Bệnh nhân", txtBenhNhan));
         fields.add(field("Nha sĩ (không bắt buộc)", cbNhaSi)); fields.add(field("Ngày (yyyy-MM-dd)", txtNgay));
         fields.add(field("Giờ (HH:mm)", txtGio)); fields.add(field("Lý do khám", txtLyDo));
         fields.add(field("Ghi chú", txtGhiChu)); fields.add(field("Trạng thái", cbTrangThai));
@@ -79,11 +79,28 @@ public class PanelLichHenModern extends JPanel {
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && table.getSelectedRow() >= 0) {
                 int row = table.convertRowIndexToModel(table.getSelectedRow());
+                
                 txtMaLich.setText(String.valueOf(model.getValueAt(row, 0)));
+                txtNgay.setText(String.valueOf(model.getValueAt(row, 1)));
+                txtGio.setText(String.valueOf(model.getValueAt(row, 2)));
+                txtBenhNhan.setText(String.valueOf(model.getValueAt(row, 3))); 
+                
+                // Quét combobox để chọn đúng nha sĩ đang hiển thị trên bảng
+                Object nhaSi = model.getValueAt(row, 6);
+                String tenNS = nhaSi != null ? nhaSi.toString() : "Chưa phân công";
+                cbNhaSi.setSelectedIndex(0); // Mặc định chưa phân công
+                for (int i = 0; i < cbNhaSi.getItemCount(); i++) {
+                    if (cbNhaSi.getItemAt(i).contains(tenNS)) {
+                        cbNhaSi.setSelectedIndex(i);
+                        break;
+                    }
+                }
+                
+                txtLyDo.setText(String.valueOf(model.getValueAt(row, 7)));
                 cbTrangThai.setSelectedItem(model.getValueAt(row, 8));
             }
         });
-        loadOptions(); loadAll(); resetForm();
+        loadNhaSi(); loadAll(); resetForm();
     }
 
     private JPanel field(String label, JComponent input) {
@@ -92,13 +109,12 @@ public class PanelLichHenModern extends JPanel {
         p.add(l, BorderLayout.NORTH); p.add(input, BorderLayout.CENTER); return p;
     }
 
-    private void loadOptions() {
-        cbBenhNhan.removeAllItems();
-        for (String[] row : dao.getBenhNhanOptions()) cbBenhNhan.addItem(new Choice(row[0], row[1] + " - " + row[2]));
-        if (dao.getLastError() != null) { showError(dao.getLastError()); return; }
-        cbNhaSi.removeAllItems(); cbNhaSi.addItem(new Choice("", "Chưa phân công"));
-        for (String[] row : dao.getNhaSiOptions()) cbNhaSi.addItem(new Choice(row[0], row[1]));
-        if (dao.getLastError() != null) showError(dao.getLastError());
+    private void loadNhaSi() {
+        cbNhaSi.removeAllItems();
+        cbNhaSi.addItem("Chưa phân công");
+        for (String[] row : dao.getNhaSiOptions()) {
+            cbNhaSi.addItem(row[0] + " - " + row[1]); 
+        }
     }
 
     private void loadAll() { showRows(dao.getAllLichHen()); }
@@ -139,24 +155,55 @@ public class PanelLichHenModern extends JPanel {
     }
 
     private void createAppointment() {
-        if (cbBenhNhan.getSelectedItem() == null) { showError("Cần có ít nhất một bệnh nhân trước khi đặt lịch."); return; }
+
+        String inputBN = txtBenhNhan.getText().trim().toLowerCase();
+        if (inputBN.isEmpty()) { showError("Vui lòng nhập mã hoặc tên bệnh nhân."); return; }
+        
+        String maBNSave = null, tenBNSave = null, sdtBNSave = null;
+        for (String[] row : dao.getBenhNhanOptions()) {
+            if (row[0].toLowerCase().equals(inputBN) || row[1].toLowerCase().contains(inputBN)) {
+                maBNSave = row[0]; tenBNSave = row[1]; sdtBNSave = row[2]; break;
+            }
+        }
+        if (maBNSave == null) { showError("Không tìm thấy bệnh nhân hợp lệ!"); return; }
+
+
+        String bsItem = cbNhaSi.getSelectedItem() != null ? cbNhaSi.getSelectedItem().toString() : "Chưa phân công";
+        String maNSSave = bsItem.contains(" - ") ? bsItem.split(" - ")[0].trim() : null;
+        String tenNSSave = bsItem.contains(" - ") ? bsItem.split(" - ")[1].trim() : "Chưa phân công";
+        
+        if (bsItem.equals("Chưa phân công")) {
+            maNSSave = null;
+        }
+
+
         try {
             Date date = Date.valueOf(txtNgay.getText().trim());
             String timeText = txtGio.getText().trim();
             Time time = Time.valueOf(timeText.length() == 5 ? timeText + ":00" : timeText);
+            
             if (date.before(Date.valueOf(LocalDate.now()))) { showError("Không thể tạo lịch trong quá khứ."); return; }
             if (txtLyDo.getText().trim().isEmpty()) { showError("Vui lòng nhập lý do khám."); return; }
+            
             String id = dao.sinhMaLichHenMoi();
             if (id == null) { showError(dao.getLastError()); return; }
-            Choice patient = (Choice) cbBenhNhan.getSelectedItem();
-            Choice dentist = (Choice) cbNhaSi.getSelectedItem();
-            LichHen lh = new LichHen(id, patient.id, dentist == null ? null : dentist.id, date, time,
+            
+            LichHen lh = new LichHen(id, maBNSave, maNSSave, date, time,
                     txtLyDo.getText().trim(), txtGhiChu.getText().trim(), "Đã lên lịch");
-            if (!dao.themLichHen(lh)) { showError(dao.getLastError()); return; }
-            loadAll(); resetForm(); JOptionPane.showMessageDialog(this, "Đã tạo lịch hẹn " + id + ".");
-        } catch (IllegalArgumentException e) { showError("Ngày cần theo yyyy-MM-dd, giờ theo HH:mm."); }
-    }
+            
+            lh.setTenBenhNhan(tenBNSave);
+            lh.setSdtBenhNhan(sdtBNSave);
+            lh.setTenNhaSi(tenNSSave);
 
+            if (!dao.themLichHen(lh)) { showError(dao.getLastError()); return; }
+            
+            loadAll(); 
+            resetForm(); 
+            JOptionPane.showMessageDialog(this, "Đã tạo lịch hẹn " + id + ".");
+        } catch (IllegalArgumentException e) { 
+            showError("Ngày cần theo định dạng yyyy-MM-dd, giờ theo HH:mm."); 
+        }
+    }
     private void updateStatus(boolean cancel) {
         String id = txtMaLich.getText().trim();
         if (id.isEmpty()) { showError("Chọn lịch hẹn cần cập nhật trong bảng."); return; }
@@ -167,10 +214,14 @@ public class PanelLichHenModern extends JPanel {
 
     private void resetForm() {
         String id = dao.sinhMaLichHenMoi(); txtMaLich.setText(id == null ? "" : id);
+        txtBenhNhan.setText(""); 
+        
+        if (cbNhaSi.getItemCount() > 0) cbNhaSi.setSelectedIndex(0); 
+     
         txtNgay.setText(LocalDate.now().toString()); txtGio.setText("09:00"); txtLyDo.setText(""); txtGhiChu.setText("");
         cbTrangThai.setSelectedItem("Đã lên lịch"); table.clearSelection();
+        loadAll(); 
     }
-
     private void showError(String message) {
         JOptionPane.showMessageDialog(this, message == null ? "Có lỗi khi xử lý lịch hẹn." : message,
                 "Lịch hẹn", JOptionPane.WARNING_MESSAGE);

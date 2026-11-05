@@ -88,7 +88,7 @@ public class TrangChuModern extends JFrame {
 
         // Khởi tạo các panels
         pnlDashboard = new PanelDashboardModern(this::switchTab);
-        pnlBenhNhan = new PanelBenhNhanModern();
+        pnlBenhNhan = new PanelBenhNhanModern(user);
         pnlDichVu = new PanelDichVuModern();
         pnlKhoVatTu = new PanelKhoVatTuModern();
         pnlLichTruc = new PanelLichTrucModern();
