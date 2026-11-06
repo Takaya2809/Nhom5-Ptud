@@ -1,0 +1,336 @@
+@startuml Dental_Clinic_Management_System_Fixed
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam monochrome false
+skinparam roundcorner 6
+skinparam dpi 240
+skinparam nodesep 60
+skinparam ranksep 60
+
+skinparam class {
+    BackgroundColor #F8FBFF
+    ArrowColor #1565C0
+    BorderColor #1976D2
+    HeaderBackgroundColor #BBDEFB
+    FontSize 12
+    AttributeFontSize 11
+}
+
+' ==========================================
+' 1. NHÓM NHÂN SỰ & TÀI KHOẢN & CA TRỰC
+' ==========================================
+package "Quản lý Nhân sự & Phân ca" #F4F8FA {
+  abstract class NhanVien {
+    - maNV : String
+    - hoTen : String
+    - ngaySinh : Date
+    - gioiTinh : String
+    - sdt : String
+    - email : String
+    - ngayVaoLam : Date
+    - trangThai : String
+    + capNhatThongTin() : void
+    + chuyenTrangThaiNghiViec() : void
+    + xemLichTruc() : List<PhanCongCaTruc>
+  }
+
+  class TaiKhoan {
+    - tenDangNhap : String
+    - matKhauHash : String
+    - ngayTao : DateTime
+    - trangThai : String
+    - soLanSaiMatKhau : int
+    + dangNhap(mk : String) : boolean
+    + doiMatKhau() : void
+    + khoaTaiKhoan() : void
+    + moKhoaTaiKhoan() : void
+  }
+
+  class QuanLy {
+    - phongBan : String
+    + duyetPhieuNhapKho(p : PhieuNhapKho) : void
+    + phanCongCaTruc() : PhanCongCaTruc
+    + xemBaoCaoDoanhThu() : double
+  }
+
+  class LeTan {
+    - caLamViecChinh : String
+    + tiepNhanBenhNhan(bn : BenhNhan) : void
+    + taoLichHen() : LichHen
+    + lapHoaDon() : HoaDon
+  }
+
+  class NhaSi {
+    - chuyenMon : String
+    - soChungChiHanhNghe : String
+    + khamBenh(bn : BenhNhan) : HoSoBenhAn
+    + keDonThuoc() : DonThuoc
+    + capNhatKetQuaDieuTri() : void
+  }
+
+  class YTa {
+    - chuyenMon : String
+    - soChungChiHanhNghe : String
+    + hoTroKham() : void
+    + capNhatGhiChuHoSo(hs : HoSoBenhAn) : void
+  }
+
+  class CaTruc {
+    - maCa : String
+    - tenCa : String
+    - ngayTruc : Date
+    - gioBatDau : Time
+    - gioKetThuc : Time
+    - soNhaSiToiThieu : int
+    - soYTaToiThieu : int
+    - soLeTanToiThieu : int
+    - soLuotKhamToiDa : int
+    - trangThai : String
+    + kiemTraDinhBien() : boolean
+    + capNhatThoiGian() : void
+    + capNhatTrangThai() : void
+  }
+
+  class PhanCongCaTruc {
+    - maPhanCong : String
+    - vaiTroTrongCa : String
+    - trangThaiDiemDanh : String
+    - thoiGianDiemDanh : DateTime
+    - ghiChu : String
+    + diemDanh() : void
+    + xinDoiCa() : void
+  }
+
+  NhanVien <|-- QuanLy
+  NhanVien <|-- LeTan
+  NhanVien <|-- NhaSi
+  NhanVien <|-- YTa
+
+  NhanVien "1" -up-> "0..1" TaiKhoan : soHuu
+  NhanVien "1" --> "0..*" PhanCongCaTruc : duocPhanCong
+  CaTruc "1" o--> "0..*" PhanCongCaTruc : danhSachTruc
+}
+
+' ==========================================
+' 2. NHÓM KHO & VẬT TƯ
+' ==========================================
+package "Quản lý Kho & Vật tư" #F0F4F8 {
+  class NCC {
+    - maNCC : String
+    - tenNCC : String
+    - sdt : String
+    - diaChi : String
+    + capNhatThongTin() : void
+  }
+
+  class PhieuNhapKho {
+    - maPhieu : String
+    - ngayNhap : DateTime
+    - tongTien : double
+    - ghiChu : String
+    - trangThai : String
+    + themChiTiet() : void
+    + tinhTongTien() : double
+    + xacNhanNhapKho() : void
+    + huyPhieu() : void
+  }
+
+  class ChiTietPhieuNhapKho {
+    - soLuongNhap : int
+    - giaNhap : double
+    - thanhTien : double
+    + tinhThanhTien() : double
+    + capNhatSoLuongNhap() : void
+  }
+
+  class VatTu {
+    - maVatTu : String
+    - tenVatTu : String
+    - loaiVatTu : String
+    - donViTinh : String
+    - soLuongTon : int
+    - dinhMucToiThieu : int
+    - donGia : double
+    - trangThai : String
+    + capNhatTonKho(sl : int) : void
+    + kiemTraCanhBaoTonKho() : boolean
+    + thietLapDinhMuc() : void
+  }
+
+  NCC "1" -down-> "0..*" PhieuNhapKho : cungCap
+  PhieuNhapKho "1" *--down-> "1..*" ChiTietPhieuNhapKho
+  ChiTietPhieuNhapKho "0..*" -down-> "1" VatTu
+}
+
+QuanLy "1" ..down..> PhieuNhapKho : duyetPhieu
+
+' ==========================================
+' 3. NHÓM BỆNH NHÂN & LỊCH HẸN
+' ==========================================
+package "Bệnh nhân & Lịch hẹn" #F9FBE7 {
+  class BenhNhan {
+    - maBN : String
+    - hoTen : String
+    - ngaySinh : Date
+    - gioiTinh : String
+    - sdt : String
+    - email : String
+    - diaChi : String
+    - tienSuBenh : String
+    - trangThai : String
+    + xemDanhSachHoSo() : List<HoSoBenhAn>
+    + xemLichSuKham() : List<LichHen>
+    + capNhatThongTin() : void
+  }
+
+  class LichHen {
+    - maLichHen : String
+    - ngayHen : Date
+    - gioHen : Time
+    - lyDoKham : String
+    - ghiChu : String
+    - trangThai : String
+    + doiLich() : void
+    + capNhatTrangThai() : void
+    + huyLichHen() : void
+  }
+
+  BenhNhan "1" -down-> "0..*" LichHen : datHen
+}
+
+NhaSi "1" -down-> "0..*" LichHen : phuTrach
+
+' ==========================================
+' 4. NHÓM HỒ SƠ BỆNH ÁN & ĐIỀU TRỊ
+' ==========================================
+package "Khám bệnh & Điều trị" #E8F5E9 {
+  class HoSoBenhAn {
+    - maHoSo : String
+    - ngayKham : DateTime
+    - trieuChung : String
+    - chanDoan : String
+    - ketQuaDieuTri : String
+    - ghiChu : String
+    - trangThai : String
+    + capNhatHoSo() : void
+    + ketThucKham() : void
+  }
+
+  class ChiTietDieuTri {
+    - viTriRang : String
+    - soLuong : int
+    - donGia : double
+    - thanhTien : double
+    - ghiChu : String
+    + tinhThanhTien() : double
+  }
+
+  class DichVu {
+    - maDichVu : String
+    - tenDichVu : String
+    - giaDichVu : double
+    - thoiGianDuKien : int
+    - trangThai : String
+    - moTa : String
+    + capNhatGia() : void
+    + chuyenTrangThai() : void
+  }
+
+  HoSoBenhAn "1" *--down-> "1..*" ChiTietDieuTri
+  ChiTietDieuTri "0..*" -right-> "1" DichVu
+}
+
+BenhNhan "1" -down-> "0..*" HoSoBenhAn : hoSoKham
+NhaSi "1" -down-> "0..*" HoSoBenhAn : chuTri
+LichHen "0..1" -down-> "0..1" HoSoBenhAn : tiepNhan
+
+' ==========================================
+' 5. NHÓM ĐƠN THUỐC
+' ==========================================
+package "Quản lý Đơn thuốc" #FFF8E1 {
+  class DonThuoc {
+    - maDonThuoc : String
+    - ngayLap : DateTime
+    - loiDan : String
+    - trangThai : String
+    + themChiTiet() : void
+    + tinhTongTienThuoc() : double
+    + inDonThuoc() : void
+  }
+
+  class ChiTietDonThuoc {
+    - soLuong : int
+    - donGia : double
+    - lieuDung : String
+    - cachDung : String
+    - soNgayDung : int
+    + tinhThanhTien() : double
+    + capNhatSoLuong() : void
+  }
+
+  class Thuoc {
+    - maThuoc : String
+    - tenThuoc : String
+    - donViTinh : String
+    - gia : double
+    - soLuongTon : int
+    - trangThai : String
+    + capNhatGia() : void
+    + capNhatTonKho() : void
+  }
+
+  DonThuoc "1" *--down-> "1..*" ChiTietDonThuoc
+  ChiTietDonThuoc "0..*" -right-> "1" Thuoc
+}
+
+HoSoBenhAn "1" -down-> "0..1" DonThuoc : keDon
+
+' ==========================================
+' 6. NHÓM HÓA ĐƠN & THANH TOÁN
+' ==========================================
+package "Hóa đơn & Thanh toán" #EDE7F6 {
+  class HoaDon {
+    - maHD : String
+    - ngayLap : DateTime
+    - tongTienDichVu : double
+    - tongTienThuoc : double
+    - tienGiam : double
+    - tongTienPhaiTra : double
+    - phuongThucThanhToan : String
+    - trangThai : String
+    + tinhTongTien() : double
+    + apDungUuDai(ud : UuDai) : void
+    + xuatHoaDon() : void
+  }
+
+  class ChiTietHoaDon {
+    - soLuong : int
+    - donGia : double
+    - thanhTien : double
+    + tinhThanhTien() : double
+  }
+
+  class UuDai {
+    - maGiamGia : String
+    - tenChuongTrinh : String
+    - loaiGiamGia : String
+    - giaTriGiam : double
+    - giamToiDa : double
+    - dieuKienToiThieu : double
+    - thoiGianBatDau : DateTime
+    - thoiGianKetThuc : DateTime
+    - trangThai : String
+    + kiemTraHopLe(tong : double) : boolean
+    + tinhTienGiam(tong : double) : double
+  }
+
+  HoaDon "1" *--down-> "1..*" ChiTietHoaDon
+  HoaDon "0..*" -right-> "0..1" UuDai : apDung
+}
+
+BenhNhan "1" -down-> "0..*" HoaDon : thanhToan
+HoSoBenhAn "1" -down-> "0..1" HoaDon : thanhToanKham
+DonThuoc "0..1" -down-> "0..1" HoaDon : thanhToanThuoc
+ChiTietHoaDon "0..*" -down-> "1" DichVu
+LeTan "1" -down-> "0..*" HoaDon : lapHoaDon
+@enduml

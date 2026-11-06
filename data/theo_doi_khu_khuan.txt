@@ -1,0 +1,6 @@
+# MaDC	TenDC	LoaiDC	TrangThai	ThoiGianCapNhat
+DC001	Bộ kìm nhổ răng Inox	Dụng cụ phẫu thuật	Đang khử khuẩn (Autoclave)	02/11/2026 23:45
+DC002	Gương nha khoa & Thám trâm	Dụng cụ khám	Đang khử khuẩn (Autoclave)	01/11/2026 11:00
+DC003	Tay khoan turbine tốc độ cao	Thiết bị cầm tay	Chưa khử khuẩn	Chưa xử lý
+DC004	Bộ đầu lấy cao răng siêu âm	Dụng cụ nha chu	Đã tiệt trùng (Sẵn sàng)	01/11/2026 09:15
+DC005	Khay lấy dấu răng Inox	Dụng cụ phục hình	Đang khử khuẩn (Autoclave)	01/11/2026 10:45
