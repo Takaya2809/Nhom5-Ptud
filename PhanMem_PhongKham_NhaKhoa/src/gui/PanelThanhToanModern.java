@@ -110,7 +110,7 @@ public class PanelThanhToanModern extends JPanel {
         lblFormTitle.setForeground(ModernUITheme.PRIMARY_DARK);
         pnlBillingCard.add(lblFormTitle, BorderLayout.NORTH);
 
-        // Center: Selection fields
+     // Center: Selection fields
         JPanel pnlFields = new JPanel(new GridLayout(2, 3, 16, 10));
         pnlFields.setOpaque(false);
 
@@ -120,21 +120,10 @@ public class PanelThanhToanModern extends JPanel {
         cbUuDai = new JComboBox<>();
         cbPhuongThuc = new JComboBox<>(new String[]{"Tiền mặt", "Chuyển khoản QR", "Quẹt thẻ POS", "Ví điện tử MoMo"});
 
-        pnlFields.add(createFieldItem("Bệnh nhân tiếp nhận (*):", cbBenhNhan));
-        pnlFields.add(createFieldItem("Bác sĩ điều trị (*):", cbBacSi));
-        pnlFields.add(createFieldItem("Dịch vụ thực hiện (*):", cbDichVu));
-        pnlFields.add(createFieldItem("Chương trình ưu đãi:", cbUuDai));
-        pnlFields.add(createFieldItem("Hình thức thanh toán:", cbPhuongThuc));
-
-        pnlBillingCard.add(pnlFields, BorderLayout.CENTER);
-
-        // Bottom: Total summary & Action buttons
-        JPanel pnlSummaryAndBtns = new JPanel(new BorderLayout(20, 0));
-        pnlSummaryAndBtns.setOpaque(false);
-        pnlSummaryAndBtns.setBorder(new EmptyBorder(10, 0, 0, 0));
-
-        JPanel pnlSummary = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
+        // Tạo bảng hiển thị tổng tiền nằm dọc để nhét vào ô trống
+        JPanel pnlSummary = new JPanel(new GridLayout(3, 1, 0, 5));
         pnlSummary.setOpaque(false);
+        pnlSummary.setBorder(new EmptyBorder(15, 0, 0, 0));
 
         lblTongTien = new JLabel("Nguyên giá: 0 VNĐ");
         lblTongTien.setFont(ModernUITheme.FONT_REGULAR);
@@ -151,7 +140,20 @@ public class PanelThanhToanModern extends JPanel {
         pnlSummary.add(lblTongTien);
         pnlSummary.add(lblGiamGia);
         pnlSummary.add(lblThanhTien);
-        pnlSummaryAndBtns.add(pnlSummary, BorderLayout.WEST);
+
+        pnlFields.add(createFieldItem("Bệnh nhân tiếp nhận (*):", cbBenhNhan));
+        pnlFields.add(createFieldItem("Bác sĩ điều trị (*):", cbBacSi));
+        pnlFields.add(createFieldItem("Dịch vụ thực hiện (*):", cbDichVu));
+        pnlFields.add(createFieldItem("Chương trình ưu đãi:", cbUuDai));
+        pnlFields.add(createFieldItem("Hình thức thanh toán:", cbPhuongThuc));
+        pnlFields.add(pnlSummary); // Nhét khối tổng tiền vào ô trống thứ 6
+
+        pnlBillingCard.add(pnlFields, BorderLayout.CENTER);
+
+        // Bottom: Action buttons ONLY
+        JPanel pnlSummaryAndBtns = new JPanel(new BorderLayout(20, 0));
+        pnlSummaryAndBtns.setOpaque(false);
+        pnlSummaryAndBtns.setBorder(new EmptyBorder(10, 0, 0, 0));
 
         // Action Buttons
         JPanel pnlActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
@@ -185,6 +187,7 @@ public class PanelThanhToanModern extends JPanel {
         txtTimKiem.addActionListener(e -> xuLyTimKiem());
         btnTaiLai.addActionListener(e -> {
             txtTimKiem.setText("");
+            napDuLieuCombobox();
             taiDuLieu();
         });
 
@@ -505,5 +508,10 @@ public class PanelThanhToanModern extends JPanel {
         cbPhuongThuc.setSelectedIndex(0);
         table.clearSelection();
         capNhatGia();
+    }
+    
+    public void refreshData() {
+        napDuLieuCombobox();
+        taiDuLieu();
     }
 }

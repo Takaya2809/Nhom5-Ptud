@@ -64,6 +64,8 @@ public class PanelBenhNhanModern extends JPanel {
     private boolean isEditMode = false;
     private boolean isFormDirty = false;
     private DecimalFormat df = new DecimalFormat("#,### VNĐ");
+    
+    private DatePickerField dpLocNgayHen;
 
     public PanelBenhNhanModern() {
         setLayout(new BorderLayout(0, 14));
@@ -71,7 +73,8 @@ public class PanelBenhNhanModern extends JPanel {
         setBorder(new EmptyBorder(16, 20, 20, 20));
 
         // 1. HEADER & SEARCH BAR
-        JPanel pnlHeader = new JPanel(new BorderLayout(15, 0));
+     // 1. HEADER & SEARCH BAR
+        JPanel pnlHeader = new JPanel(new BorderLayout(15, 10));
         pnlHeader.setOpaque(false);
 
         JPanel pnlTitle = new JPanel(new GridLayout(2, 1, 0, 3));
@@ -88,15 +91,15 @@ public class PanelBenhNhanModern extends JPanel {
         pnlTitle.add(lblSub);
         pnlHeader.add(pnlTitle, BorderLayout.WEST);
 
-        // Search bar & Lọc nhanh
-        JPanel pnlSearch = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        pnlSearch.setOpaque(false);
+        // --- BẮT ĐẦU CHỈNH SỬA LAYOUT TÌM KIẾM & BỘ LỌC ---
+        JPanel pnlSearchContainer = new JPanel(new BorderLayout(0, 8));
+        pnlSearchContainer.setOpaque(false);
 
-        cbFilterHangThe = new JComboBox<>(
-                new String[] { "Tất cả hạng thẻ", "Khách mới", "Thường", "Thân thiết", "VIP" });
-        cbFilterGioiTinh = new JComboBox<>(new String[] { "Tất cả giới tính", "Nam", "Nữ" });
-
-        txtTimKiem = ModernUITheme.createTextField(15);
+        // Hàng 1: Ô nhập tìm kiếm và Nút bấm (Căn phải)
+        JPanel pnlSearchTop = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        pnlSearchTop.setOpaque(false);
+        
+        txtTimKiem = ModernUITheme.createTextField(20); 
         txtTimKiem.setToolTipText("Nhập mã, tên hoặc SĐT bệnh nhân...");
 
         btnTimKiem = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SEARCH, 15, Color.WHITE), "Tìm kiếm",
@@ -104,17 +107,38 @@ public class PanelBenhNhanModern extends JPanel {
         JButton btnTaiLai = ModernUITheme.createOutlineIconButton(
                 new AppIcon(AppIcon.Type.REFRESH, 14, ModernUITheme.TEXT_MUTED), "Tất cả", ModernUITheme.TEXT_MUTED);
 
-        pnlSearch.add(new JLabel("Lọc thẻ:"));
-        pnlSearch.add(cbFilterHangThe);
-        pnlSearch.add(new JLabel("Giới tính:"));
-        pnlSearch.add(cbFilterGioiTinh);
-        pnlSearch.add(txtTimKiem);
-        pnlSearch.add(btnTimKiem);
-        pnlSearch.add(btnTaiLai);
-        pnlHeader.add(pnlSearch, BorderLayout.EAST);
+        pnlSearchTop.add(txtTimKiem);
+        pnlSearchTop.add(btnTimKiem);
+        pnlSearchTop.add(btnTaiLai);
+
+        // Hàng 2: Các bộ lọc (Căn phải)
+        JPanel pnlSearchBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
+        pnlSearchBottom.setOpaque(false);
+
+        cbFilterHangThe = new JComboBox<>(
+                new String[] { "Tất cả hạng thẻ", "Khách mới", "Thường", "Thân thiết", "VIP" });
+        cbFilterGioiTinh = new JComboBox<>(new String[] { "Tất cả giới tính", "Nam", "Nữ" });
+
+        dpLocNgayHen = new DatePickerField(LocalDate.now());
+        dpLocNgayHen.addPropertyChangeListener("date", evt -> xuLyTimKiem());
+
+        if (SessionManager.isLeTan()) {
+            pnlSearchBottom.add(new JLabel("Ngày hẹn:"));
+            pnlSearchBottom.add(dpLocNgayHen);
+        }
+
+        pnlSearchBottom.add(new JLabel("Hạng thẻ:"));
+        pnlSearchBottom.add(cbFilterHangThe);
+        pnlSearchBottom.add(new JLabel("Giới tính:"));
+        pnlSearchBottom.add(cbFilterGioiTinh);
+
+        pnlSearchContainer.add(pnlSearchTop, BorderLayout.NORTH);
+        pnlSearchContainer.add(pnlSearchBottom, BorderLayout.SOUTH);
+        
+        pnlHeader.add(pnlSearchContainer, BorderLayout.EAST);
+        // --- KẾT THÚC CHỈNH SỬA LAYOUT ---
 
         add(pnlHeader, BorderLayout.NORTH);
-
         // 2. MAIN SPLITPANE
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitPane.setResizeWeight(0.55);
@@ -200,7 +224,7 @@ public class PanelBenhNhanModern extends JPanel {
         txtHoTen = ModernUITheme.createTextField(16);
         txtSDT = ModernUITheme.createTextField(12);
         txtDiaChi = ModernUITheme.createTextField(18);
-        cbGioiTinh = new JComboBox<>(new String[] { "Nam", "Nữ", "Khác" });
+        cbGioiTinh = new JComboBox<>(new String[] { "Nam", "Nữ"});
 
         dpNgaySinh = new DatePickerField();
         dpNgaySinh.setMaxDate(LocalDate.now());
@@ -404,6 +428,30 @@ public class PanelBenhNhanModern extends JPanel {
             protected void done() {
                 try {
                     List<BenhNhan> list = get();
+
+                    // --- BẮT ĐẦU ĐOẠN CODE LỌC THEO NGÀY CHO LỄ TÂN ---
+                    if (SessionManager.isLeTan()) {
+                        java.sql.Date ngayLoc = dpLocNgayHen.getDate();
+                        
+                        // Chỉ lọc khi có chọn ngày. Nếu xóa ngày (ngayLoc == null) thì bỏ qua, giữ nguyên toàn bộ danh sách
+                        if (ngayLoc != null) {
+                            List<BenhNhan> danhSachLoc = new ArrayList<>();
+                            List<LichHen> tatCaLichHen = lichHenDAO.getAllLichHen();
+                            for (BenhNhan bn : list) {
+                                for (LichHen lh : tatCaLichHen) {
+                                    if (lh.getMaBN() != null && lh.getMaBN().equalsIgnoreCase(bn.getMaBN())) {
+                                        if (lh.getNgayHen() != null && lh.getNgayHen().toLocalDate().isEqual(ngayLoc.toLocalDate())) {
+                                            danhSachLoc.add(bn);
+                                            break; 
+                                        }
+                                    }
+                                }
+                            }
+                            list = danhSachLoc; 
+                        }
+                    }
+                    // --- KẾT THÚC ĐOẠN CODE LỌC ---
+
                     for (BenhNhan bn : list) {
                         int tuoi = 0;
                         if (bn.getNgaySinh() != null) {
@@ -738,8 +786,18 @@ public class PanelBenhNhanModern extends JPanel {
             String maLH = txtDlgMaLH.getText().trim();
             String lyDo = txtLyDo.getText().trim();
 
+            // Tách lấy tên bác sĩ từ ComboBox
+            String tenBS = bsItem.contains(" - ") ? bsItem.substring(bsItem.indexOf(" - ") + 3).trim() : maBS;
+
             LichHen lh = new LichHen(maLH, maBN, maBS, d, t, lyDo, "Đặt hẹn tại quầy tiếp tân",
                     TrangThaiConstants.LH_DA_XAC_NHAN);
+            
+            // --- BỔ SUNG GÁN DỮ LIỆU ĐỂ HIỂN THỊ KHI CHẠY OFFLINE ---
+            lh.setTenBenhNhan(hoTen);
+            lh.setSdtBenhNhan(txtSDT.getText().trim());
+            lh.setTenNhaSi(tenBS);
+            // --------------------------------------------------------
+
             boolean ok = lichHenDAO.themLichHen(lh);
             if (ok) {
                 ThongKeDAO.ghiLog(SessionManager.getTenDangNhapHienTai(), "ĐẶT LỊCH HẸN",
@@ -1253,6 +1311,30 @@ public class PanelBenhNhanModern extends JPanel {
                 : "Tất cả giới tính";
 
         List<BenhNhan> all = benhNhanDAO.timKiem(keyword);
+
+        // --- BẮT ĐẦU ĐOẠN CODE LỌC THEO NGÀY CHO LỄ TÂN ---
+        if (SessionManager.isLeTan()) {
+            java.sql.Date ngayLoc = dpLocNgayHen.getDate();
+            
+            // Chỉ lọc khi có chọn ngày. Nếu xóa ngày (ngayLoc == null) thì bỏ qua, giữ nguyên toàn bộ danh sách
+            if (ngayLoc != null) {
+                List<BenhNhan> danhSachLoc = new ArrayList<>();
+                List<LichHen> tatCaLichHen = lichHenDAO.getAllLichHen();
+                for (BenhNhan bn : all) {
+                    for (LichHen lh : tatCaLichHen) {
+                        if (lh.getMaBN() != null && lh.getMaBN().equalsIgnoreCase(bn.getMaBN())) {
+                            if (lh.getNgayHen() != null && lh.getNgayHen().toLocalDate().isEqual(ngayLoc.toLocalDate())) {
+                                danhSachLoc.add(bn);
+                                break;
+                            }
+                        }
+                    }
+                }
+                all = danhSachLoc;
+            }
+        }
+        // --- KẾT THÚC ĐOẠN CODE LỌC ---
+
         tableModel.setRowCount(0);
 
         for (BenhNhan bn : all) {
