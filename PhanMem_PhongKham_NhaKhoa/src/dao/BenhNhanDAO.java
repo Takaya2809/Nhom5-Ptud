@@ -57,7 +57,7 @@ public class BenhNhanDAO {
                 System.err.println("BenhNhanDAO.getAllBenhNhan DB error: " + e.getMessage());
             }
         }
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             list.addAll(MOCK_BENH_NHAN);
         }
         return list;
@@ -211,7 +211,7 @@ public class BenhNhanDAO {
         }
 
         // Nếu database không có kết quả hoặc không kết nối được, tìm trong bộ đệm bộ nhớ
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             String lower = cleanKeyword.toLowerCase();
             for (BenhNhan bn : MOCK_BENH_NHAN) {
                 boolean match = (bn.getMaBN() != null && bn.getMaBN().toLowerCase().contains(lower)) ||

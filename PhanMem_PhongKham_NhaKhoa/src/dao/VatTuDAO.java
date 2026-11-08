@@ -58,7 +58,7 @@ public class VatTuDAO {
                 System.err.println("VatTuDAO.getAllVatTu DB error: " + e.getMessage());
             }
         }
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             list.addAll(MOCK_VAT_TU);
         }
         return list;
@@ -207,7 +207,7 @@ public class VatTuDAO {
             }
         }
 
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             String lower = cleanKeyword.toLowerCase();
             for (VatTu vt : MOCK_VAT_TU) {
                 boolean match = (vt.getMaVatTu() != null && vt.getMaVatTu().toLowerCase().contains(lower)) ||

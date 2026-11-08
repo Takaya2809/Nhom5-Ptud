@@ -53,7 +53,7 @@ public class ThuocDAO {
                 System.err.println("ThuocDAO.getAllThuoc DB error: " + e.getMessage());
             }
         }
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             list.addAll(MOCK_THUOC);
         }
         return list;

@@ -6,6 +6,13 @@ set "APP_DIR=%~dp0PhanMem_PhongKham_NhaKhoa"
 set "DRIVER=%APP_DIR%\lib\mssql-jdbc-13.2.1.jre11.jar"
 set "CLASSES=%APP_DIR%\bin"
 
+rem SQL Server Express on this machine is listening on TCP port 1433.
+if not defined SQL_SERVER set "SQL_SERVER=localhost"
+if not defined SQL_PORT set "SQL_PORT=1433"
+if not defined SQL_DATABASE set "SQL_DATABASE=QLPHONGKHAM"
+if not defined SQL_USER set "SQL_USER=sa"
+if not defined SQL_PASSWORD echo SQL_PASSWORD is not set. Set it in Windows environment variables before launching the app.
+
 rem Use JAVA_HOME when javac is installed but not added to PATH.
 if defined JAVA_HOME if exist "%JAVA_HOME%bin\javac.exe" set "PATH=%JAVA_HOME%bin;%PATH%"
 if not defined JAVA_HOME (
@@ -33,7 +40,7 @@ if not exist "%DRIVER%" (
 if not exist "%CLASSES%" mkdir "%CLASSES%"
 
 dir /s /b "%APP_DIR%\src\*.java" > "%CLASSES%\sources.list"
-javac -encoding UTF-8 -cp "%DRIVER%" -d "%CLASSES%" @"%CLASSES%\sources.list"
+javac -encoding UTF-8 -d "%CLASSES%" @"%CLASSES%\sources.list"
 if errorlevel 1 (
     echo.
     echo Build failed.

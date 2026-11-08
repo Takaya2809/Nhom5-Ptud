@@ -196,9 +196,9 @@ public class ThongKeDAO {
         Connection conn = ConnectDB.getConnection();
         if (conn != null) {
             try {
-                String sql = "SELECT COUNT(*) FROM BenhNhan WHERE trangThai IS NULL OR trangThai != ?";
+                // BenhNhan in QLPHONGKHAM has no trangThai column; count rows directly.
+                String sql = "SELECT COUNT(*) FROM BenhNhan";
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, TrangThaiConstants.BN_NGUNG_THEO_DOI);
                     try (ResultSet rs = stmt.executeQuery()) {
                         if (rs.next()) return rs.getInt(1);
                     }
@@ -286,7 +286,7 @@ public class ThongKeDAO {
                 System.err.println("ThongKeDAO.getDoanhThu7NgayGanNhat error: " + e.getMessage());
             }
         }
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             java.time.LocalDate today = java.time.LocalDate.now();
             double[] mockRevs = {3500000, 4800000, 6200000, 5100000, 8900000, 7200000, 11500000};
             int[] mockCas = {3, 4, 5, 4, 6, 5, 8};
@@ -350,7 +350,7 @@ public class ThongKeDAO {
                 System.err.println("ThongKeDAO.getTopDichVu30Ngay error: " + e.getMessage());
             }
         }
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             list.add(new TopDichVu("Cấy ghép Implant Straumann Thụy Sĩ", 4, 22000000.0, 100));
             list.add(new TopDichVu("Niềng răng mắc cài kim loại tự buộc", 3, 18500000.0, 84));
             list.add(new TopDichVu("Bọc răng toàn sứ Cercon cao cấp", 5, 12500000.0, 56));
@@ -458,7 +458,7 @@ public class ThongKeDAO {
                 System.err.println("ThongKeDAO.getDoanhThuTheoDichVu error: " + e.getMessage());
             }
         }
-        if (map.isEmpty()) {
+        if (conn == null && map.isEmpty()) {
             map.put("Cấy ghép Implant Straumann Thụy Sĩ", 19800000.0);
             map.put("Niềng răng mắc cài kim loại tự buộc", 27000000.0);
             map.put("Bọc răng toàn sứ Cercon cao cấp", 4050000.0);
@@ -491,7 +491,7 @@ public class ThongKeDAO {
                 System.err.println("ThongKeDAO.getHieuSuatBacSi error: " + e.getMessage());
             }
         }
-        if (map.isEmpty()) {
+        if (conn == null && map.isEmpty()) {
             map.put("ThS. BS Lê Thị Thảo", 2);
             map.put("BS. CKII Nguyễn Văn An", 1);
             map.put("BS. Trần Minh Trí", 1);
@@ -553,7 +553,7 @@ public class ThongKeDAO {
                 System.err.println("ThongKeDAO.getDoanhThuTheoMoc error: " + e.getMessage());
             }
         }
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             list.add(new BieuDoThoiGianItem("20/10", 6500000, 3));
             list.add(new BieuDoThoiGianItem("22/10", 12000000, 5));
             list.add(new BieuDoThoiGianItem("24/10", 18500000, 6));
@@ -593,7 +593,7 @@ public class ThongKeDAO {
                 System.err.println("ThongKeDAO.getDoanhThuTheoPhuongThuc error: " + e.getMessage());
             }
         }
-        if (map.isEmpty()) {
+        if (conn == null && map.isEmpty()) {
             map.put("Chuyển khoản QR", 38500000.0);
             map.put("Tiền mặt", 24300000.0);
             map.put("Thẻ tín dụng/POS", 10050000.0);
@@ -682,7 +682,7 @@ public class ThongKeDAO {
                 System.err.println("ThongKeDAO.getThongKeBacSiChiTiet error: " + e.getMessage());
             }
         }
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             list.add(new BacSiThongKe("NV001", "BS. CKII Nguyễn Văn An", "Bác sĩ cấy ghép Implant", 8, 38500000.0));
             list.add(new BacSiThongKe("NV002", "ThS. BS Lê Thị Thảo", "Bác sĩ chỉnh nha", 10, 26000000.0));
             list.add(new BacSiThongKe("NV003", "BS. Trần Minh Trí", "Bác sĩ tiểu phẫu & nha chu", 6, 8350000.0));
@@ -696,10 +696,9 @@ public class ThongKeDAO {
         if (conn != null) {
             try {
                 String sql = "SELECT COALESCE(loaiKhach, N'Khách mới') AS HangThe, COUNT(*) AS SoLuong " +
-                             "FROM BenhNhan WHERE trangThai IS NULL OR trangThai != ? " +
+                             "FROM BenhNhan " +
                              "GROUP BY loaiKhach ORDER BY SoLuong DESC";
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, TrangThaiConstants.BN_NGUNG_THEO_DOI);
                     try (ResultSet rs = stmt.executeQuery()) {
                         while (rs.next()) {
                             map.put(rs.getString("HangThe"), rs.getInt("SoLuong"));

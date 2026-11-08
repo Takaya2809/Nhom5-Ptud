@@ -327,6 +327,9 @@ public class PanelKhamDieuTriModern extends JPanel {
         // Tabbed Pane cho 5 use case
         useCaseTabs = new JTabbedPane();
         useCaseTabs.setFont(ModernUITheme.FONT_BOLD);
+        // Giữ các bước trên một hàng; chế độ WRAP mặc định đổi vị trí hàng tab
+        // mỗi khi chọn tab, khiến người dùng tưởng giao diện đang tự nhảy bước.
+        useCaseTabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         useCaseTabs.addTab("Tiếp nhận và khám bệnh nhân", intakeTab());
         useCaseTabs.addTab("Chẩn đoán", diagnosisTab());
         useCaseTabs.addTab("Tư vấn và thực hiện điều trị", treatmentTab());
@@ -802,6 +805,7 @@ public class PanelKhamDieuTriModern extends JPanel {
 
     private void loadQueue() {
         queueModel.setRowCount(0);
+        lblQueueCount.setText("0 ca khám");
         try {
             List<NhaSiDAO.CaKham> list = dao.getCaKham(user.getMaNV());
             for (NhaSiDAO.CaKham appointment : list) {
@@ -812,9 +816,28 @@ public class PanelKhamDieuTriModern extends JPanel {
                 });
             }
             lblQueueCount.setText(list.size() + " ca khám");
+            if (list.isEmpty()) clearSelectedAppointment();
         } catch (SQLException ex) {
+            clearSelectedAppointment();
             showError("Lỗi tải lịch khám: " + ex.getMessage());
         }
+    }
+
+    private void clearSelectedAppointment() {
+        selectedAppointment = null;
+        selectedPatient = null;
+        selectedPatientName = null;
+        selectedRecord = null;
+        selectedAllergies = "";
+        existingFollowUpId = null;
+        completedRecord = false;
+        if (queue != null) queue.clearSelection();
+        historyModel.setRowCount(0);
+        patientInfo.setText("Không có ca khám từ cơ sở dữ liệu.");
+        recordInfo.setText("Chưa chọn hồ sơ bệnh án.");
+        lblAllergyAlert.setVisible(false);
+        clearEncounterFields();
+        setEditorEnabled(false);
     }
 
     private void locDanhSachCaKham() {
@@ -824,6 +847,7 @@ public class PanelKhamDieuTriModern extends JPanel {
         String todayStr = sdf.format(new java.util.Date());
 
         queueModel.setRowCount(0);
+        lblQueueCount.setText("0 ca khám");
         try {
             List<NhaSiDAO.CaKham> list = dao.getCaKham(user.getMaNV());
             int count = 0;
@@ -850,7 +874,9 @@ public class PanelKhamDieuTriModern extends JPanel {
                 }
             }
             lblQueueCount.setText(count + " ca khám");
+            if (count == 0) clearSelectedAppointment();
         } catch (Exception ex) {
+            clearSelectedAppointment();
             showError("Lỗi lọc danh sách: " + ex.getMessage());
         }
     }

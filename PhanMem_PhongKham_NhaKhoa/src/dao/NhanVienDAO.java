@@ -62,7 +62,7 @@ public class NhanVienDAO {
                 System.err.println("NhanVienDAO.getAllNhanVien DB error: " + e.getMessage());
             }
         }
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             list.addAll(MOCK_NHAN_VIEN);
         }
         return list;
@@ -204,7 +204,7 @@ public class NhanVienDAO {
             }
         }
 
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             String lower = cleanKeyword.toLowerCase();
             for (NhanVien nv : MOCK_NHAN_VIEN) {
                 boolean match = (nv.getMaNV() != null && nv.getMaNV().toLowerCase().contains(lower)) ||
@@ -251,9 +251,6 @@ public class NhanVienDAO {
             if (cd.contains("bác sĩ") || cd.contains("nha sĩ") || nv.getMaNV().startsWith("BS")) {
                 list.add(nv);
             }
-        }
-        if (list.isEmpty()) {
-            list.addAll(getAllNhanVien());
         }
         return list;
     }

@@ -110,7 +110,6 @@ public class TrangChuModern extends JFrame {
         pnlContentArea.add(pnlDashboard, "DASHBOARD");
         pnlContentArea.add(pnlBenhNhan, "BENH_NHAN");
         pnlContentArea.add(pnlKhamDieuTri, "NHA_SI");
-        pnlContentArea.add(pnlKhamDieuTri, "KHAM_DIEU_TRI");
         pnlContentArea.add(pnlDichVu, "DICH_VU");
         pnlContentArea.add(pnlKhoVatTu, "KHO_VAT_TU");
         pnlContentArea.add(pnlLichTruc, "LICH_TRUC");

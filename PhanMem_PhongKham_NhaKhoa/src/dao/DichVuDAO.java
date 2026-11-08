@@ -81,7 +81,7 @@ public class DichVuDAO {
                 }
             }
         }
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             list.addAll(MOCK_DICH_VU);
         }
         return list;
@@ -354,7 +354,7 @@ public class DichVuDAO {
                 System.err.println("DichVuDAO.getLichSuGia DB error: " + e.getMessage());
             }
         }
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             for (LichSuGiaDichVu ls : MOCK_LICHSU_GIA) {
                 if (ls.getMaDichVu().equalsIgnoreCase(maDV)) {
                     list.add(ls);

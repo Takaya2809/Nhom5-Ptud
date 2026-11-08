@@ -85,7 +85,7 @@ public class LichHenDAO {
                 System.err.println("LichHenDAO.getAllLichHen DB error: " + e.getMessage());
             }
         }
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             list.addAll(MOCK_LICH_HEN);
         }
         return list;

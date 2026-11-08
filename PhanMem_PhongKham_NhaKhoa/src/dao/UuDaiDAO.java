@@ -52,7 +52,7 @@ public class UuDaiDAO {
                 System.err.println("UuDaiDAO.getAllUuDai DB error: " + e.getMessage());
             }
         }
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             list.addAll(MOCK_UU_DAI);
         }
         return list;
@@ -224,7 +224,7 @@ public class UuDaiDAO {
             }
         }
 
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             String lower = cleanKeyword.toLowerCase();
             for (UuDai ud : MOCK_UU_DAI) {
                 boolean match = (ud.getMaUuDai() != null && ud.getMaUuDai().toLowerCase().contains(lower)) ||

@@ -49,7 +49,7 @@ public class QuyDinhDAO {
                 System.err.println("QuyDinhDAO.getAllQuyDinh DB error: " + e.getMessage());
             }
         }
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             list.addAll(MOCK_QUY_DINH);
         }
         return list;

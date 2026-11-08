@@ -83,7 +83,7 @@ public class HoaDonDAO {
                 System.err.println("HoaDonDAO.getAllHoaDon DB error: " + e.getMessage());
             }
         }
-        if (list.isEmpty()) {
+        if (conn == null && list.isEmpty()) {
             list.addAll(MOCK_HOA_DON);
         }
         return list;
