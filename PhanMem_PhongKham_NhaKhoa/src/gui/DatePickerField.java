@@ -43,15 +43,15 @@ public class DatePickerField extends JPanel {
         setOpaque(false);
 
         txtDate = new JTextField();
-        txtDate.setFont(ModernUITheme.FONT_REGULAR);
-        txtDate.setForeground(ModernUITheme.TEXT_MAIN);
-        txtDate.setCaretColor(ModernUITheme.PRIMARY);
+        txtDate.setFont(UITheme.FONT_REGULAR);
+        txtDate.setForeground(UITheme.TEXT_MAIN);
+        txtDate.setCaretColor(UITheme.PRIMARY);
         txtDate.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(ModernUITheme.BORDER_LIGHT, 1, true),
+                BorderFactory.createLineBorder(UITheme.BORDER_LIGHT, 1, true),
                 BorderFactory.createEmptyBorder(6, 10, 6, 8)));
 
         // Nút biểu tượng lịch
-        btnCalendar = new JButton(new AppIcon(AppIcon.Type.CALENDAR, 16, ModernUITheme.PRIMARY));
+        btnCalendar = new JButton(new AppIcon(AppIcon.Type.CALENDAR, 16, UITheme.PRIMARY));
         btnCalendar.setToolTipText("Mở lịch chọn ngày (dd/MM/yyyy)");
         btnCalendar.setFocusPainted(false);
         btnCalendar.setContentAreaFilled(false);
@@ -114,7 +114,7 @@ public class DatePickerField extends JPanel {
             this.displayMonth = date;
             txtDate.setText(date.format(FORMATTER));
             txtDate.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(ModernUITheme.BORDER_LIGHT, 1, true),
+                    BorderFactory.createLineBorder(UITheme.BORDER_LIGHT, 1, true),
                     BorderFactory.createEmptyBorder(6, 10, 6, 8)));
         } else {
             clear();
@@ -133,7 +133,7 @@ public class DatePickerField extends JPanel {
         this.selectedDate = null;
         txtDate.setText("");
         txtDate.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(ModernUITheme.BORDER_LIGHT, 1, true),
+                BorderFactory.createLineBorder(UITheme.BORDER_LIGHT, 1, true),
                 BorderFactory.createEmptyBorder(6, 10, 6, 8)));
     }
 
@@ -157,7 +157,7 @@ public class DatePickerField extends JPanel {
         if (text.isEmpty()) {
             selectedDate = null;
             txtDate.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(ModernUITheme.BORDER_LIGHT, 1, true),
+                    BorderFactory.createLineBorder(UITheme.BORDER_LIGHT, 1, true),
                     BorderFactory.createEmptyBorder(6, 10, 6, 8)));
             return;
         }
@@ -192,7 +192,7 @@ public class DatePickerField extends JPanel {
             setDate(parsed);
         } else {
             txtDate.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(ModernUITheme.DANGER, 1, true),
+                    BorderFactory.createLineBorder(UITheme.DANGER, 1, true),
                     BorderFactory.createEmptyBorder(6, 10, 6, 8)));
             JOptionPane.showMessageDialog(this,
                     "Vui lòng nhập ngày theo đúng định dạng ngày/tháng/năm (dd/MM/yyyy)!\nVí dụ: 15/01/1990",
@@ -218,7 +218,7 @@ public class DatePickerField extends JPanel {
         popupCalendar = new JPopupMenu();
         popupCalendar.setBackground(Color.WHITE);
         popupCalendar.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(ModernUITheme.BORDER_LIGHT, 1),
+                BorderFactory.createLineBorder(UITheme.BORDER_LIGHT, 1),
                 new EmptyBorder(8, 10, 8, 10)));
         popupCalendar.setLayout(new BorderLayout(0, 8));
 
@@ -227,8 +227,8 @@ public class DatePickerField extends JPanel {
         pnlHeader.setOpaque(false);
 
         JButton btnPrev = new JButton("<");
-        btnPrev.setFont(ModernUITheme.FONT_BOLD);
-        btnPrev.setForeground(ModernUITheme.TEXT_MUTED);
+        btnPrev.setFont(UITheme.FONT_BOLD);
+        btnPrev.setForeground(UITheme.TEXT_MUTED);
         btnPrev.setContentAreaFilled(false);
         btnPrev.setBorder(new EmptyBorder(3, 8, 3, 8));
         btnPrev.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -238,8 +238,8 @@ public class DatePickerField extends JPanel {
         });
 
         JButton btnNext = new JButton(">");
-        btnNext.setFont(ModernUITheme.FONT_BOLD);
-        btnNext.setForeground(ModernUITheme.TEXT_MUTED);
+        btnNext.setFont(UITheme.FONT_BOLD);
+        btnNext.setForeground(UITheme.TEXT_MUTED);
         btnNext.setContentAreaFilled(false);
         btnNext.setBorder(new EmptyBorder(3, 8, 3, 8));
         btnNext.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -249,8 +249,8 @@ public class DatePickerField extends JPanel {
         });
 
         lblMonthYear = new JLabel("", SwingConstants.CENTER);
-        lblMonthYear.setFont(ModernUITheme.FONT_BOLD);
-        lblMonthYear.setForeground(ModernUITheme.PRIMARY_DARK);
+        lblMonthYear.setFont(UITheme.FONT_BOLD);
+        lblMonthYear.setForeground(UITheme.PRIMARY_DARK);
 
         pnlHeader.add(btnPrev, BorderLayout.WEST);
         pnlHeader.add(lblMonthYear, BorderLayout.CENTER);
@@ -266,8 +266,8 @@ public class DatePickerField extends JPanel {
         String[] days = {"T2", "T3", "T4", "T5", "T6", "T7", "CN"};
         for (String d : days) {
             JLabel lbl = new JLabel(d, SwingConstants.CENTER);
-            lbl.setFont(ModernUITheme.FONT_TINY);
-            lbl.setForeground("CN".equals(d) ? ModernUITheme.DANGER : ModernUITheme.TEXT_MUTED);
+            lbl.setFont(UITheme.FONT_TINY);
+            lbl.setForeground("CN".equals(d) ? UITheme.DANGER : UITheme.TEXT_MUTED);
             pnlWeekDays.add(lbl);
         }
         pnlCenter.add(pnlWeekDays, BorderLayout.NORTH);
@@ -283,8 +283,8 @@ public class DatePickerField extends JPanel {
         JPanel pnlFooter = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 2));
         pnlFooter.setOpaque(false);
 
-        JButton btnToday = ModernUITheme.createOutlineButton("Hôm nay", ModernUITheme.PRIMARY);
-        btnToday.setFont(ModernUITheme.FONT_TINY);
+        JButton btnToday = UITheme.createOutlineButton("Hôm nay", UITheme.PRIMARY);
+        btnToday.setFont(UITheme.FONT_TINY);
         btnToday.setBorder(new EmptyBorder(3, 6, 3, 6));
         btnToday.addActionListener(e -> {
             LocalDate today = LocalDate.now();
@@ -296,16 +296,16 @@ public class DatePickerField extends JPanel {
             popupCalendar.setVisible(false);
         });
 
-        JButton btnClear = ModernUITheme.createOutlineButton("Xóa", ModernUITheme.TEXT_MUTED);
-        btnClear.setFont(ModernUITheme.FONT_TINY);
+        JButton btnClear = UITheme.createOutlineButton("Xóa", UITheme.TEXT_MUTED);
+        btnClear.setFont(UITheme.FONT_TINY);
         btnClear.setBorder(new EmptyBorder(3, 6, 3, 6));
         btnClear.addActionListener(e -> {
             clear();
             popupCalendar.setVisible(false);
         });
 
-        JButton btnClose = ModernUITheme.createOutlineButton("Đóng", ModernUITheme.TEXT_MUTED);
-        btnClose.setFont(ModernUITheme.FONT_TINY);
+        JButton btnClose = UITheme.createOutlineButton("Đóng", UITheme.TEXT_MUTED);
+        btnClose.setFont(UITheme.FONT_TINY);
         btnClose.setBorder(new EmptyBorder(3, 6, 3, 6));
         btnClose.addActionListener(e -> popupCalendar.setVisible(false));
 
@@ -338,7 +338,7 @@ public class DatePickerField extends JPanel {
         for (int day = 1; day <= lengthOfMonth; day++) {
             LocalDate date = ym.atDay(day);
             JButton btnDay = new JButton(String.valueOf(day));
-            btnDay.setFont(ModernUITheme.FONT_TINY);
+            btnDay.setFont(UITheme.FONT_TINY);
             btnDay.setFocusPainted(false);
             btnDay.setBorder(new EmptyBorder(2, 2, 2, 2));
             btnDay.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -352,16 +352,16 @@ public class DatePickerField extends JPanel {
                 btnDay.setForeground(new Color(203, 213, 225));
                 btnDay.setBackground(Color.WHITE);
             } else if (isSelected) {
-                btnDay.setBackground(ModernUITheme.PRIMARY);
+                btnDay.setBackground(UITheme.PRIMARY);
                 btnDay.setForeground(Color.WHITE);
-                btnDay.setFont(ModernUITheme.FONT_BOLD);
+                btnDay.setFont(UITheme.FONT_BOLD);
             } else if (isToday) {
-                btnDay.setBackground(ModernUITheme.PRIMARY_LIGHT);
-                btnDay.setForeground(ModernUITheme.PRIMARY_DARK);
-                btnDay.setBorder(BorderFactory.createLineBorder(ModernUITheme.PRIMARY, 1));
+                btnDay.setBackground(UITheme.PRIMARY_LIGHT);
+                btnDay.setForeground(UITheme.PRIMARY_DARK);
+                btnDay.setBorder(BorderFactory.createLineBorder(UITheme.PRIMARY, 1));
             } else {
                 btnDay.setBackground(Color.WHITE);
-                btnDay.setForeground(ModernUITheme.TEXT_MAIN);
+                btnDay.setForeground(UITheme.TEXT_MAIN);
             }
 
             if (!isDisabled) {

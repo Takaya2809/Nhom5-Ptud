@@ -55,11 +55,11 @@ public class AppIcon implements Icon {
     }
 
     public AppIcon(Type type, int size) {
-        this(type, size, ModernUITheme.SIDEBAR_TEXT);
+        this(type, size, UITheme.SIDEBAR_TEXT);
     }
 
     public AppIcon(Type type) {
-        this(type, 16, ModernUITheme.SIDEBAR_TEXT);
+        this(type, 16, UITheme.SIDEBAR_TEXT);
     }
 
     @Override
