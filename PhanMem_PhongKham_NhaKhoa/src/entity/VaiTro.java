@@ -1,31 +1,55 @@
 package entity;
 
-public class VaiTro {
-    private String maVaiTro;
-    private String tenVaiTro;
-    private String moTa;
-    private String danhSachQuyen;
+/**
+ * Enum đại diện cho các vai trò trong hệ thống quản lý phòng khám nha khoa
+ */
+public enum VaiTro {
+    QUAN_LY("VT_QL", "Quản lý"),
+    BAC_SI("VT_BS", "Nha sĩ"),
+    LE_TAN("VT_LT", "Lễ tân"),
+    Y_TA("VT_YT", "Y tá");
 
-    public VaiTro() {}
+    private final String maVaiTro;
+    private final String tenVaiTro;
 
-    public VaiTro(String maVaiTro, String tenVaiTro, String moTa, String danhSachQuyen) {
+    VaiTro(String maVaiTro, String tenVaiTro) {
         this.maVaiTro = maVaiTro;
         this.tenVaiTro = tenVaiTro;
-        this.moTa = moTa;
-        this.danhSachQuyen = danhSachQuyen;
     }
 
-    public String getMaVaiTro() { return maVaiTro; }
-    public void setMaVaiTro(String maVaiTro) { this.maVaiTro = maVaiTro; }
+    public String getMaVaiTro() {
+        return maVaiTro;
+    }
 
-    public String getTenVaiTro() { return tenVaiTro; }
-    public void setTenVaiTro(String tenVaiTro) { this.tenVaiTro = tenVaiTro; }
+    public String getTenVaiTro() {
+        return tenVaiTro;
+    }
 
-    public String getMoTa() { return moTa; }
-    public void setMoTa(String moTa) { this.moTa = moTa; }
+    public String getTenHienThi() {
+        return tenVaiTro;
+    }
 
-    public String getDanhSachQuyen() { return danhSachQuyen; }
-    public void setDanhSachQuyen(String danhSachQuyen) { this.danhSachQuyen = danhSachQuyen; }
+    public static VaiTro fromMa(String ma) {
+        if (ma == null)
+            return null;
+        for (VaiTro vt : values()) {
+            if (vt.maVaiTro.equalsIgnoreCase(ma.trim()) || vt.name().equalsIgnoreCase(ma.trim())) {
+                return vt;
+            }
+        }
+        return null;
+    }
+
+    public static VaiTro fromTen(String ten) {
+        if (ten == null)
+            return null;
+        for (VaiTro vt : values()) {
+            if (vt.tenVaiTro.equalsIgnoreCase(ten.trim()) || vt.name().equalsIgnoreCase(ten.trim())) {
+                return vt;
+            }
+        }
+        return null;
+    }
 
     @Override
     public String toString() {

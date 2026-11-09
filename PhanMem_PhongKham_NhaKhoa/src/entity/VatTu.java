@@ -1,5 +1,7 @@
 package entity;
 
+import java.util.Objects;
+
 public class VatTu {
     private String maVatTu;
     private String tenVatTu;
@@ -9,11 +11,21 @@ public class VatTu {
     private int dinhMucToiThieu;
     private double donGia;
     private String trangThai; // Còn hàng, Cảnh báo hết hàng, Hết hàng, Ngừng sử dụng
+    private NCC nhaCungCap;
 
     public VatTu() {}
 
+    public VatTu(String maVatTu) {
+        this.maVatTu = maVatTu;
+    }
+
     public VatTu(String maVatTu, String tenVatTu, String loaiVatTu, String donViTinh,
                  int soLuongTon, int dinhMucToiThieu, double donGia, String trangThai) {
+        this(maVatTu, tenVatTu, loaiVatTu, donViTinh, soLuongTon, dinhMucToiThieu, donGia, trangThai, null);
+    }
+
+    public VatTu(String maVatTu, String tenVatTu, String loaiVatTu, String donViTinh,
+                 int soLuongTon, int dinhMucToiThieu, double donGia, String trangThai, NCC nhaCungCap) {
         this.maVatTu = maVatTu;
         this.tenVatTu = tenVatTu;
         this.loaiVatTu = loaiVatTu;
@@ -22,6 +34,7 @@ public class VatTu {
         this.dinhMucToiThieu = dinhMucToiThieu;
         this.donGia = donGia;
         this.trangThai = trangThai;
+        this.nhaCungCap = nhaCungCap;
     }
 
     public String getMaVatTu() { return maVatTu; }
@@ -48,8 +61,28 @@ public class VatTu {
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
 
+    public NCC getNhaCungCap() { return nhaCungCap; }
+    public void setNhaCungCap(NCC nhaCungCap) { this.nhaCungCap = nhaCungCap; }
+
+    public String getMaNCC() {
+        return nhaCungCap != null ? nhaCungCap.getMaNCC() : null;
+    }
+
     public boolean isDuoiDinhMuc() {
         return soLuongTon <= dinhMucToiThieu;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof VatTu)) return false;
+        VatTu vatTu = (VatTu) o;
+        return Objects.equals(maVatTu, vatTu.maVatTu);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(maVatTu);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package entity;
 
 import java.sql.Date;
+import java.util.Objects;
 
 public class UuDai {
     private String maUuDai;
@@ -12,6 +13,10 @@ public class UuDai {
     private String trangThai;
 
     public UuDai() {}
+
+    public UuDai(String maUuDai) {
+        this.maUuDai = maUuDai;
+    }
 
     public UuDai(String maUuDai, String tenUuDai, double phanTramGiam, String dieuKien,
                  Date ngayBD, Date ngayKT, String trangThai) {
@@ -44,6 +49,19 @@ public class UuDai {
 
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UuDai)) return false;
+        UuDai uuDai = (UuDai) o;
+        return Objects.equals(maUuDai, uuDai.maUuDai);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(maUuDai);
+    }
 
     @Override
     public String toString() {
