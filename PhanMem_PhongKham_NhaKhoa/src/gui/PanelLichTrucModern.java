@@ -293,12 +293,14 @@ public class PanelLichTrucModern extends JPanel {
     private void apDungPhanQuyenPhanCong() {
         boolean isQL = SessionManager.isQuanLy();
         if (!isQL) {
-            btnPhanCong.setEnabled(false);
-            btnPhanCong.setToolTipText("Chỉ Quản lý mới có quyền phân công ca trực");
-            btnHuyPhanCong.setEnabled(false);
-            btnHuyPhanCong.setToolTipText("Chỉ Quản lý mới có quyền hủy phân công");
-            btnThemCa.setEnabled(false);
-            btnThemCa.setToolTipText("Chỉ Quản lý mới có quyền tạo ca trực");
+        	if (btnPhanCong != null) btnPhanCong.setVisible(false);
+            if (btnHuyPhanCong != null) btnHuyPhanCong.setVisible(false);
+            if (btnThemCa != null) btnThemCa.setVisible(false);
+            if (btnLamMoi != null) btnLamMoi.setVisible(false);
+            if (cbNhanVien != null) cbNhanVien.setEnabled(false);
+            if (cbCaTruc != null) cbCaTruc.setEnabled(false);
+            if (cbVaiTro != null) cbVaiTro.setEnabled(false);
+            if (txtGhiChu != null) txtGhiChu.setEditable(false);
         }
     }
 
@@ -939,7 +941,7 @@ public class PanelLichTrucModern extends JPanel {
         JButton btnHuyLH = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.CLOSE, 14, Color.WHITE), "Hủy lịch hẹn", ModernUITheme.DANGER, Color.WHITE);
         JButton btnDoiGio = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.CLOCK, 14, ModernUITheme.PRIMARY), "Đổi giờ hẹn", ModernUITheme.PRIMARY);
         JButton btnKhongDen = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.DELETE, 13, ModernUITheme.DANGER), "Đánh dấu không đến", ModernUITheme.DANGER);
-        JButton btnChuyenHangDoi = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 13, ModernUITheme.ACCENT), "Chuyển hàng đợi", ModernUITheme.ACCENT);
+        JButton btnChuyenHangDoi = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 13, ModernUITheme.ACCENT), "Tiếp nhận khám", ModernUITheme.ACCENT);
 
         pnlActions.add(btnKhongDen);
         pnlActions.add(btnHuyLH);
@@ -1146,7 +1148,7 @@ public class PanelLichTrucModern extends JPanel {
         if (TrangThaiConstants.LH_DANG_KHAM.equalsIgnoreCase(trangThaiMoi) &&
             !TrangThaiConstants.LH_DA_XAC_NHAN.equalsIgnoreCase(ttHienTai) &&
             !TrangThaiConstants.LH_DA_LEN_LICH.equalsIgnoreCase(ttHienTai)) {
-            JOptionPane.showMessageDialog(this, "Chỉ có thể chuyển sang hàng đợi khi lịch hẹn ở trạng thái Đã xác nhận hoặc Đã lên lịch!", "Không hợp lệ", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Chỉ có thể chuyển sang tiếp nhận khám khi lịch hẹn ở trạng thái Đã xác nhận hoặc Đã lên lịch!", "Không hợp lệ", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -1215,9 +1217,9 @@ public class PanelLichTrucModern extends JPanel {
         int[] h = {7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 13, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 8, 8};
         int[] m = {30, 0, 30, 0, 30, 0, 30, 0, 30, 0, 30, 0, 30, 0, 30, 0, 30, 0, 30, 0, 30, 0, 30, 0, 30, 0, 30, 0, 0, 30};
         khungGio = new String[]{
-            "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+            "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
             "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00",
-            "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"
+            "18:00", "18:30", "19:00", "19:30", "20:00"
         };
         JComboBox<String> cbGioMoi = new JComboBox<>(khungGio);
 

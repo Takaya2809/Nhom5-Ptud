@@ -122,10 +122,10 @@ public class PanelBenhNhanModern extends JPanel {
         dpLocNgayHen = new DatePickerField(LocalDate.now());
         dpLocNgayHen.addPropertyChangeListener("date", evt -> xuLyTimKiem());
 
-        if (SessionManager.isLeTan()) {
-            pnlSearchBottom.add(new JLabel("Ngày hẹn:"));
-            pnlSearchBottom.add(dpLocNgayHen);
-        }
+
+        pnlSearchBottom.add(new JLabel("Ngày hẹn:"));
+        pnlSearchBottom.add(dpLocNgayHen);
+  
 
         pnlSearchBottom.add(new JLabel("Hạng thẻ:"));
         pnlSearchBottom.add(cbFilterHangThe);
@@ -311,6 +311,8 @@ public class PanelBenhNhanModern extends JPanel {
                 "Bệnh án & Lịch sử", ModernUITheme.ACCENT, Color.WHITE);
         btnDatHen = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.CALENDAR, 15, Color.WHITE), "Đặt lịch hẹn",
                 ModernUITheme.PRIMARY_DARK, Color.WHITE);
+        JButton btnKhamNgay = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.CHECK, 15, Color.WHITE), 
+                "Khám ngay", new Color(0, 150, 100), Color.WHITE);
         btnXoa = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.DELETE, 15, Color.WHITE),
                 "Xóa / Ngừng theo dõi", ModernUITheme.DANGER, Color.WHITE);
         btnThem = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.PLUS, 15, Color.WHITE), "Thêm mới hồ sơ",
@@ -320,6 +322,7 @@ public class PanelBenhNhanModern extends JPanel {
 
         pnlButtons.add(btnXemLichSu);
         pnlButtons.add(btnDatHen);
+        pnlButtons.add(btnKhamNgay);
         pnlButtons.add(btnXoa);
         pnlButtons.add(btnCapNhat);
         pnlButtons.add(btnThem);
@@ -361,6 +364,7 @@ public class PanelBenhNhanModern extends JPanel {
         btnXoa.addActionListener(e -> xuLyXoa());
         btnXemLichSu.addActionListener(e -> xuLyXemLichSu());
         btnDatHen.addActionListener(e -> xuLyDatHen());
+        btnKhamNgay.addActionListener(e -> xuLyKhamNgayVangLai());
         btnLamMoi.addActionListener(e -> xoaTrangForm());
         btnTimKiem.addActionListener(e -> xuLyTimKiem());
         txtTimKiem.addActionListener(e -> xuLyTimKiem());
@@ -441,27 +445,27 @@ public class PanelBenhNhanModern extends JPanel {
                 try {
                     List<BenhNhan> list = get();
 
-                    // --- BẮT ĐẦU ĐOẠN CODE LỌC THEO NGÀY CHO LỄ TÂN ---
-                    if (SessionManager.isLeTan()) {
-                        java.sql.Date ngayLoc = dpLocNgayHen.getDate();
-                        
-                        // Chỉ lọc khi có chọn ngày. Nếu xóa ngày (ngayLoc == null) thì bỏ qua, giữ nguyên toàn bộ danh sách
-                        if (ngayLoc != null) {
-                            List<BenhNhan> danhSachLoc = new ArrayList<>();
-                            List<LichHen> tatCaLichHen = lichHenDAO.getAllLichHen();
-                            for (BenhNhan bn : list) {
-                                for (LichHen lh : tatCaLichHen) {
-                                    if (lh.getMaBN() != null && lh.getMaBN().equalsIgnoreCase(bn.getMaBN())) {
-                                        if (lh.getNgayHen() != null && lh.getNgayHen().toLocalDate().isEqual(ngayLoc.toLocalDate())) {
-                                            danhSachLoc.add(bn);
-                                            break; 
-                                        }
+
+
+                    java.sql.Date ngayLoc = dpLocNgayHen.getDate();
+                    
+                    // Chỉ lọc khi có chọn ngày. Nếu xóa ngày (ngayLoc == null) thì bỏ qua, giữ nguyên toàn bộ danh sách
+                    if (ngayLoc != null) {
+                        List<BenhNhan> danhSachLoc = new ArrayList<>();
+                        List<LichHen> tatCaLichHen = lichHenDAO.getAllLichHen();
+                        for (BenhNhan bn : list) {
+                            for (LichHen lh : tatCaLichHen) {
+                                if (lh.getMaBN() != null && lh.getMaBN().equalsIgnoreCase(bn.getMaBN())) {
+                                    if (lh.getNgayHen() != null && lh.getNgayHen().toLocalDate().isEqual(ngayLoc.toLocalDate())) {
+                                        danhSachLoc.add(bn);
+                                        break; 
                                     }
                                 }
                             }
-                            list = danhSachLoc; 
                         }
+                        list = danhSachLoc; 
                     }
+                
                     // --- KẾT THÚC ĐOẠN CODE LỌC ---
 
                     for (BenhNhan bn : list) {
@@ -736,9 +740,9 @@ public class PanelBenhNhanModern extends JPanel {
 
         // Khung giờ hẹn chuẩn y khoa 30 phút
         String[] khungGio = {
-                "08:00:00", "08:30:00", "09:00:00", "09:30:00", "10:00:00", "10:30:00", "11:00:00", "11:30:00",
-                "13:30:00", "14:00:00", "14:30:00", "15:00:00", "15:30:00", "16:00:00", "16:30:00", "17:00:00",
-                "18:00:00", "18:30:00", "19:00:00", "19:30:00", "20:00:00"
+                "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+                "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00",
+                "18:00", "18:30", "19:00", "19:30", "20:00"
         };
         JComboBox<String> cbKhungGio = new JComboBox<>(khungGio);
 
@@ -789,7 +793,7 @@ public class PanelBenhNhanModern extends JPanel {
                 return;
             }
             String maBS = bsItem.split(" - ")[0].trim();
-            Time t = Time.valueOf(cbKhungGio.getSelectedItem().toString());
+            Time t = Time.valueOf(cbKhungGio.getSelectedItem().toString() + ":00");
 
             // Chặn đặt trùng lịch của bác sĩ
             boolean biTrung = lichHenDAO.kiemTraTrungLichBacSi(maBS, d, t, null);
@@ -827,6 +831,104 @@ public class PanelBenhNhanModern extends JPanel {
             } else {
                 JOptionPane.showMessageDialog(dlg, "Không thể lưu lịch hẹn vào CSDL!", "Lỗi",
                         JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        btnHuy.addActionListener(e -> dlg.dispose());
+        pnlBtns.add(btnHuy);
+        pnlBtns.add(btnLuu);
+        dlg.add(pnlBtns, BorderLayout.SOUTH);
+
+        dlg.setVisible(true);
+    }
+    
+    private void xuLyKhamNgayVangLai() {
+        int row = table.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 bệnh nhân để đưa vào phòng khám!", "Nhắc nhở",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String maBN = txtMaBN.getText().trim();
+        String hoTen = txtHoTen.getText().trim();
+
+        JDialog dlg = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Tiếp Nhận Khách Vãng Lai Khám Ngay", true);
+        dlg.setSize(450, 250);
+        dlg.setLocationRelativeTo(this);
+        dlg.setLayout(new BorderLayout(15, 15));
+
+        JPanel pnlForm = new JPanel(new GridLayout(3, 2, 12, 12));
+        pnlForm.setBorder(new EmptyBorder(20, 24, 10, 24));
+
+        JComboBox<String> cbBS = new JComboBox<>();
+        List<NhanVien> listBS = nhanVienDAO.getDanhSachBacSi();
+        for (NhanVien bs : listBS) {
+            cbBS.addItem(bs.getMaNV() + " - " + bs.getHoTen());
+        }
+
+        JTextField txtLyDo = ModernUITheme.createTextField(20);
+        txtLyDo.setText("Khám trực tiếp tại quầy (Walk-in)");
+
+        pnlForm.add(new JLabel("Bệnh nhân:"));
+        pnlForm.add(new JLabel("<html><b>" + maBN + " - " + hoTen + "</b></html>"));
+        pnlForm.add(new JLabel("Phân công Bác sĩ đang rảnh (*):"));
+        pnlForm.add(cbBS);
+        pnlForm.add(new JLabel("Lý do / Yêu cầu:"));
+        pnlForm.add(txtLyDo);
+
+        dlg.add(pnlForm, BorderLayout.CENTER);
+
+        JPanel pnlBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 14));
+        JButton btnLuu = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.CHECK, 15, Color.WHITE),
+                "Đưa vào hàng đợi khám", new Color(0, 150, 100), Color.WHITE);
+        JButton btnHuy = ModernUITheme.createOutlineButton("Hủy", ModernUITheme.TEXT_MUTED);
+
+        btnLuu.addActionListener(e -> {
+            String bsItem = cbBS.getSelectedItem() != null ? cbBS.getSelectedItem().toString() : "";
+            if (bsItem.isEmpty()) return;
+            String maBS = bsItem.split(" - ")[0].trim();
+            
+            // Lấy chính xác thời gian hiện tại
+            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            java.sql.Date ngayHienTai = java.sql.Date.valueOf(now.toLocalDate());
+            java.sql.Time gioHienTai = java.sql.Time.valueOf(now.toLocalTime());
+
+            
+            boolean biTrung = lichHenDAO.kiemTraTrungLichBacSi(maBS, ngayHienTai, gioHienTai, null);
+            if (biTrung) {
+                JOptionPane.showMessageDialog(dlg,
+                        "Bác sĩ [" + bsItem.substring(bsItem.indexOf(" - ") + 3).trim() + "] đang có lịch hẹn hoặc đang bận khám cho bệnh nhân khác vào lúc này!\nVui lòng chọn một Bác sĩ khác đang rảnh.",
+                        "Bác sĩ đang bận", JOptionPane.WARNING_MESSAGE);
+                return; 
+            }
+        
+            LichHen lh = new LichHen(
+                lichHenDAO.sinhMaLichHenMoi(), 
+                maBN, 
+                maBS, 
+                ngayHienTai, 
+                gioHienTai, 
+                txtLyDo.getText().trim(), 
+                "Khách vãng lai", 
+                TrangThaiConstants.LH_DANG_KHAM
+            );
+            
+           
+            lh.setTenBenhNhan(hoTen);
+            lh.setSdtBenhNhan(txtSDT.getText().trim());
+            lh.setTenNhaSi(bsItem.substring(bsItem.indexOf(" - ") + 3).trim());
+
+            boolean ok = lichHenDAO.themLichHen(lh);
+            if (ok) {
+                ThongKeDAO.ghiLog(SessionManager.getTenDangNhapHienTai(), "TIẾP NHẬN KHÁCH VÃNG LAI",
+                        "Đưa khách [" + hoTen + "] vào khám ngay với bác sĩ [" + maBS + "]");
+                JOptionPane.showMessageDialog(dlg,
+                        "Đã đưa bệnh nhân vào phòng khám thành công!", "Thông báo",
+                        JOptionPane.INFORMATION_MESSAGE);
+                dlg.dispose();
+            } else {
+                JOptionPane.showMessageDialog(dlg, "Lỗi khi lưu dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -1334,26 +1436,26 @@ public class PanelBenhNhanModern extends JPanel {
         List<BenhNhan> all = benhNhanDAO.timKiem(keyword);
 
         // --- BẮT ĐẦU ĐOẠN CODE LỌC THEO NGÀY CHO LỄ TÂN ---
-        if (SessionManager.isLeTan()) {
-            java.sql.Date ngayLoc = dpLocNgayHen.getDate();
-            
-            // Chỉ lọc khi có chọn ngày. Nếu xóa ngày (ngayLoc == null) thì bỏ qua, giữ nguyên toàn bộ danh sách
-            if (ngayLoc != null) {
-                List<BenhNhan> danhSachLoc = new ArrayList<>();
-                List<LichHen> tatCaLichHen = lichHenDAO.getAllLichHen();
-                for (BenhNhan bn : all) {
-                    for (LichHen lh : tatCaLichHen) {
-                        if (lh.getMaBN() != null && lh.getMaBN().equalsIgnoreCase(bn.getMaBN())) {
-                            if (lh.getNgayHen() != null && lh.getNgayHen().toLocalDate().isEqual(ngayLoc.toLocalDate())) {
-                                danhSachLoc.add(bn);
-                                break;
-                            }
+
+        java.sql.Date ngayLoc = dpLocNgayHen.getDate();
+        
+        // Chỉ lọc khi có chọn ngày. Nếu xóa ngày (ngayLoc == null) thì bỏ qua, giữ nguyên toàn bộ danh sách
+        if (ngayLoc != null) {
+            List<BenhNhan> danhSachLoc = new ArrayList<>();
+            List<LichHen> tatCaLichHen = lichHenDAO.getAllLichHen();
+            for (BenhNhan bn : all) {
+                for (LichHen lh : tatCaLichHen) {
+                    if (lh.getMaBN() != null && lh.getMaBN().equalsIgnoreCase(bn.getMaBN())) {
+                        if (lh.getNgayHen() != null && lh.getNgayHen().toLocalDate().isEqual(ngayLoc.toLocalDate())) {
+                            danhSachLoc.add(bn);
+                            break;
                         }
                     }
                 }
-                all = danhSachLoc;
             }
+            all = danhSachLoc;
         }
+    
         // --- KẾT THÚC ĐOẠN CODE LỌC ---
 
         tableModel.setRowCount(0);

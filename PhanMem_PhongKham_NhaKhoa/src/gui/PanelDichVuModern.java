@@ -339,12 +339,19 @@ public class PanelDichVuModern extends JPanel {
     private void apDungPhanQuyen() {
         boolean isQL = SessionManager.isQuanLy();
         if (!isQL) {
-            btnThem.setEnabled(false);
-            btnCapNhat.setEnabled(false);
-            btnDoiTrangThai.setEnabled(false);
+        	btnThem.setVisible(false);
+            btnCapNhat.setVisible(false);
+            btnDoiTrangThai.setVisible(false);
+            btnLamMoi.setVisible(false);
             btnThem.setToolTipText("Chỉ Quản lý mới có quyền tạo mới dịch vụ");
             btnCapNhat.setToolTipText("Chỉ Quản lý mới có quyền điều chỉnh giá dịch vụ");
             btnDoiTrangThai.setToolTipText("Chỉ Quản lý mới có quyền ngừng/kích hoạt dịch vụ");
+            txtTenDV.setEditable(false);
+            txtDonGia.setEditable(false);
+            txtThoiGian.setEditable(false);
+            txtMoTa.setEditable(false);
+            cbNhomDichVu.setEnabled(false);
+            cbTrangThai.setEnabled(false);
         }
     }
 

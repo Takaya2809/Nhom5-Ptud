@@ -155,8 +155,28 @@ public class PanelUuDaiModern extends JPanel {
             txtTimKiem.setText("");
             taiDuLieu();
         });
-
-        taiDuLieu();
+        
+     // ================= PHÂN QUYỀN (RBAC) =================
+        // Nếu không phải Quản lý, thì ẩn toàn bộ các nút thay đổi dữ liệu
+        if (!SessionManager.isQuanLy()) {
+            btnThem.setVisible(false);
+            btnCapNhat.setVisible(false);
+            btnXoa.setVisible(false);
+            btnDoiTrangThai.setVisible(false);
+            btnLamMoi.setVisible(false);
+            
+            // Khóa luôn các ô nhập liệu để Lễ tân chỉ có thể đọc
+            txtTenUD.setEditable(false);
+            txtPhanTramGiam.setEditable(false);
+            txtNgayBD.setEditable(false);
+            txtNgayKT.setEditable(false);
+            txtDieuKien.setEditable(false);
+            cbTrangThai.setEnabled(false);
+        }
+    
+        
+        taiDuLieu(); 
+      
     }
 
     private JPanel createFieldItem(String labelText, JComponent comp) {
@@ -202,12 +222,14 @@ public class PanelUuDaiModern extends JPanel {
     private void xoaTrangForm() {
         txtMaUD.setText(uuDaiDAO.sinhMaUuDaiMoi());
         txtTenUD.setText("");
-        txtPhanTramGiam.setText("10");
-        txtNgayBD.setText("2026-10-01");
-        txtNgayKT.setText("2026-12-31");
-        txtDieuKien.setText("Áp dụng khách hàng điều trị");
+        txtPhanTramGiam.setText(""); 
+        txtNgayBD.setText("");      
+        txtNgayKT.setText("");
+        txtDieuKien.setText("");
         cbTrangThai.setSelectedIndex(0);
         table.clearSelection();
+        txtTenUD.requestFocus();    
+        
     }
 
     private void xuLyThem() {
@@ -345,7 +367,7 @@ public class PanelUuDaiModern extends JPanel {
     private void xuLyXoa() {
         int row = table.getSelectedRow();
         String maUD = txtMaUD.getText().trim();
-        if (row < 0 && (maUD.isEmpty() || maUD.equals(uuDaiDAO.sinhMaUDMoi()))) {
+        if (row < 0 && (maUD.isEmpty() || maUD.equals(uuDaiDAO.sinhMaUuDaiMoi()))) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 chương trình ưu đãi trong bảng để xóa!", "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
             return;
         }

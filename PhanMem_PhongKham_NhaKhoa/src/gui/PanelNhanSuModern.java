@@ -188,6 +188,23 @@ public class PanelNhanSuModern extends JPanel {
                 txtMaNV.setText(nhanVienDAO.sinhMaNVMoi(cd));
             }
         });
+        
+        if (!SessionManager.isQuanLy()) {
+            btnThem.setVisible(false);
+            btnCapNhat.setVisible(false);
+            btnXoa.setVisible(false);
+            btnLamMoi.setVisible(false);
+            
+            txtHoTen.setEditable(false);
+            txtSDT.setEditable(false);
+            txtEmail.setEditable(false);
+            txtBangCap.setEditable(false);
+            cbGioiTinh.setEnabled(false);
+            cbChucDanh.setEnabled(false);
+            cbTrangThai.setEnabled(false);
+            dpNgaySinh.setEnabled(false);
+            dpNgayVaoLam.setEnabled(false);
+        }
 
         taiDuLieu();
     }
