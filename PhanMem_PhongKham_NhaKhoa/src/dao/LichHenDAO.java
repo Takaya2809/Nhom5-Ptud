@@ -146,11 +146,15 @@ public class LichHenDAO {
     }
 
     public boolean kiemTraTrungLichBacSi(String maNhaSi, Date ngayHen, Time gioHen, String maLichHenBoQua) {
+        // Đặt khoảng thời gian cho phép (buffer time) giữa 2 bệnh nhân là 60 phút
+        int khoangThoiGianChoPhep = 60; 
+
         Connection conn = ConnectDB.getConnection();
         if (conn != null && maNhaSi != null && ngayHen != null && gioHen != null) {
             try {
                 String sql = "SELECT COUNT(*) FROM LichHen " +
-                             "WHERE maNhaSi = ? AND ngayHen = ? AND gioHen = ? " +
+                             "WHERE maNhaSi = ? AND ngayHen = ? " +
+                             "  AND ABS(DATEDIFF(MINUTE, gioHen, ?)) < ? " +
                              "  AND trangThai NOT IN (?, ?) ";
                 if (maLichHenBoQua != null && !maLichHenBoQua.trim().isEmpty()) {
                     sql += " AND maLichHen != ? ";
@@ -159,10 +163,11 @@ public class LichHenDAO {
                     stmt.setString(1, maNhaSi);
                     stmt.setDate(2, ngayHen);
                     stmt.setTime(3, gioHen);
-                    stmt.setString(4, entity.TrangThaiConstants.LH_DA_HUY);
-                    stmt.setString(5, entity.TrangThaiConstants.LH_VANG_MAT);
+                    stmt.setInt(4, khoangThoiGianChoPhep);
+                    stmt.setString(5, entity.TrangThaiConstants.LH_DA_HUY);
+                    stmt.setString(6, entity.TrangThaiConstants.LH_VANG_MAT);
                     if (maLichHenBoQua != null && !maLichHenBoQua.trim().isEmpty()) {
-                        stmt.setString(6, maLichHenBoQua);
+                        stmt.setString(7, maLichHenBoQua);
                     }
                     try (ResultSet rs = stmt.executeQuery()) {
                         if (rs.next()) return rs.getInt(1) > 0;
@@ -172,6 +177,33 @@ public class LichHenDAO {
                 System.err.println("LichHenDAO.kiemTraTrungLichBacSi error: " + e.getMessage());
             }
         }
+        
+        // KIỂM TRA TRONG MOCK DATA (Phòng trường hợp mạng rớt, chạy ngoại tuyến)
+        if (maNhaSi != null && ngayHen != null && gioHen != null) {
+            long timeMoi = gioHen.getTime();
+            String ngayMoiStr = ngayHen.toString();
+            for (LichHen lh : MOCK_LICH_HEN) {
+                if (maLichHenBoQua != null && lh.getMaLichHen().equalsIgnoreCase(maLichHenBoQua)) continue;
+                if (!maNhaSi.equalsIgnoreCase(lh.getMaNhaSi())) continue;
+                if (lh.getNgayHen() == null || !lh.getNgayHen().toString().equals(ngayMoiStr)) continue;
+                
+                String tt = lh.getTrangThai();
+                if (tt != null && (tt.equalsIgnoreCase(entity.TrangThaiConstants.LH_DA_HUY) || 
+                                   tt.equalsIgnoreCase(entity.TrangThaiConstants.LH_VANG_MAT))) {
+                    continue;
+                }
+                
+                if (lh.getGioHen() != null) {
+                    long timeCu = lh.getGioHen().getTime();
+                    // Tính chênh lệch phút
+                    long diffMinutes = Math.abs(timeMoi - timeCu) / (60 * 1000);
+                    if (diffMinutes < khoangThoiGianChoPhep) {
+                        return true; // Trả về true tức là bị trùng khoảng thời gian
+                    }
+                }
+            }
+        }
+        
         return false;
     }
 

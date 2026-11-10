@@ -344,6 +344,18 @@ public class PanelBenhNhanModern extends JPanel {
         });
 
         // Sự kiện các nút
+
+        new javax.swing.Timer(300, new java.awt.event.ActionListener() {
+            java.time.LocalDate lastDate = dpLocNgayHen.getLocalDate();
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                java.time.LocalDate currDate = dpLocNgayHen.getLocalDate();
+                if ((lastDate == null && currDate != null) || (lastDate != null && !lastDate.equals(currDate))) {
+                    lastDate = currDate;
+                    xuLyTimKiem(); 
+                }
+            }
+        }).start();
         btnThem.addActionListener(e -> xuLyThem());
         btnCapNhat.addActionListener(e -> xuLyCapNhat());
         btnXoa.addActionListener(e -> xuLyXoa());
@@ -752,18 +764,24 @@ public class PanelBenhNhanModern extends JPanel {
         JButton btnLuu = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SAVE, 15, Color.WHITE),
                 "Xác nhận đặt lịch", ModernUITheme.PRIMARY, Color.WHITE);
         JButton btnHuy = ModernUITheme.createOutlineButton("Đóng", ModernUITheme.TEXT_MUTED);
-
         btnLuu.addActionListener(e -> {
             Date d = dpHen.getDate();
             if (d == null) {
                 JOptionPane.showMessageDialog(dlg, "Vui lòng chọn ngày hẹn hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            if (dpHen.getLocalDate().isBefore(LocalDate.now())) {
-                JOptionPane.showMessageDialog(dlg, "Không được đặt lịch hẹn trong quá khứ!", "Lỗi ngày hẹn",
-                        JOptionPane.ERROR_MESSAGE);
+            
+            // --- MÃ MỚI ĐÃ ĐƯỢC CẬP NHẬT ---
+            // Ghép Ngày và Giờ thành LocalDateTime để kiểm tra thời gian thực
+            java.time.LocalDate ngayChon = dpHen.getLocalDate();
+            java.time.LocalTime gioChon = java.time.LocalTime.parse(cbKhungGio.getSelectedItem().toString());
+            java.time.LocalDateTime thoiGianHen = java.time.LocalDateTime.of(ngayChon, gioChon);
+
+            if (thoiGianHen.isBefore(java.time.LocalDateTime.now())) {
+                JOptionPane.showMessageDialog(dlg, "Không thể đặt lịch! Thời gian hẹn (" + gioChon + ") đã trôi qua so với hiện tại.", "Lỗi thời gian", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            // ---------------------------
 
             String bsItem = cbBS.getSelectedItem() != null ? cbBS.getSelectedItem().toString() : "";
             if (bsItem.isEmpty()) {
@@ -988,6 +1006,8 @@ public class PanelBenhNhanModern extends JPanel {
         pnl.add(pnlActions, BorderLayout.SOUTH);
         return pnl;
     }
+    
+    
 
     private void moDialogTaoSuaBenhAn(JDialog parent, String maBN, HoSoBenhAn hsCu, Runnable onSuccess) {
         boolean isEdit = hsCu != null;
@@ -1095,6 +1115,7 @@ public class PanelBenhNhanModern extends JPanel {
                 }
             }
         });
+        
 
         btnHuy.addActionListener(e -> dlg.dispose());
         pnlBtns.add(btnHuy);

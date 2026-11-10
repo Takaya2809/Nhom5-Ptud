@@ -60,7 +60,12 @@ public class PanelLichTrucModern extends JPanel {
     private DefaultTableModel modelLichHen;
     private JComboBox<String> cbLocNgayLH, cbLocBacSiLH, cbLocTrangThaiLH;
     private DatePickerField dpLocNgayLH;
+    private JComboBox<String> cbCheDoXemLH;
+    private JComboBox<String> cbChonTuan;
+    private java.util.List<java.time.LocalDate> dsNgayBatDauTuan;
     private JLabel lblLoadingLH;
+	private Container pnl;
+	private JLabel lblThongTinTuan;
 
     private static final int COL_PC_MA = 0;      // mã phân công (ẩn)
     private static final int COL_PC_MANV = 1;    // mã NV (ẩn)
@@ -811,17 +816,30 @@ public class PanelLichTrucModern extends JPanel {
     // ===================================================================================
 
     private JPanel buildTabLichHen() {
-        JPanel pnl = new JPanel(new BorderLayout(0, 10));
-        pnl.setBackground(ModernUITheme.BG_MAIN);
-        pnl.setBorder(new EmptyBorder(10, 0, 0, 0));
-
+        JPanel pnl = new JPanel(new BorderLayout()); 
+        pnl.setOpaque(false);
+        
         // Filter bar
         JPanel pnlFilter = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         pnlFilter.setOpaque(false);
 
+        cbCheDoXemLH = new JComboBox<>(new String[]{"Xem theo ngày", "Xem theo tuần"});
+        
+        JButton btnPrev = ModernUITheme.createOutlineButton("<", ModernUITheme.PRIMARY);
+        JButton btnNext = ModernUITheme.createOutlineButton(">", ModernUITheme.PRIMARY);
+        btnPrev.setBorder(new EmptyBorder(4, 12, 4, 12));
+        btnNext.setBorder(new EmptyBorder(4, 12, 4, 12));
+        btnPrev.setToolTipText("Lùi lại (Ngày/Tuần trước)");
+        btnNext.setToolTipText("Tiến lên (Ngày/Tuần sau)");
+
         dpLocNgayLH = new DatePickerField(LocalDate.now());
+        
+        cbChonTuan = new JComboBox<>();
+        napDuLieuTuan(); 
+        cbChonTuan.setVisible(false); // Ẩn mặc định khi ở chế độ "Ngày"
+
         JButton btnLocLH = ModernUITheme.createIconButton(new AppIcon(AppIcon.Type.SEARCH, 14, Color.WHITE), "Lọc", ModernUITheme.PRIMARY, Color.WHITE);
-        JButton btnTatCaLH = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 13, ModernUITheme.TEXT_MUTED), "Tất cả ngày", ModernUITheme.TEXT_MUTED);
+        JButton btnTatCaLH = ModernUITheme.createOutlineIconButton(new AppIcon(AppIcon.Type.REFRESH, 13, ModernUITheme.TEXT_MUTED), "Tất cả", ModernUITheme.TEXT_MUTED);
 
         List<NhanVien> listBS = nhanVienDAO.getDanhSachBacSi();
         cbLocBacSiLH = new JComboBox<>();
@@ -844,8 +862,11 @@ public class PanelLichTrucModern extends JPanel {
         lblLoadingLH.setFont(ModernUITheme.FONT_SMALL);
         lblLoadingLH.setForeground(ModernUITheme.PRIMARY);
 
-        pnlFilter.add(new JLabel("Ngày:"));
+        pnlFilter.add(cbCheDoXemLH);
+        pnlFilter.add(btnPrev);
         pnlFilter.add(dpLocNgayLH);
+        pnlFilter.add(cbChonTuan); // Nằm vào vị trí kế DatePicker
+        pnlFilter.add(btnNext);
         pnlFilter.add(new JLabel("  Bác sĩ:"));
         pnlFilter.add(cbLocBacSiLH);
         pnlFilter.add(new JLabel("  Trạng thái:"));
@@ -853,10 +874,10 @@ public class PanelLichTrucModern extends JPanel {
         pnlFilter.add(btnLocLH);
         pnlFilter.add(btnTatCaLH);
         pnlFilter.add(lblLoadingLH);
-
+        
         pnl.add(pnlFilter, BorderLayout.NORTH);
 
-        // Bảng lịch hẹn - ẩn 3 cột kỹ thuật (maLH, maBN, maBS)
+        // Bảng lịch hẹn
         String[] colsLH = {"MaLH", "MaBN", "MaBS", "Tên Bệnh Nhân", "SĐT", "Bác Sĩ Phụ Trách", "Ngày Hẹn", "Giờ Hẹn", "Lý Do Khám", "Trạng Thái"};
         modelLichHen = new DefaultTableModel(colsLH, 0) {
             @Override
@@ -865,7 +886,6 @@ public class PanelLichTrucModern extends JPanel {
         tblLichHen = new JTable(modelLichHen);
         ModernUITheme.formatModernTable(tblLichHen);
 
-        // Ẩn các cột kỹ thuật
         int[] hideCols = {COL_LH_MA, COL_LH_MABN, COL_LH_MABS};
         for (int hc : hideCols) {
             tblLichHen.getColumnModel().getColumn(hc).setMinWidth(0);
@@ -880,7 +900,6 @@ public class PanelLichTrucModern extends JPanel {
         tblLichHen.getColumnModel().getColumn(COL_LH_LYDO).setPreferredWidth(200);
         tblLichHen.getColumnModel().getColumn(COL_LH_TRANGTHAI).setPreferredWidth(120);
 
-        // Renderer màu trạng thái lịch hẹn
         tblLichHen.getColumnModel().getColumn(COL_LH_TRANGTHAI).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object value, boolean sel, boolean foc, int row, int col) {
@@ -912,7 +931,6 @@ public class PanelLichTrucModern extends JPanel {
         JScrollPane scrollLH = new JScrollPane(tblLichHen);
         scrollLH.setBorder(BorderFactory.createLineBorder(ModernUITheme.BORDER_LIGHT));
 
-        // Action buttons
         JPanel pnlActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 8));
         pnlActions.setOpaque(false);
         pnlActions.setBackground(ModernUITheme.BG_CARD);
@@ -937,15 +955,78 @@ public class PanelLichTrucModern extends JPanel {
         pnl.add(scrollLH, BorderLayout.CENTER);
         pnl.add(pnlBottom, BorderLayout.SOUTH);
 
-        // Sự kiện
+        // ============ GẮN SỰ KIỆN ============
+        
+        new javax.swing.Timer(300, new java.awt.event.ActionListener() {
+            java.time.LocalDate lastDate = dpLocNgayLH.getLocalDate();
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                java.time.LocalDate currDate = dpLocNgayLH.getLocalDate();
+                if ((lastDate == null && currDate != null) || (lastDate != null && !lastDate.equals(currDate))) {
+                    lastDate = currDate;
+                    taiDuLieuLichHen();
+                }
+            }
+        }).start();
+   
+        dpLocNgayLH.addPropertyChangeListener(e -> {
+            String prop = e.getPropertyName();
+            if ("date".equals(prop) || "value".equals(prop) || "localDate".equals(prop)) {
+                taiDuLieuLichHen();
+            }
+        });
+        
+        cbCheDoXemLH.addActionListener(e -> {
+            boolean isTheoTuan = cbCheDoXemLH.getSelectedIndex() == 1;
+            dpLocNgayLH.setVisible(!isTheoTuan);
+            cbChonTuan.setVisible(isTheoTuan);
+            pnlFilter.revalidate();
+            pnlFilter.repaint();
+            taiDuLieuLichHen();
+        });
+
+        cbChonTuan.addActionListener(e -> {
+            if (cbChonTuan.isVisible()) taiDuLieuLichHen();
+        });
+        
         btnLocLH.addActionListener(e -> taiDuLieuLichHen());
         cbLocBacSiLH.addActionListener(e -> taiDuLieuLichHen());
         cbLocTrangThaiLH.addActionListener(e -> taiDuLieuLichHen());
+        
         btnTatCaLH.addActionListener(e -> {
-            dpLocNgayLH.setLocalDate(null);
+            dpLocNgayLH.setLocalDate(null); 
+            cbCheDoXemLH.setSelectedIndex(0);
             cbLocBacSiLH.setSelectedIndex(0);
             cbLocTrangThaiLH.setSelectedIndex(0);
             taiDuLieuLichHen();
+        });
+
+
+        dpLocNgayLH.addPropertyChangeListener(e -> {
+            String prop = e.getPropertyName();
+            if ("date".equals(prop) || "value".equals(prop) || "localDate".equals(prop)) {
+                taiDuLieuLichHen();
+            }
+        });
+        
+        btnPrev.addActionListener(e -> {
+            if (cbCheDoXemLH.getSelectedIndex() == 1) {
+                int idx = cbChonTuan.getSelectedIndex();
+                if (idx > 0) cbChonTuan.setSelectedIndex(idx - 1);
+            } else if (dpLocNgayLH.getLocalDate() != null) {
+                dpLocNgayLH.setLocalDate(dpLocNgayLH.getLocalDate().minusDays(1));
+                taiDuLieuLichHen();
+            }
+        });
+        
+        btnNext.addActionListener(e -> {
+            if (cbCheDoXemLH.getSelectedIndex() == 1) {
+                int idx = cbChonTuan.getSelectedIndex();
+                if (idx < cbChonTuan.getItemCount() - 1) cbChonTuan.setSelectedIndex(idx + 1);
+            } else if (dpLocNgayLH.getLocalDate() != null) {
+                dpLocNgayLH.setLocalDate(dpLocNgayLH.getLocalDate().plusDays(1));
+                taiDuLieuLichHen();
+            }
         });
 
         btnXacNhan.addActionListener(e -> xuLyCapNhatTrangThaiLH(TrangThaiConstants.LH_DA_XAC_NHAN));
@@ -954,18 +1035,14 @@ public class PanelLichTrucModern extends JPanel {
         btnKhongDen.addActionListener(e -> xuLyCapNhatTrangThaiLH(TrangThaiConstants.LH_KHONG_DEN));
         btnChuyenHangDoi.addActionListener(e -> xuLyCapNhatTrangThaiLH(TrangThaiConstants.LH_DANG_KHAM));
 
-        return pnl;
+        return (JPanel) pnl;
     }
-
     private void taiDuLieuLichHen() {
         lblLoadingLH.setText("Đang tải...");
         SwingWorker<List<LichHen>, Void> worker = new SwingWorker<List<LichHen>, Void>() {
             @Override
             protected List<LichHen> doInBackground() {
-                java.sql.Date ngayLoc = dpLocNgayLH.getDate();
-                if (ngayLoc != null) {
-                    return lichHenDAO.getLichHenTheoNgay(ngayLoc);
-                }
+                // Lấy toàn bộ để tự xử lý lọc theo ngày hoặc tuần
                 return lichHenDAO.getAllLichHen();
             }
 
@@ -976,17 +1053,56 @@ public class PanelLichTrucModern extends JPanel {
                     String bsFilter = cbLocBacSiLH.getSelectedItem() != null ? cbLocBacSiLH.getSelectedItem().toString() : "Tất cả bác sĩ";
                     String ttFilter = cbLocTrangThaiLH.getSelectedItem() != null ? cbLocTrangThaiLH.getSelectedItem().toString() : "Tất cả trạng thái";
 
+                    java.sql.Date ngayLoc = dpLocNgayLH.getDate();
+                    boolean isTheoTuan = cbCheDoXemLH != null && cbCheDoXemLH.getSelectedIndex() == 1;
+
+
+                    java.time.LocalDate startDate = null;
+                    java.time.LocalDate endDate = null;
+                    
+                    // --- ĐỌC NGÀY TỪ GIAO DIỆN MỚI ---
+                    if (isTheoTuan) {
+                        int idx = cbChonTuan.getSelectedIndex();
+                        if (idx >= 0 && dsNgayBatDauTuan != null && idx < dsNgayBatDauTuan.size()) {
+                            startDate = dsNgayBatDauTuan.get(idx);
+                            endDate = startDate.plusDays(6);
+                        }
+                    } else {
+                        if (ngayLoc != null) {
+                            startDate = ngayLoc.toLocalDate();
+                            endDate = ngayLoc.toLocalDate();
+                        }
+                    }
+
                     modelLichHen.setRowCount(0);
+                    
+                    // --- BẮT ĐẦU VÒNG LẶP LỌC DỮ LIỆU ---
                     for (LichHen lh : list) {
-                        // Lọc bác sĩ
+                        
+                        // 1. Lọc theo khoảng thời gian
+                        if (startDate != null && endDate != null) {
+                            if (lh.getNgayHen() == null) continue;
+                            java.time.LocalDate lhDate = new java.sql.Date(lh.getNgayHen().getTime()).toLocalDate();
+                            
+                            // Nếu lịch hẹn nằm ngoài thì bỏ qua
+                            if (lhDate.isBefore(startDate) || lhDate.isAfter(endDate)) {
+                                continue;
+                            }
+                        }
+                        
+                        // ... (Các dòng code lọc bác sĩ, lọc trạng thái giữ nguyên) ...
+
+                        // 2. Lọc bác sĩ
                         if (!"Tất cả bác sĩ".equals(bsFilter)) {
                             String maBSFilter = bsFilter.split(" - ")[0].trim();
                             if (!maBSFilter.equalsIgnoreCase(lh.getMaNhaSi())) continue;
                         }
-                        // Lọc trạng thái
+                        
+                        // 3. Lọc trạng thái
                         if (!"Tất cả trạng thái".equals(ttFilter)) {
                             if (!ttFilter.equalsIgnoreCase(lh.getTrangThai())) continue;
                         }
+                        
                         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
                         modelLichHen.addRow(new Object[]{
                             lh.getMaLichHen(),
@@ -1127,6 +1243,11 @@ public class PanelLichTrucModern extends JPanel {
             String gioStr = cbGioMoi.getSelectedItem() != null ? cbGioMoi.getSelectedItem().toString() : "08:00";
             if (ngayMoi == null) {
                 JOptionPane.showMessageDialog(dlg, "Vui lòng chọn ngày hẹn mới!", "Lỗi", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            java.time.LocalDateTime thoiGianMoi = java.time.LocalDateTime.of(ngayMoi.toLocalDate(), java.time.LocalTime.parse(gioStr));
+            if (thoiGianMoi.isBefore(java.time.LocalDateTime.now())) {
+                JOptionPane.showMessageDialog(dlg, "Thời gian hẹn mới không được nằm trong quá khứ!", "Lỗi", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             boolean ok = lichHenDAO.doiLichHen(maLH, ngayMoi, Time.valueOf(gioStr + ":00"));
@@ -1270,5 +1391,32 @@ public class PanelLichTrucModern extends JPanel {
         pnl.add(lbl, BorderLayout.NORTH);
         pnl.add(comp, BorderLayout.CENTER);
         return pnl;
+    }
+    
+    private void napDuLieuTuan() {
+        cbChonTuan.removeAllItems();
+        dsNgayBatDauTuan = new java.util.ArrayList<>();
+        java.time.LocalDate today = java.time.LocalDate.now();
+        
+        java.time.LocalDate startPoint = today.minusMonths(3).with(java.time.DayOfWeek.MONDAY);
+        int todayIdx = 0;
+        
+        java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        java.time.temporal.WeekFields weekFields = java.time.temporal.WeekFields.of(java.util.Locale.getDefault());
+        
+        for (int i = 0; i < 40; i++) {
+            java.time.LocalDate s = startPoint.plusWeeks(i);
+            java.time.LocalDate e = s.plusDays(6);
+            dsNgayBatDauTuan.add(s);
+            
+            int weekNum = s.get(weekFields.weekOfWeekBasedYear());
+            cbChonTuan.addItem("Tuần " + weekNum + " (" + s.format(fmt) + " - " + e.format(fmt) + ")");
+            
+    
+            if (!today.isBefore(s) && !today.isAfter(e)) {
+                todayIdx = i;
+            }
+        }
+        cbChonTuan.setSelectedIndex(todayIdx);
     }
 }

@@ -457,19 +457,50 @@ public class TrangChuModern extends JFrame {
     /**
      * THỰC HIỆN TRA CỨU NHANH BỆNH NHÂN, HÓA ĐƠN & LỊCH HẸN TỪ CSDL
      */
+    /**
+     * THỰC HIỆN TRA CỨU NHANH BỆNH NHÂN, HÓA ĐƠN & LỊCH HẸN TỪ CSDL
+     */
     private void thucHienTraCuuNhanh() {
         String keyword = txtQuickSearch.getText().trim();
-        if (keyword.isEmpty() || keyword.equals("Tra cứu nhanh bệnh nhân, hóa đơn, lịch hẹn...")) {
+        if (keyword.isEmpty() || keyword.equalsIgnoreCase("Tra cứu nhanh bệnh nhân, hóa đơn, lịch hẹn...")) {
             JOptionPane.showMessageDialog(this,
                     "Vui lòng nhập mã bệnh nhân, tên, số điện thoại hoặc mã hóa đơn để tra cứu!",
                     "Nhắc nhở", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
+        String kwUpper = keyword.toUpperCase();
+
+        // --- BẮT ĐẦU: CHUYỂN TRANG NGAY LẬP TỨC NẾU GÕ ĐÚNG ĐỊNH DẠNG MÃ ---
+        if (kwUpper.startsWith("BN") && kwUpper.length() >= 5) {
+            if (kiemTraQuyenTruyCap("BENH_NHAN")) {
+                switchTab("BENH_NHAN");
+                pnlBenhNhan.selectBenhNhan(kwUpper);
+            }
+            return;
+        } else if (kwUpper.startsWith("HD") && kwUpper.length() >= 5) {
+            if (kiemTraQuyenTruyCap("THANH_TOAN")) {
+                switchTab("THANH_TOAN");
+                try {
+                    int maHD = Integer.parseInt(kwUpper.replaceAll("[^0-9]", ""));
+                    pnlThanhToan.selectHoaDon(maHD);
+                } catch (Exception ex) {}
+            }
+            return;
+        } else if (kwUpper.startsWith("LH") && kwUpper.length() >= 5) {
+            if (kiemTraQuyenTruyCap("LICH_TRUC")) {
+                switchTab("LICH_TRUC");
+                pnlLichTruc.selectLichHen(kwUpper);
+            }
+            return;
+        }
+        // --- KẾT THÚC ---
+
+        // Nếu người dùng nhập Tên hoặc SĐT, vẫn giữ nguyên tính năng hiển thị Popup tìm kiếm
         popupSearch.removeAll();
         popupSearch.setPreferredSize(new Dimension(460, 0));
 
-        // Tìm kiếm đa luồng / async nhẹ để không khóa EDT
+ 
         SwingWorker<SearchResults, Void> worker = new SwingWorker<>() {
             @Override
             protected SearchResults doInBackground() {
@@ -493,7 +524,6 @@ public class TrangChuModern extends JFrame {
         };
         worker.execute();
     }
-
     private static class SearchResults {
         List<BenhNhan> benhNhans;
         List<HoaDonKham> hoaDons;

@@ -144,7 +144,13 @@ public class PanelLichHenModern extends JPanel {
             Date date = Date.valueOf(txtNgay.getText().trim());
             String timeText = txtGio.getText().trim();
             Time time = Time.valueOf(timeText.length() == 5 ? timeText + ":00" : timeText);
-            if (date.before(Date.valueOf(LocalDate.now()))) { showError("Không thể tạo lịch trong quá khứ."); return; }
+            
+            java.time.LocalDateTime thoiGianHen = java.time.LocalDateTime.of(date.toLocalDate(), time.toLocalTime());
+            if (thoiGianHen.isBefore(java.time.LocalDateTime.now())) { 
+                showError("Không thể tạo lịch hẹn trong quá khứ hoặc trước thời gian hiện tại."); 
+                return; 
+            }
+            
             if (txtLyDo.getText().trim().isEmpty()) { showError("Vui lòng nhập lý do khám."); return; }
             String id = dao.sinhMaLichHenMoi();
             if (id == null) { showError(dao.getLastError()); return; }
