@@ -1,0 +1,4 @@
+# CaTruc	KhungGio	SoLuongBN	VatTuTieuHao	TrangThai
+Ca Sáng	08:00 - 12:00	99	Găng tay y tế Nitrile (SL: 2), Khẩu trang y tế (SL: 2)	Đã gửi quản lý
+Ca Chiều	13:30 - 17:30	15	Găng tay y tế Nitrile (SL: 2), Khẩu trang y tế (SL: 2)	Chưa gửi
+Ca Tối	18:00 - 21:00	8	Găng tay y tế Nitrile (SL: 2), Khẩu trang y tế (SL: 2)	Chưa gửi

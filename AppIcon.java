@@ -40,8 +40,7 @@ public class AppIcon implements Icon {
         DOLLAR,
         TOOTH,
         USER, 
-        SHIELD,
-        CHART
+        SHIELD
     }
 
     private final Type type;
@@ -312,6 +311,7 @@ public class AppIcon implements Icon {
                 g2.draw(new Line2D.Float(8.0f, 5.5f, 8.0f, 11.0f));
                 g2.draw(new Line2D.Float(5.5f, 8.25f, 10.5f, 8.25f));
                 break;
+            
         }
 
         g2.dispose();
