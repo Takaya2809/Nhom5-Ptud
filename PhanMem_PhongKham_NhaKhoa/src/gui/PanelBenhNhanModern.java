@@ -1047,8 +1047,8 @@ public class PanelBenhNhanModern extends JPanel {
                 "Sửa Bệnh Án", ModernUITheme.ACCENT, Color.WHITE);
 
         boolean coQuyen = SessionManager.isQuanLy() || SessionManager.isNhaSi();
-        btnThemBA.setEnabled(coQuyen);
-        btnSuaBA.setEnabled(coQuyen);
+        btnThemBA.setVisible(coQuyen);
+        btnSuaBA.setVisible(coQuyen);
 
         btnThemBA.addActionListener(e -> moDialogTaoSuaBenhAn(parentDlg, maBN, null, () -> {
             // Refresh lại bảng bệnh án
@@ -1331,7 +1331,7 @@ public class PanelBenhNhanModern extends JPanel {
                 "Kê Thêm Thuốc & Trừ Tồn Kho", ModernUITheme.PRIMARY, Color.WHITE);
 
         boolean coQuyen = SessionManager.isQuanLy() || SessionManager.isNhaSi();
-        btnKeDon.setEnabled(coQuyen);
+        btnKeDon.setVisible(coQuyen);
 
         btnKeDon.addActionListener(e -> {
             moDialogKeDonThuoc(parent, (tenTh, hoatChat, dvt, sl, cachDung) -> {
