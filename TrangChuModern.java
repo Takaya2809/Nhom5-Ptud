@@ -303,7 +303,7 @@ public class TrangChuModern extends JFrame {
             addMenuItem(pnlMenuItems, AppIcon.Type.PATIENT, "Hồ sơ bệnh nhân", "BENH_NHAN");
             addMenuItem(pnlMenuItems, AppIcon.Type.CALENDAR, "Lịch Trực & Lịch Hẹn Khám", "LICH_TRUC");
             addCategoryHeader(pnlMenuItems, "BÁO CÁO QUẢN LÝ");
-            addMenuItem(pnlMenuItems, AppIcon.Type.CHART, "Thống Kê Cuối Ngày", "THONG_KE_CUOI_NGAY");
+            addMenuItem(pnlMenuItems, AppIcon.Type.REPORT, "Báo Cáo Cuối Ngày", "THONG_KE_CUOI_NGAY");
 
         } else {
             // VỊ TRÍ QUẢN LÝ / ADMIN: Toàn quyền truy cập tất cả chức năng quản trị
